@@ -46,3 +46,10 @@ export function athensIsoDate(d: Date): string {
   const p = athensParts(d);
   return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
 }
+
+// "2026-12-31" -> the first moment of that day in Athens.
+export function startOfAthensDay(isoDate: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!m) return null;
+  return athensToUtc(Number(m[1]), Number(m[2]), Number(m[3]));
+}

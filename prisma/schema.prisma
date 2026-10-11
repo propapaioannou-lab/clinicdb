@@ -96,7 +96,8 @@ model Session {
   @@index([userId, revokedAt])
 }
 
-// Append-only record of who did what (CLAUDE.md). No foreign keys, so entries
+// Append-only record of who did what (CLAUDE.md). A database trigger refuses any
+// UPDATE, DELETE or TRUNCATE (migration audit_log_immutable). No foreign keys, so entries
 // survive even if the user or record they mention is later deleted.
 model AuditLog {
   id          BigInt   @id @default(autoincrement())
@@ -115,6 +116,7 @@ model AuditLog {
   @@index([at])
   @@index([actorUserId, at])
   @@index([entityType, entityId, at])
+  @@index([entityId, at])
   @@index([action, at])
 }
 

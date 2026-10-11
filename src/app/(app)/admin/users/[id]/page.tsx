@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 import type { Level } from "@/generated/prisma/client";
@@ -37,6 +38,7 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
   const companies = await listCompanies();
   const t = await getTranslations("admin");
   const tl = await getTranslations("levels");
+  const ta = await getTranslations("audit");
   const format = await getFormatter();
   const when = (d: Date) => format.dateTime(d, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
@@ -56,7 +58,9 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
         <Badge>{tl(user.level)}</Badge>
         <Badge tone={user.status === "active" ? "green" : user.status === "locked" ? "red" : "amber"}>{t(`status.${user.status}`)}</Badge>
       </div>
-      <p className="text-sm text-neutral-500">{user.email}</p>
+      <p className="text-sm text-neutral-500">
+        {user.email} · <Link href={`/admin/audit?user=${user.id}`} className="underline-offset-2 hover:underline">{ta("history")}</Link>
+      </p>
 
       {notice === "invited" && <Notice>{t("created.invited", { email: user.email })}</Notice>}
       {notice && notice !== "invited" && <Notice>{t(`detail.${notice}`)}</Notice>}

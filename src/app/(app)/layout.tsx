@@ -18,6 +18,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             <>
               <Link href="/admin/users" className="text-sm hover:underline">{t("nav.users")}</Link>
               <Link href="/admin/devices" className="text-sm hover:underline">{t("nav.devices")}</Link>
+              <Link href="/admin/audit" className="text-sm hover:underline">{t("nav.audit")}</Link>
             </>
           )}
         </nav>

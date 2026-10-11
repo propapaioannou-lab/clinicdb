@@ -9,6 +9,7 @@ export default async function DeletedUsersPage() {
   const t = await getTranslations("admin.deleted");
   const tu = await getTranslations("admin.users");
   const tl = await getTranslations("levels");
+  const ta = await getTranslations("audit");
   const format = await getFormatter();
   const date = (d: Date) => format.dateTime(d, { day: "numeric", month: "short", year: "numeric" });
 
@@ -40,6 +41,7 @@ export default async function DeletedUsersPage() {
                   <td className="py-2 pr-4">
                     <span className="font-medium">{u.name}</span>
                     <div className="text-xs text-neutral-500">{u.email}</div>
+                    <Link href={`/admin/audit?user=${u.userId}`} className="text-xs underline-offset-2 hover:underline">{ta("history")}</Link>
                   </td>
                   <td className="py-2 pr-4">{tl(u.level)}</td>
                   <td className="py-2 pr-4">{u.companies.join(", ")}</td>

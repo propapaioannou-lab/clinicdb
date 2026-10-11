@@ -2,6 +2,22 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 1, Step 6: Audit log screen
+
+- New **Αρχείο καταγραφής** link (Owner and Admin). Every login, failed login,
+  lockout, 2FA event, device change and user change, newest first, in Greek time:
+  who, what (in Greek), on whom, details (e.g. "επίπεδο: Χρήστης → Επισκέπτης"),
+  IP and device.
+- Filters: person (deleted users included), type (logins, failures & lockouts,
+  2FA & devices, user management, log views), from/to date. 50 per page.
+- **Ιστορικό ενεργειών** link on each user's page and on each deleted user.
+- Opening the log is itself recorded.
+- **The log cannot be changed or deleted** — the database refuses it, even for the
+  app. At deployment the app will also use a restricted database account that can
+  only add to the log.
+
+**Check it:** see README, "Test the audit log".
+
 ## 11 Oct 2026 — Suspend and delete users
 
 - The hidden "Ενεργός λογαριασμός" tick box is gone. Instead, the user page has:

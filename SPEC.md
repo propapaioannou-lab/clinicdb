@@ -207,6 +207,9 @@ services and are NOT rebuilt here.
   follow-ups none (default per visit type); entered and collected by the **secretary or
   PA/nurse** only; never shown on the surgeon's screens. In the Spa (set up later) the
   aestheticians may also charge.
+- Built (Phase 2): visit open → closed by surgeon or PA/nurse (locks the clinical part;
+  payment can still be recorded); only a surgeon reopens. Procedure catalogue and exam
+  areas from the design, in code for now; they move to the Settings lists.
 - **Vitals / measurements on every visit:** weight (required prompt), height,
   BMI (auto), blood pressure, pulse — list extensible. Weight shown as a trend chart.
 - Optional: audio recording + AI transcript + AI review (§9)

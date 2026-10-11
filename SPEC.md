@@ -248,6 +248,11 @@ services and are NOT rebuilt here.
   and offers only the fitting procedures (Μύτη → rhinoplasty; Μαστός → breast list by
   gender; face/body/genital/other findings map to their procedures, e.g. Άνω βλέφαρα →
   upper blepharoplasty, Λιποίδημα → lipoedema liposuction); "+ Όλες" shows the full list.
+  Inside an area, the most recently tapped finding (and chosen procedure) shows its
+  details first.
+- **Eyelid measurements** (decided 11 Oct 2026): when brows or eyelids are examined, a
+  block with MRD1, MRD2, LF, MCD (lid crease), TPS (mm, Δ/Α) and a standard eyelid
+  diagram (both eyes, brow, crease, lid margins, light reflex) showing the values.
 - **Προεγχειρητική εκτίμηση** (decided 11 Oct 2026; was "Επεμβάσεις που συζητήθηκαν" —
   it is my-medical's "Προεγχειρητική εκτίμηση"): areas (Πρόσωπο, Μαστός, Σώμα, Γεννητικά,
   Άλλο) are added like the evaluation areas; an area opens its procedures; ✕ closes it

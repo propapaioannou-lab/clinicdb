@@ -2,6 +2,15 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Eyelid diagram; latest choice on top
+
+- Πρόσωπο → tap Φρύδια, Άνω or Κάτω βλέφαρα: a "Βλέφαρα (mm)" box appears with MRD1,
+  MRD2, LF, MCD and TPS for each eye, and an eyelid diagram that shows the numbers on
+  the lines as you type.
+- The detail card of the finding or procedure you tapped last now appears first.
+- Check: Νέα επίσκεψη → + Πρόσωπο → Άνω βλέφαρα; type 2,5 in MRD1 Δ and watch the right
+  eye (left on the screen).
+
 ## 11 Oct 2026 — Fewer taps
 
 - A newly added evaluation area opens at the top, right under the "+ area" chips.

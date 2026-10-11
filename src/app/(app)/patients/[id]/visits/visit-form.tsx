@@ -256,7 +256,8 @@ export function VisitForm({
                     </button>
                   )}
                 </div>
-                {v.procedures.filter((p) => area.procedures.some((x) => x.key === p.key) && (findProcedure(p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
+                {/* Latest chosen procedure first (decided 11 Oct 2026). */}
+                {[...v.procedures].reverse().filter((p) => area.procedures.some((x) => x.key === p.key) && (findProcedure(p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
                   const def = findProcedure(p.key)!;
                   const details = PROCEDURE_DETAILS[p.key];
                   const chart = details ? chartFor(p.details ?? {}) : [];

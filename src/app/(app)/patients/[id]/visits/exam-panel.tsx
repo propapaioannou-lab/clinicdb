@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { fieldClass } from "@/components/ui";
 import { difficultyModifiers, type AreaExam, type ExamValue as Exam, type FieldValue, type MeasureValue } from "@/lib/visits/exams/engine";
 import { BreastSketch } from "./breast-sketch";
+import { EyeSketch } from "./eye-sketch";
 import { FieldsEditor, MeasureInputs, opt } from "./fields-editor";
 
 const pill = (on: boolean) =>
@@ -110,7 +111,7 @@ export function ExamPanel({
         )}
       </div>
 
-      {area.measurements && (
+      {area.measurements && (!area.measurements.whenFindings || area.measurements.whenFindings.some((k) => k in exam.findings) || exam.measurements) && (
         <div className={`flex flex-col gap-2 rounded-[10px] border px-3 py-2.5 ${missingNames.length ? "border-warn-line bg-warn-bg/40" : "border-line-soft bg-surface"}`}>
           <span className="text-sm font-semibold">{area.measurements.title}</span>
           {missingNames.length > 0 && <span role="status" className="text-[13px] font-medium text-warn-ink">{t("requiredMissing", { list: missingNames.join(", ") })}</span>}
@@ -119,12 +120,17 @@ export function ExamPanel({
               {area.measurements.fields.map((f) =>
                 f.type !== "measure" ? null : (
                   <div key={f.key} className="flex flex-wrap items-center gap-2">
-                    <span className={`w-40 shrink-0 text-[13px] ${missing.includes(f.key) ? "font-semibold text-warn-ink" : "text-ink-3"}`}>{f.el}</span>
+                    <span className={`w-36 shrink-0 text-[13px] ${missing.includes(f.key) ? "font-semibold text-warn-ink" : "text-ink-3"}`}>{f.el}</span>
                     <MeasureInputs compact field={f} value={exam.measurements?.[f.key]} onChange={(v) => setMeasurement(f.key, v)} />
                   </div>
                 ),
               )}
             </div>
+            {area.measurements.sketch === "eyes" && (
+              <div className="flex-[1_1_100%]">
+                <EyeSketch values={exam.measurements ?? {}} />
+              </div>
+            )}
             {area.measurements.sketch === "breast" && (
               <div className="flex-[1_1_260px]">
                 <BreastSketch
@@ -163,7 +169,8 @@ export function ExamPanel({
         </button>
       )}
 
-      {findings.filter((f) => f.key in exam.findings).map((f) => (
+      {/* Latest tapped finding first (decided 11 Oct 2026). */}
+      {Object.keys(exam.findings).reverse().map((k) => findings.find((f) => f.key === k)).filter((f) => !!f).map((f) => (
         <div key={f.key} className="flex flex-col gap-2 rounded-[10px] border border-line-soft bg-surface px-3 py-2.5">
           <span className="text-sm font-semibold">{f.el}</span>
           <FieldsEditor label={f.el} fields={f.fields} value={exam.findings[f.key] ?? {}} onField={(field, u) => setField(f.key, field, u)} />

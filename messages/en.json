@@ -876,6 +876,7 @@
     "revision": "Revision (previous surgery in this area)",
     "right": "R",
     "left": "L",
+    "eyeSketch": "Eyelid diagram",
     "showAll": "All findings",
     "showFewer": "Relevant only",
     "requiredMissing": "Breast/chest procedure: measurements missing: {list}",

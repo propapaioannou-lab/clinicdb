@@ -210,6 +210,20 @@ export function missingMeasurements(exam: ExamValue | undefined, required: strin
 // ── Πρόσωπο ─────────────────────────────────────────────────────────────────────────────
 const FACE: AreaExam = {
   key: "face",
+  // Standard eyelid measurements with the eye sketch (decided 11 Oct 2026).
+  measurements: {
+    title: "Βλέφαρα (mm)",
+    sketch: "eyes",
+    whenFindings: ["brows", "upperLids", "lowerLids"],
+    note: "Normal: MRD1 3.5–4.5 · MRD2 5–5.5 · LF ≥ 12 (good), 5–11 (fair), ≤ 4 (poor) · MCD 8–10 ♀ / 6–8 ♂",
+    fields: [
+      mm("mrd1", "MRD1", "MRD1", { min: -5, max: 10 }),
+      mm("mrd2", "MRD2", "MRD2", { max: 12 }),
+      mm("lf", "LF (levator function)", "LF", { max: 25 }),
+      mm("mcd", "MCD (lid crease)", "MCD", { max: 20 }),
+      mm("tps", "TPS", "TPS", { max: 20 }),
+    ],
+  },
   findings: [
     {
       key: "forehead", el: "Μέτωπο / μεσόφρυο",
@@ -237,11 +251,9 @@ const FACE: AreaExam = {
         { key: "gland", el: "Πρόπτωση δακρυϊκού", type: "bool", phrase: "πρόπτωση δακρυϊκού αδένα" },
         { key: "field", el: "Περιορισμός οπτικού πεδίου", type: "bool", phrase: "περιορισμός άνω οπτικού πεδίου" },
         { key: "ptosis", el: "Βλεφαρόπτωση", type: "one", options: [o("mild", "ήπια 1–2 mm", "ήπια βλεφαρόπτωση (1–2 mm)"), o("moderate", "μέτρια 3–4 mm", "μέτρια βλεφαρόπτωση (3–4 mm)"), o("severe", "σοβαρή > 4 mm", "σοβαρή βλεφαρόπτωση (> 4 mm)")] },
-        mm("mrd1", "MRD1 (φυσιολ. 3,5–4,5)", "MRD1", { min: -5, max: 10 }),
-        mm("lf", "Λειτουργία ανελκτήρα (φυσιολ. ≥ 12)", "λειτουργία ανελκτήρα", { max: 25 }),
         side,
       ],
-      parts: ["{derm}", "{fat}", "{gland}", "{field}", "{ptosis}", "{mrd1}", "{lf}"], after: sideAfter, empty: "δερματόχαλαση άνω βλεφάρων",
+      parts: ["{derm}", "{fat}", "{gland}", "{field}", "{ptosis}"], after: sideAfter, empty: "δερματόχαλαση άνω βλεφάρων",
     },
     {
       key: "lowerLids", el: "Κάτω βλέφαρα",

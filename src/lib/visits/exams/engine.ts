@@ -38,7 +38,8 @@ export type AreaExam = {
   key: string;
   findings: Finding[];
   // Area-wide measurements block (breast, nose), written as "Μετρήσεις: …".
-  measurements?: { title: string; note?: string; fields: Field[]; sketch?: "breast" };
+  // `whenFindings`: shown only once one of these findings is ticked (eyelids).
+  measurements?: { title: string; note?: string; fields: Field[]; sketch?: "breast" | "eyes"; whenFindings?: string[] };
   // Groups of finding chips, in display order (findings without a group come first).
   groups?: string[];
   // Which groups to offer for the patient's recorded gender ("" = findings without a

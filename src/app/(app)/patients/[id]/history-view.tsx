@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { num1 } from "@/lib/format";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Badge, card, primaryButton } from "@/components/ui";
 import type { HistorySource, HistoryStatus, Role } from "@/generated/prisma/client";
@@ -118,9 +119,9 @@ export async function HistoryView({
             <Item label={t("medication")} value={picks(data.medication, "medItems")} strong={data.medication?.a === "yes"} />
             <Item label={t("allergies")} value={picks(data.allergies, "allergyItems")} strong={data.allergies?.a === "yes"} danger={data.allergies?.a === "yes"} />
             <Item label={t("smoking")} value={smoking} strong={data.smoking?.a === "yes"} />
-            <Item label={t("weight")} value={data.weightKg ? `${data.weightKg} kg${b ? ` · BMI ${b}` : ""}` : "—"} />
-            <Item label={t("maxWeight")} value={data.maxWeightKg ? `${data.maxWeightKg} kg` : "—"} />
-            <Item label={t("height")} value={data.heightCm ? `${data.heightCm} cm` : "—"} />
+            <Item label={t("weight")} value={data.weightKg ? `${num1(data.weightKg)} kg${b ? ` · BMI ${num1(b)}` : ""}` : "—"} />
+            <Item label={t("maxWeight")} value={data.maxWeightKg ? `${num1(data.maxWeightKg)} kg` : "—"} />
+            <Item label={t("height")} value={data.heightCm ? `${num1(data.heightCm)} cm` : "—"} />
           </dl>
         </section>
 

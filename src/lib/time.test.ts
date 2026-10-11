@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { athensIsoDate, endOfAthensDay } from "./time";
+import { athensDateTime, athensDateTimeFields, athensIsoDate, endOfAthensDay } from "./time";
 
 describe("Athens dates", () => {
   it("end of day in winter (UTC+2) and summer (UTC+3)", () => {
@@ -13,3 +13,14 @@ describe("Athens dates", () => {
     expect(athensIsoDate(endOfAthensDay("2026-07-15")!)).toBe("2026-07-15");
   });
 });
+
+describe("athensDateTime", () => {
+  it("reads Athens day/month/year and hour:minute, summer and winter", () => {
+    expect(athensDateTime("15/07/2026", "09:30")?.toISOString()).toBe("2026-07-15T06:30:00.000Z");
+    expect(athensDateTime("5/1/2026", "9:05")?.toISOString()).toBe("2026-01-05T07:05:00.000Z");
+    expect(athensDateTime("31/02/2026", "09:00")).toBeNull();
+    expect(athensDateTime("15/07/2026", "25:00")).toBeNull();
+    expect(athensDateTimeFields(new Date("2026-07-15T06:30:00Z"))).toEqual({ date: "15/07/2026", time: "09:30" });
+  });
+});
+

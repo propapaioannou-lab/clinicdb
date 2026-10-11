@@ -6,7 +6,7 @@ export const ACTION_GROUPS = {
   logins: ["auth.login.success", "auth.login.password_ok"],
   failures: ["auth.login.failure", "auth.login.locked"],
   security: ["auth.2fa.", "auth.recovery_code.", "auth.trusted_device.", "auth.session."],
-  patients: ["patient.", "history."],
+  patients: ["patient.", "history.", "visit."],
   users: ["user."],
   audit: ["audit."],
   system: ["backup."],

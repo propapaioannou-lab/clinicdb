@@ -8,14 +8,16 @@ import { canArchivePatients, canEditPatients } from "@/lib/permissions";
 import { patientFormOptions } from "@/lib/patients/options";
 import { openPatient, type PatientView } from "@/lib/patients/record";
 import { loadActor } from "@/lib/users/manage";
+import { lastMeasurements, listVisits, moneyTotals, weightSeries } from "@/lib/visits/visits";
 import { setArchivedAction, setFlagAction, updatePatientAction } from "../actions";
 import type { PatientFormValues } from "../patient-form";
-import { bmi, type HistoryData } from "@/lib/history/data";
+import type { HistoryData } from "@/lib/history/data";
 import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion, questionChoices } from "@/lib/history/history";
 import { saveHistoryAction, unverifyHistoryAction, verifyHistoryAction } from "./history-actions";
 import { HistoryForm, type QuestionView } from "./history-form";
 import { HistoryStatusLine, HistoryView } from "./history-view";
 import { PatientCard } from "./patient-card";
+import { Timeline, VisitsTab, WeightCard } from "./record-visits";
 
 const TABS = [
   { key: "overview" },
@@ -137,7 +139,13 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
       ? [{ text: [th(`smokingChip.${hd.smoking.a}`), hd.smoking.perDay && th(`perDayOptions.${hd.smoking.perDay}`)].filter(Boolean).join(" · "), tone: "neutral" as const }]
       : []),
   ];
-  const b = bmi(hd?.weightKg, hd?.heightCm);
+  const [visits, totals, series, lastMeas] = await Promise.all([
+    listVisits(actor, p.id).then((v) => v ?? []),
+    moneyTotals(actor, p.id),
+    weightSeries(p.id),
+    lastMeasurements(p.id),
+  ]);
+  const heightForBmi = lastMeas?.heightCm ?? hd?.heightCm ?? null;
   const viewNumber = typeof sp.v === "string" ? Number(sp.v) : null;
   const oldVersion = tab === "history" && viewNumber ? await loadHistoryVersion(actor, p.id, viewNumber) : null;
 
@@ -167,20 +175,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
         alerts={alerts}
         widgets={
           <>
-            <section aria-label={t("weight")} className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 px-5 py-[18px]`}>
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-[17px] font-semibold">{t("weight")}</h2>
-                {hd?.weightKg ? (
-                  <span className="text-[22px] font-semibold">
-                    {hd.weightKg} kg {b && <span className="text-[13px] font-medium text-muted">BMI {b}</span>}
-                  </span>
-                ) : (
-                  <span className="text-[22px] font-semibold text-muted">—</span>
-                )}
-              </div>
-              <div className="flex h-[90px] items-center justify-center rounded-[10px] bg-surface-2 text-[13px] text-muted">{t("weightEmpty")}</div>
-              {hd?.maxWeightKg && <span className="text-[13px] text-muted">{t("maxWeight", { kg: hd.maxWeightKg })}</span>}
-            </section>
+            <WeightCard series={series} historyWeight={hd?.weightKg ?? null} heightCm={heightForBmi} maxWeightKg={hd?.maxWeightKg ?? null} />
             <section aria-label={t("history")} className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 px-5 py-[18px]`}>
               <div className="flex items-center justify-between">
                 <h2 className="text-[17px] font-semibold">{t("history")}</h2>
@@ -210,7 +205,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
 
       <nav aria-label={t("tabsLabel")} className="flex gap-1 overflow-x-auto border-b border-line">
         {TABS.map((x) => {
-          const label = t(`tabs.${x.key}`);
+          const label = x.key === "visits" && visits.length ? `${t("tabs.visits")} · ${visits.length}` : t(`tabs.${x.key}`);
           if ("soon" in x) {
             return (
               <span key={x.key} aria-disabled="true" title={t("soon")} className="whitespace-nowrap px-3.5 py-3 text-[14.5px] font-medium text-ink-3 opacity-45">
@@ -246,6 +241,8 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
             viewing={oldVersion && history?.current ? { number: oldVersion.number, current: history.current.number } : null}
           />
         )
+      ) : tab === "visits" ? (
+        <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} />
       ) : tab === "overview" ? (
         <div className="flex flex-wrap items-start gap-5">
           <section className={`${card} flex min-w-0 flex-[999_1_480px] flex-col gap-1 px-[22px] py-5`}>
@@ -253,7 +250,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
               <h2 className="text-[17px] font-semibold">{t("timeline")}</h2>
               <span className="text-[13.5px] text-muted">{t("newestFirst")}</span>
             </div>
-            <p className="border-t border-line-softer py-4 text-sm text-muted">{t("timelineEmpty")}</p>
+            <Timeline patientId={p.id} visits={visits} />
           </section>
           <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">
             <section className={`${card} flex flex-col gap-2.5 px-5 py-[18px] opacity-60`}>

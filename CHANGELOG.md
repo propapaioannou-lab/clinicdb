@@ -2,6 +2,37 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 5: Visits and vitals
+
+- **Νέα επίσκεψη** (from the patient's Επισκέψεις tab), as in your design:
+  visit type, date and time (typed ηη/μμ/εεεε · ΩΩ:ΛΛ, Athens time),
+  "Γενικά · αίτημα ασθενούς", one **clinical section per area** (Μαστός, Πρόσωπο, Σώμα,
+  Μύτη, Γεννητικά, Άλλο) whose reminder chips add a line to the notes, **procedures
+  discussed** by area (48 procedures; Lifting, Ρινοπλαστική, Βλεφαροπλαστικές, FFS,
+  Εμφυτεύματα open their sub-options), diagnosis.
+- **Μετρήσεις**: weight (with a reminder to weigh), height (pre-filled), blood pressure,
+  pulse, BMI worked out live, previous weight and the change. The previous visit is shown
+  beside it. Impossible values (e.g. pulse 5) are refused, not silently dropped.
+- **Αμοιβή**: only the **secretary and PA/nurse** see and enter fee, amount collected and
+  method; the surgeon's screens carry no money at all (not even hidden in the page).
+  Consultations ("Πρώτη επίσκεψη") are charged by default, other types not; the default
+  amount will be set in Settings. Receipts come with Epsilon Net (Phase 8).
+- **Κλείσιμο επίσκεψης** (surgeon or PA/nurse) saves and locks the clinical part; the front
+  desk can still record payment; only a surgeon can **Άνοιγμα ξανά**.
+- Patient record: **Επισκέψεις · n** tab (list newest first; totals charged / paid /
+  outstanding for money roles), visits on the **Overview** timeline, and the **Βάρος**
+  card now shows the latest weight, BMI, a trend line, the change and the highest weight.
+- The visit screens show the patient strip with the risk badge, allergies and the
+  infectious alert, and "← Καρτέλα ασθενή".
+- Every visit created, changed (by field name), charged, closed or reopened is logged.
+- Fake data: each fake patient now has 0–4 fake visits (31,000 in all).
+- Weights and BMI are written the Greek way (63,5 not 63.5).
+
+**Check it:** open a patient → Επισκέψεις → Νέα επίσκεψη. Add "Μαστός", tap a few
+reminder chips, pick Αυξητική μαστού and Lifting προσώπου (try the sub-options), enter
+weight and blood pressure, save. Close the visit, then look at the Βάρος card and the
+Επισκόπηση timeline. Log in as a secretary to see the Αμοιβή panel.
+
 ## 11 Oct 2026 — Medical history: quick picks on every question
 
 - Every question now works like Φάρμακα / Αλλεργίες / Χειρουργεία: on **Ναι** the most

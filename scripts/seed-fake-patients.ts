@@ -135,6 +135,7 @@ async function main() {
     return;
   }
   if (replace) {
+    await db.visit.deleteMany();
     await db.patientFlagReason.deleteMany();
     await db.patient.deleteMany();
   }
@@ -150,6 +151,10 @@ async function main() {
       // About 1 in 150 is a forgotten earlier visit.
       patients.push(n > 100 && chance(1 / 150) ? duplicateOf(pick(patients.slice(0, n - 50)), n) : fakePatient(n, lists));
     }
+
+    const visitTypes = await db.listItem.findMany({ where: { companyId: company.id, kind: "VISIT_TYPE" }, orderBy: { sortOrder: "asc" } });
+    const consult = visitTypes.find((t) => t.chargeable) ?? visitTypes[0];
+    const others = visitTypes.filter((t) => t.id !== consult?.id);
 
     for (let i = 0; i < patients.length; i += BATCH) {
       const batch = patients.slice(i, i + BATCH);
@@ -171,6 +176,38 @@ async function main() {
         data: batch.flatMap((p, j) =>
           p.emails.map((email, k) => ({ email: normalizeEmail(email), patientId: created[j].id, companyId: company.id, sortOrder: k })),
         ),
+      });
+      // 0–4 fake visits each: a consultation first, then follow-ups; weight drifts a little.
+      await db.visit.createMany({
+        data: batch.flatMap((p, j) => {
+          const n = Math.floor(rand() * 5);
+          let when = p.data.registeredAt.getTime();
+          let kg = 55 + Math.round(rand() * 40);
+          const height = p.data.sex === "MALE" ? 168 + Math.round(rand() * 20) : 155 + Math.round(rand() * 17);
+          return Array.from({ length: n }, (_, k) => {
+            when += (14 + rand() * 300) * 86_400_000;
+            kg = Math.max(45, kg + Math.round((rand() - 0.6) * 4));
+            const type = k === 0 ? consult : pick(others);
+            const fee = type?.chargeable ? 7000 : null;
+            return {
+              companyId: company.id,
+              patientId: created[j].id,
+              typeId: type?.id ?? null,
+              startedAt: new Date(Math.min(when, Date.now() - 86_400_000)),
+              general: k === 0 ? "Δοκιμαστική πρώτη επίσκεψη." : "Δοκιμαστικός επανέλεγχος.",
+              weightKg: kg,
+              heightCm: height,
+              bpSystolic: 105 + Math.round(rand() * 35),
+              bpDiastolic: 65 + Math.round(rand() * 20),
+              pulse: 60 + Math.round(rand() * 30),
+              feeCents: fee,
+              paidCents: fee && rand() < 0.9 ? fee : null,
+              paymentMethod: fee ? pick(["cash", "card"]) : null,
+              status: "CLOSED" as const,
+              closedAt: new Date(Math.min(when, Date.now() - 86_400_000)),
+            };
+          });
+        }),
       });
       await db.patientFlagReason.createMany({
         data: batch.flatMap((p, j) =>

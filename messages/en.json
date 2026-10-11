@@ -312,7 +312,12 @@
       "patient_not_duplicate": "'Not the same person' (duplicate)",
       "history_saved": "Medical history saved",
       "history_verified": "Medical history verified",
-      "history_unverified": "History verification undone"
+      "history_unverified": "History verification undone",
+      "visit_created": "New visit",
+      "visit_updated": "Visit changed",
+      "visit_charge_updated": "Visit fee",
+      "visit_closed": "Visit closed",
+      "visit_reopened": "Visit reopened"
     },
     "reasons": {
       "wrong_password": "wrong password",
@@ -482,7 +487,6 @@
     },
     "tabSoon": {
       "history": "The full history by section, showing what the patient filled in and what was verified. Coming in the next step.",
-      "visits": "Visits with notes, vitals and amounts. Coming in a later step.",
       "documents": "Files, lab results and documents. Coming in a later step."
     },
     "timeline": "Visits and surgeries",
@@ -501,7 +505,10 @@
     },
     "maxWeight": "Highest weight {kg} kg",
     "backToDetails": "All details",
-    "infectiousHidden": "Infectious ⚠"
+    "infectiousHidden": "Infectious ⚠",
+    "backToRecord": "Patient record",
+    "weightTrend": "Weight per visit: {list} kg",
+    "weightChange": "{change} kg since {date}"
   },
   "roles": {
     "SURGEON": "Surgeon",
@@ -788,5 +795,76 @@
       }
     },
     "notesShort": "Notes"
+  },
+  "visit": {
+    "newTitle": "New visit",
+    "new": "New visit",
+    "visit": "Visit",
+    "type": "Visit type",
+    "date": "Date",
+    "time": "Time",
+    "datePlaceholder": "dd/mm/yyyy",
+    "evaluation": "Clinical evaluation",
+    "addArea": "Add area",
+    "general": "General · patient's request",
+    "areaLabel": "{area} clinical evaluation",
+    "removeArea": "Remove area {area}",
+    "procedures": "Procedures discussed",
+    "procedureArea": "Area",
+    "chosen": "Chosen",
+    "noneChosen": "none yet",
+    "planningSoon": "Surgical planning (pen sketches, measurements) comes with surgeries (Phase 4).",
+    "diagnosis": "Diagnosis / comment",
+    "vitals": "Measurements",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "bp": "Blood pressure",
+    "pulse": "Pulse",
+    "bmiAuto": "BMI (automatic)",
+    "weightPrompt": "Weigh the patient — weight is recorded at every visit.",
+    "previousWeight": "Previous weight: {kg} kg on {date}",
+    "save": "Save visit",
+    "saving": "Saving…",
+    "saved": "Visit saved.",
+    "close": "Close visit",
+    "closeConfirm": "Close this visit? The clinical part is locked; the front desk can still record payment.",
+    "reopen": "Reopen",
+    "open": "Open",
+    "closed": "Completed",
+    "previous": "Previous visit",
+    "chargeAfterSave": "The fee is entered after the visit is saved.",
+    "fee": "Fee",
+    "feeAmount": "Fee (€)",
+    "paidAmount": "Collected (€)",
+    "method": "Payment method",
+    "methods": {
+      "cash": "Cash",
+      "card": "Card",
+      "transfer": "Bank transfer"
+    },
+    "noCharge": "No charge",
+    "balanceDue": "Balance: {amount} €",
+    "paidInFull": "Paid in full",
+    "chargeSaved": "Fee saved.",
+    "saveCharge": "Save fee",
+    "receipt": "Issue receipt",
+    "receiptSoon": "With the Epsilon Net connection (Phase 8)",
+    "totalFees": "Total charged",
+    "totalPaid": "Paid",
+    "balance": "Outstanding",
+    "visitsCount": "{count, plural, =0 {Visits} other {Visits · #}}",
+    "none": "No visits yet.",
+    "weightShort": "Weight",
+    "feePaid": "{amount} · paid",
+    "feeDue": "{amount} due",
+    "errors": {
+      "forbidden": "You are not allowed to do this.",
+      "not_found": "Visit not found.",
+      "closed": "This visit is closed; reopen it to make changes.",
+      "invalid_type": "Invalid visit type.",
+      "invalid_value": "A value is not right (e.g. weight, blood pressure, pulse or amount).",
+      "invalid_date": "The date or time is not right (dd/mm/yyyy and HH:MM).",
+      "invalid": "Something went wrong; please try again."
+    }
   }
 }

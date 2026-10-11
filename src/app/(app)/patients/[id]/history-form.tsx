@@ -1,5 +1,6 @@
 "use client";
 
+import { num1 } from "@/lib/format";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
@@ -254,7 +255,7 @@ export function HistoryForm({
           </label>
           <div className="flex flex-col justify-end text-sm text-ink-3">
             BMI
-            <span className="flex h-11 items-center text-[17px] font-semibold text-ink">{b ?? "—"}</span>
+            <span className="flex h-11 items-center text-[17px] font-semibold text-ink">{num1(b)}</span>
           </div>
         </div>
       </section>

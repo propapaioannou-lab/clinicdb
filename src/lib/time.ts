@@ -27,8 +27,8 @@ export function athensParts(d: Date) {
 }
 
 // Athens wall-clock time -> real instant (handles summer/winter time).
-export function athensToUtc(year: number, month: number, day: number, hour = 0): Date {
-  const guess = Date.UTC(year, month - 1, day, hour);
+export function athensToUtc(year: number, month: number, day: number, hour = 0, minute = 0): Date {
+  const guess = Date.UTC(year, month - 1, day, hour, minute);
   const p = athensParts(new Date(guess));
   const offset = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - guess;
   return new Date(guess - offset);
@@ -52,4 +52,23 @@ export function startOfAthensDay(isoDate: string): Date | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
   if (!m) return null;
   return athensToUtc(Number(m[1]), Number(m[2]), Number(m[3]));
+}
+
+// "5/3/2026" + "09:30" (Athens) -> instant; null if either is not a real date/time.
+export function athensDateTime(dmy: string, hm: string): Date | null {
+  const d = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(dmy.trim());
+  const t = /^(\d{1,2}):(\d{2})$/.exec(hm.trim());
+  if (!d || !t) return null;
+  const [day, month, year, hour, minute] = [Number(d[1]), Number(d[2]), Number(d[3]), Number(t[1]), Number(t[2])];
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) return null;
+  const check = new Date(Date.UTC(year, month - 1, day));
+  if (check.getUTCMonth() !== month - 1) return null;
+  return athensToUtc(year, month, day, hour, minute);
+}
+
+// Instant -> { date: "05/03/2026", time: "09:30" } in Athens, for the form fields.
+export function athensDateTimeFields(d: Date) {
+  const p = athensParts(d);
+  const two = (n: number) => String(n).padStart(2, "0");
+  return { date: `${two(p.day)}/${two(p.month)}/${p.year}`, time: `${two(p.hour)}:${two(p.minute)}` };
 }

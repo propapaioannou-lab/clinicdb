@@ -11,9 +11,12 @@ const euros = (cents: number | null) => (cents === null ? "" : (cents / 100).toF
 export function ChargePanel({
   money,
   action,
+  closeAction,
 }: {
   money: { feeCents: number | null; paidCents: number | null; paymentMethod: string | null };
   action: (fd: FormData) => Promise<VisitActionState>;
+  // Present while the visit is open: save the payment and close the visit.
+  closeAction?: (fd: FormData) => Promise<VisitActionState>;
 }) {
   const t = useTranslations("visit");
   const [state, setState] = useState<VisitActionState>({});
@@ -24,7 +27,8 @@ export function ChargePanel({
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
-        start(async () => setState((await action(fd)) ?? {}));
+        const closing = (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "close";
+        start(async () => setState((await (closing && closeAction ? closeAction(fd) : action(fd))) ?? {}));
       }}
       className={`${card} flex flex-col gap-3 p-5`}
     >
@@ -51,7 +55,12 @@ export function ChargePanel({
       {state.error && <ErrorBox>{t(`errors.${state.error}`)}</ErrorBox>}
       {state.saved && <Notice>{t("chargeSaved")}</Notice>}
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={pending} className={primaryButton}>{t("saveCharge")}</button>
+        {closeAction && (
+          <button type="submit" value="close" disabled={pending} className={`${primaryButton} w-full`}>{t("saveAndClose")}</button>
+        )}
+        <button type="submit" value="save" disabled={pending} className={closeAction ? "inline-flex h-11 items-center rounded-control border border-line-strong bg-surface px-4 text-[14.5px] font-medium hover:bg-surface-2" : primaryButton}>
+          {t("saveCharge")}
+        </button>
         <button type="button" disabled title={t("receiptSoon")} className="inline-flex h-11 items-center rounded-control border border-line-strong px-4 text-[14.5px] text-muted opacity-60">
           {t("receipt")}
         </button>

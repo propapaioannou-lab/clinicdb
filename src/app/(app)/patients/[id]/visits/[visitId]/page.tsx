@@ -8,14 +8,14 @@ import { num1 } from "@/lib/format";
 import { athensDateTimeFields } from "@/lib/time";
 import { loadActor } from "@/lib/users/manage";
 import { getVisit } from "@/lib/visits/visits";
-import { setChargeAction, setClosedAction, updateVisitAction } from "../actions";
+import { chargeAndCloseAction, setChargeAction, setClosedAction, updateVisitAction } from "../actions";
 import { ChargePanel } from "../charge-panel";
 import { PatientStrip } from "../patient-strip";
 import { allergySummary, shortDate, visitTypes } from "../shared";
 import { VisitForm } from "../visit-form";
 import { VisitView } from "../visit-view";
 
-export default async function VisitPage({ params, searchParams }: PageProps<"/patients/[id]/visits/[visitId]">) {
+export default async function VisitPage({ params }: PageProps<"/patients/[id]/visits/[visitId]">) {
   const session = await requireSession();
   const actor = await loadActor(session.user.id);
   const { id, visitId } = await params;
@@ -29,7 +29,13 @@ export default async function VisitPage({ params, searchParams }: PageProps<"/pa
 
   const aside = (
     <>
-      {v.money && <ChargePanel money={v.money} action={setChargeAction.bind(null, p.id, v.id)} />}
+      {v.money && (
+        <ChargePanel
+          money={v.money}
+          action={setChargeAction.bind(null, p.id, v.id)}
+          closeAction={v.status === "OPEN" && canCloseVisit(actor) ? chargeAndCloseAction.bind(null, p.id, v.id) : undefined}
+        />
+      )}
       {v.previous && (
         <section className={`${card} flex flex-col gap-1.5 p-5`}>
           <h2 className="text-[17px] font-semibold">{t("previous")}</h2>
@@ -59,13 +65,10 @@ export default async function VisitPage({ params, searchParams }: PageProps<"/pa
           initial={{
             typeId: v.typeId ?? "", date: when.date, time: when.time, general: v.general ?? "", areas: v.areas, procedures: v.procedures,
             diagnosis: v.diagnosis ?? "", weightKg: v.weightKg !== null ? num1(v.weightKg) : "", heightCm: v.heightCm !== null ? num1(v.heightCm) : "",
-            bp: v.bpSystolic && v.bpDiastolic ? `${v.bpSystolic}/${v.bpDiastolic}` : "", pulse: v.pulse?.toString() ?? "",
           }}
           previousWeight={v.previous?.weightKg ? { kg: v.previous.weightKg, date: await shortDate(v.previous.startedAt) } : null}
           action={updateVisitAction.bind(null, p.id, v.id)}
-          closeAction={canCloseVisit(actor) ? setClosedAction.bind(null, p.id, v.id, true) : undefined}
           aside={aside}
-          savedNotice={(await searchParams).saved === "1"}
         />
       ) : (
         <VisitView v={v} aside={aside} />

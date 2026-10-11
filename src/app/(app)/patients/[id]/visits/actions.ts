@@ -36,7 +36,8 @@ export async function createVisitAction(patientId: string, json: string): Promis
   const r = await createVisit(actor, patientId, raw, await requestContext());
   if (!r.ok) return { error: r.error };
   revalidatePath(`/patients/${patientId}`);
-  redirect(`/patients/${patientId}/visits/${r.id}?saved=1`);
+  // Back to the patient's visits (decided 11 Oct 2026).
+  redirect(`/patients/${patientId}?tab=visits&saved=1`);
 }
 
 export async function updateVisitAction(patientId: string, visitId: string, json: string): Promise<VisitActionState> {
@@ -47,7 +48,7 @@ export async function updateVisitAction(patientId: string, visitId: string, json
   if (!r.ok) return { error: r.error };
   revalidatePath(`/patients/${patientId}`);
   revalidatePath(`/patients/${patientId}/visits/${visitId}`);
-  return { saved: true };
+  redirect(`/patients/${patientId}?tab=visits&saved=1`);
 }
 
 // Amounts arrive in euros ("70" or "70,50") and are stored in cents.
@@ -67,6 +68,17 @@ export async function setChargeAction(patientId: string, visitId: string, fd: Fo
   revalidatePath(`/patients/${patientId}`);
   revalidatePath(`/patients/${patientId}/visits/${visitId}`);
   return { saved: true };
+}
+
+// "Αποθήκευση & κλείσιμο": the front desk records the payment and closes the visit.
+export async function chargeAndCloseAction(patientId: string, visitId: string, fd: FormData): Promise<VisitActionState> {
+  const r = await setChargeAction(patientId, visitId, fd);
+  if (r.error) return r;
+  const actor = await actorNow();
+  const closed = await setVisitClosed(actor, visitId, true, await requestContext());
+  if (!closed.ok) return { error: closed.error };
+  revalidatePath(`/patients/${patientId}`);
+  redirect(`/patients/${patientId}?tab=visits&saved=1`);
 }
 
 export async function setClosedAction(patientId: string, visitId: string, closed: boolean) {

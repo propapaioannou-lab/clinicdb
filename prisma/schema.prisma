@@ -505,9 +505,6 @@ model Visit {
   diagnosis     String?
   weightKg      Decimal?    @db.Decimal(5, 1)
   heightCm      Decimal?    @db.Decimal(5, 1)
-  bpSystolic    Int?
-  bpDiastolic   Int?
-  pulse         Int?
   feeCents      Int?
   paidCents     Int?
   // "cash" | "card" | "transfer"

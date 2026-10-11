@@ -4,7 +4,7 @@ import { num1 } from "@/lib/format";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { PlusIcon } from "@/components/icons";
-import { card, ErrorBox, inputClass, Notice, primaryButton, secondaryButton, textareaClass } from "@/components/ui";
+import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
@@ -20,8 +20,6 @@ export type VisitFormValues = {
   diagnosis: string;
   weightKg: string;
   heightCm: string;
-  bp: string; // "118/76"
-  pulse: string;
 };
 
 const chip = (on: boolean) =>
@@ -35,22 +33,18 @@ export function VisitForm({
   initial,
   previousWeight,
   action,
-  closeAction,
   aside,
-  savedNotice,
 }: {
   types: { id: string; label: string }[];
   initial: VisitFormValues;
   previousWeight: { kg: number; date: string } | null;
   action: (json: string) => Promise<VisitActionState>;
-  closeAction?: () => Promise<void>;
   aside?: React.ReactNode;
-  savedNotice?: boolean;
 }) {
   const t = useTranslations("visit");
   const [v, setV] = useState<VisitFormValues>(initial);
   const [cat, setCat] = useState(PROCEDURE_AREAS[0].key);
-  const [state, setState] = useState<VisitActionState>(savedNotice ? { saved: true } : {});
+  const [state, setState] = useState<VisitActionState>({});
   const [pending, start] = useTransition();
   const set = (patch: Partial<VisitFormValues>) => setV((x) => ({ ...x, ...patch }));
 
@@ -80,9 +74,8 @@ export function VisitForm({
       areas: x.areas.map((a) => (a.area === area ? { ...a, text: `${a.text}${a.text && !a.text.endsWith("\n") ? "\n" : ""}${prompt}: ` } : a)),
     }));
 
-  const payload = () => {
-    const [sys, dia] = v.bp.split("/").map((s) => s.trim());
-    return JSON.stringify({
+  const payload = () =>
+    JSON.stringify({
       typeId: v.typeId || null,
       date: v.date,
       time: v.time,
@@ -92,23 +85,13 @@ export function VisitForm({
       diagnosis: v.diagnosis,
       weightKg: v.weightKg,
       heightCm: v.heightCm,
-      bpSystolic: sys ?? "",
-      bpDiastolic: dia ?? "",
-      pulse: v.pulse,
     });
-  };
   const save = () =>
     start(async () => {
       const r = await action(payload());
       setState(r ?? {});
     });
-  // Closing saves first, so nothing typed is lost.
-  const saveAndClose = () =>
-    start(async () => {
-      const r = await action(payload());
-      if (r?.error) return setState(r);
-      await closeAction?.();
-    });
+
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,14 +101,13 @@ export function VisitForm({
       <div className="flex flex-wrap items-start gap-5">
         <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-4">
           <section className={`${card} flex flex-col gap-3 p-5`}>
-            <div role="radiogroup" aria-label={t("type")} className="flex flex-wrap gap-2">
-              {types.map((ty) => (
-                <button key={ty.id} type="button" role="radio" aria-checked={v.typeId === ty.id} onClick={() => set({ typeId: ty.id })} className={chip(v.typeId === ty.id)}>
-                  {ty.label}
-                </button>
-              ))}
-            </div>
             <div className="flex flex-wrap gap-3">
+              <label className="block min-w-[240px] flex-1 text-sm text-ink-3">{t("type")}
+                <select value={v.typeId} onChange={(e) => set({ typeId: e.target.value })} className={inputClass}>
+                  <option value="">—</option>
+                  {types.map((ty) => <option key={ty.id} value={ty.id}>{ty.label}</option>)}
+                </select>
+              </label>
               <label className="block text-sm text-ink-3">{t("date")}
                 <input value={v.date} onChange={(e) => set({ date: e.target.value })} placeholder={t("datePlaceholder")} inputMode="numeric" className={`${inputClass} w-36`} />
               </label>
@@ -233,12 +215,6 @@ export function VisitForm({
               <label className="block text-sm text-ink-3">{t("height")}
                 <input value={v.heightCm} onChange={(e) => set({ heightCm: e.target.value })} inputMode="decimal" className={inputClass} />
               </label>
-              <label className="block text-sm text-ink-3">{t("bp")}
-                <input value={v.bp} onChange={(e) => set({ bp: e.target.value })} placeholder="120/80" inputMode="numeric" className={inputClass} />
-              </label>
-              <label className="block text-sm text-ink-3">{t("pulse")}
-                <input value={v.pulse} onChange={(e) => set({ pulse: e.target.value })} inputMode="numeric" className={inputClass} />
-              </label>
             </div>
             <div className="flex items-baseline justify-between rounded-[10px] bg-surface-2 px-3 py-2">
               <span className="text-sm text-muted">{t("bmiAuto")}</span>
@@ -258,11 +234,6 @@ export function VisitForm({
 
       <div className="sticky bottom-20 z-20 flex flex-wrap gap-2 rounded-[14px] border border-line bg-surface-2/95 px-4 py-3 backdrop-blur md:bottom-3">
         <button type="button" onClick={save} disabled={pending} className={primaryButton}>{pending ? t("saving") : t("save")}</button>
-        {closeAction && (
-          <button type="button" disabled={pending} onClick={() => window.confirm(t("closeConfirm")) && saveAndClose()} className={secondaryButton}>
-            {t("close")}
-          </button>
-        )}
       </div>
     </div>
   );

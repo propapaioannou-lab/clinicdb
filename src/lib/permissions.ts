@@ -82,11 +82,12 @@ export function canHandleMoney(user: { level: Level; role: Role }): boolean {
   return user.level !== "GUEST" && (user.role === "SECRETARY" || user.role === "PA_NURSE");
 }
 
-// The surgeon (or PA/nurse) closes a visit; only a surgeon reopens a closed one.
+// The secretary (or PA/nurse) closes a visit after payment (decided 11 Oct 2026); the
+// surgeon has no close button. They, or a surgeon, may reopen it.
 export function canCloseVisit(user: { level: Level; role: Role }): boolean {
-  return canEditPatients(user.level) && (user.role === "SURGEON" || user.role === "PA_NURSE");
+  return canHandleMoney(user);
 }
 
 export function canReopenVisit(user: { level: Level; role: Role }): boolean {
-  return canEditPatients(user.level) && user.role === "SURGEON";
+  return canHandleMoney(user) || (canEditPatients(user.level) && user.role === "SURGEON");
 }

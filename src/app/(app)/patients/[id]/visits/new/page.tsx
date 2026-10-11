@@ -42,7 +42,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
         types={types}
         initial={{
           typeId: firstType, date: now.date, time: now.time, general: "", areas: [], procedures: [], diagnosis: "",
-          weightKg: "", heightCm: height ? num1(height) : "", bp: "", pulse: "",
+          weightKg: "", heightCm: height ? num1(height) : "",
         }}
         previousWeight={last?.weightKg ? { kg: last.weightKg, date: await shortDate(last.startedAt) } : null}
         action={createVisitAction.bind(null, p.id)}

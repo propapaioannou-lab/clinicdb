@@ -210,11 +210,14 @@ services and are NOT rebuilt here.
   entered and collected by the **secretary or
   PA/nurse** only; never shown on the surgeon's screens. In the Spa (set up later) the
   aestheticians may also charge.
-- Built (Phase 2): visit open → closed by surgeon or PA/nurse (locks the clinical part;
-  payment can still be recorded); only a surgeon reopens. Procedure catalogue and exam
+- Built (Phase 2): the doctor saves the visit and returns to the patient's visits; the
+  surgeon has no close button. The **secretary (or PA/nurse) closes the visit after
+  payment** ("Αποθήκευση & κλείσιμο"), which locks the clinical part; they or a surgeon
+  can reopen it. Visit type chosen from a dropdown (decided 11 Oct 2026). Procedure catalogue and exam
   areas from the design, in code for now; they move to the Settings lists.
 - **Vitals / measurements on every visit:** weight (required prompt), height,
-  BMI (auto), blood pressure, pulse — list extensible. Weight shown as a trend chart.
+  BMI (auto). Weight shown as a trend chart. (Blood pressure and pulse dropped —
+  decided 11 Oct 2026.)
 - Optional: audio recording + AI transcript + AI review (§9)
 
 ### Surgery

@@ -2,6 +2,16 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Visits: simpler flow
+
+- **Blood pressure and pulse removed** from visits (form, view and stored data).
+- **Visit type is a dropdown** instead of a row of buttons.
+- **Αποθήκευση επίσκεψης** saves and goes straight back to the patient's Επισκέψεις tab
+  ("Η επίσκεψη αποθηκεύτηκε").
+- **No close button for the surgeon.** The secretary or PA closes the visit after payment
+  with **Αποθήκευση & κλείσιμο επίσκεψης** in the Αμοιβή panel. They (or a surgeon) can
+  reopen it.
+
 ## 11 Oct 2026 — Visit types cleaned up, consultation fee €100
 
 - Visit types are now the clean list from the design: **Πρώτη επίσκεψη · Προεγχειρητική

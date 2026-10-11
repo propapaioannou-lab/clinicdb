@@ -818,16 +818,12 @@
     "vitals": "Measurements",
     "weight": "Weight (kg)",
     "height": "Height (cm)",
-    "bp": "Blood pressure",
-    "pulse": "Pulse",
     "bmiAuto": "BMI (automatic)",
     "weightPrompt": "Weigh the patient — weight is recorded at every visit.",
     "previousWeight": "Previous weight: {kg} kg on {date}",
     "save": "Save visit",
     "saving": "Saving…",
     "saved": "Visit saved.",
-    "close": "Close visit",
-    "closeConfirm": "Close this visit? The clinical part is locked; the front desk can still record payment.",
     "reopen": "Reopen",
     "open": "Open",
     "closed": "Completed",
@@ -865,6 +861,7 @@
       "invalid_value": "A value is not right (e.g. weight, blood pressure, pulse or amount).",
       "invalid_date": "The date or time is not right (dd/mm/yyyy and HH:MM).",
       "invalid": "Something went wrong; please try again."
-    }
+    },
+    "saveAndClose": "Save & close visit"
   }
 }

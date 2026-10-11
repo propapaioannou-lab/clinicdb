@@ -21,9 +21,6 @@ export type VisitInput = {
   diagnosis: string | null;
   weightKg: number | null;
   heightCm: number | null;
-  bpSystolic: number | null;
-  bpDiastolic: number | null;
-  pulse: number | null;
 };
 
 export type ChargeInput = { feeCents: number | null; paidCents: number | null; paymentMethod: string | null };
@@ -67,10 +64,7 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
   }
   const weightKg = num(raw.weightKg, 20, 400, 1);
   const heightCm = num(raw.heightCm, 50, 250, 1);
-  const bpSystolic = num(raw.bpSystolic, 50, 260);
-  const bpDiastolic = num(raw.bpDiastolic, 30, 160);
-  const pulse = num(raw.pulse, 20, 250);
-  if ([weightKg, heightCm, bpSystolic, bpDiastolic, pulse].includes(undefined)) return "invalid_value";
+  if (weightKg === undefined || heightCm === undefined) return "invalid_value";
   const startedAt = typeof raw.startedAt === "string" || raw.startedAt instanceof Date ? new Date(raw.startedAt) : null;
   if (startedAt && Number.isNaN(startedAt.getTime())) return "invalid_value";
   return {
@@ -82,9 +76,6 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
     diagnosis: text(raw.diagnosis, 1000),
     weightKg: weightKg ?? null,
     heightCm: heightCm ?? null,
-    bpSystolic: bpSystolic ?? null,
-    bpDiastolic: bpDiastolic ?? null,
-    pulse: pulse ?? null,
   };
 }
 
@@ -112,9 +103,6 @@ function clinicalData(input: VisitInput) {
     diagnosis: input.diagnosis,
     weightKg: input.weightKg,
     heightCm: input.heightCm,
-    bpSystolic: input.bpSystolic,
-    bpDiastolic: input.bpDiastolic,
-    pulse: input.pulse,
   };
 }
 
@@ -279,9 +267,6 @@ export async function getVisit(actor: Actor, visitId: string) {
     diagnosis: v.diagnosis,
     weightKg: dec(v.weightKg),
     heightCm: dec(v.heightCm),
-    bpSystolic: v.bpSystolic,
-    bpDiastolic: v.bpDiastolic,
-    pulse: v.pulse,
     status: v.status,
     closedAt: v.closedAt,
     money: money(actor, v),

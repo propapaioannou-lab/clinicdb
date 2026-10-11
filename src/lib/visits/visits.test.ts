@@ -26,9 +26,9 @@ describe("cleanVisitInput", () => {
   });
 
   it("rejects impossible measurements instead of dropping them", () => {
-    expect(cleanVisitInput({ weightKg: "64,5", bpSystolic: "118", bpDiastolic: 76, pulse: "" })).toMatchObject({ weightKg: 64.5, bpSystolic: 118, bpDiastolic: 76, pulse: null });
+    expect(cleanVisitInput({ weightKg: "64,5", heightCm: "" })).toMatchObject({ weightKg: 64.5, heightCm: null });
     expect(cleanVisitInput({ weightKg: 900 })).toBe("invalid_value");
-    expect(cleanVisitInput({ pulse: 5 })).toBe("invalid_value");
+    expect(cleanVisitInput({ heightCm: 20 })).toBe("invalid_value");
   });
 });
 
@@ -60,17 +60,18 @@ describe("visits", () => {
     expect(await db.auditLog.count({ where: { action: "visit.charge_updated", entityId: p.id } })).toBe(1);
   });
 
-  it("closing locks the clinical part; only a surgeon reopens; the secretary can still record payment", async () => {
+  it("the secretary closes after payment; that locks the clinical part; a surgeon can reopen", async () => {
     const p = await makePatient(c.surgery, { surname: "Κλειστής" });
     const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
     const secretary = await makeActor("USER", [c.surgery], "SECRETARY");
     const r = await createVisit(surgeon, p.id, { typeId: consult }, ctx);
     if (!r.ok) throw new Error(r.error);
-    expect(await setVisitClosed(secretary, r.id, true, ctx)).toEqual({ ok: false, error: "forbidden" });
-    expect(await setVisitClosed(surgeon, r.id, true, ctx)).toEqual({ ok: true });
-    expect(await updateVisit(surgeon, r.id, { general: "αλλαγή" }, ctx)).toEqual({ ok: false, error: "closed" });
+    // The surgeon has no close button; the secretary closes after payment.
+    expect(await setVisitClosed(surgeon, r.id, true, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await setVisitCharge(secretary, r.id, { feeCents: 7000, paidCents: 7000, paymentMethod: "cash" }, ctx)).toEqual({ ok: true });
-    expect(await setVisitClosed(await makeActor("USER", [c.surgery], "PA_NURSE"), r.id, false, ctx)).toEqual({ ok: false, error: "forbidden" });
+    expect(await setVisitClosed(secretary, r.id, true, ctx)).toEqual({ ok: true });
+    expect(await updateVisit(surgeon, r.id, { general: "αλλαγή" }, ctx)).toEqual({ ok: false, error: "closed" });
+    expect(await setVisitClosed(await makeActor("USER", [c.surgery], "SPA_STAFF"), r.id, false, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await setVisitClosed(surgeon, r.id, false, ctx)).toEqual({ ok: true });
     expect(await updateVisit(surgeon, r.id, { general: "αλλαγή", typeId: consult }, ctx)).toEqual({ ok: true });
     const log = await db.auditLog.findFirstOrThrow({ where: { action: "visit.updated", entityId: p.id } });

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { num1 } from "@/lib/format";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PlusIcon } from "@/components/icons";
-import { Badge, card, primaryButton } from "@/components/ui";
+import { Badge, card, Notice, primaryButton } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
 import { findProcedure } from "@/lib/visits/catalog";
 import type { listVisits } from "@/lib/visits/visits";
@@ -17,16 +17,19 @@ export async function VisitsTab({
   visits,
   canCreate,
   totals,
+  saved,
 }: {
   patientId: string;
   visits: Visits;
   canCreate: boolean;
   totals: { fees: number; paid: number; balance: number } | null;
+  saved?: boolean;
 }) {
   const t = await getTranslations("visit");
   const format = await getFormatter();
   return (
     <div className="flex flex-col gap-4">
+      {saved && <Notice>{t("saved")}</Notice>}
       {totals && (
         <div className="grid gap-3 sm:grid-cols-3">
           <div className={`${card} flex flex-col gap-1 px-[18px] py-4`}><span className="text-[13px] text-muted">{t("totalFees")}</span><span className="text-[24px] font-semibold">{euros(totals.fees)}</span></div>

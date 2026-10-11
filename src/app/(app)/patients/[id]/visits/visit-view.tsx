@@ -19,9 +19,6 @@ export async function VisitView({
     diagnosis: string | null;
     weightKg: number | null;
     heightCm: number | null;
-    bpSystolic: number | null;
-    bpDiastolic: number | null;
-    pulse: number | null;
   };
   aside?: React.ReactNode;
 }) {
@@ -59,7 +56,6 @@ export async function VisitView({
         <section className={`${card} flex flex-col gap-2 p-5 text-sm`}>
           <h2 className="text-[17px] font-semibold">{t("vitals")}</h2>
           <p>{t("weight")}: <b>{num1(v.weightKg)}</b> · {t("height")}: <b>{num1(v.heightCm)}</b> · BMI <b>{num1(b)}</b></p>
-          <p>{t("bp")}: <b>{v.bpSystolic && v.bpDiastolic ? `${v.bpSystolic}/${v.bpDiastolic}` : "—"}</b> · {t("pulse")}: <b>{v.pulse ?? "—"}</b></p>
         </section>
         {aside}
       </aside>

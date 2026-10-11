@@ -242,7 +242,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
           />
         )
       ) : tab === "visits" ? (
-        <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} />
+        <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} saved={sp.saved === "1"} />
       ) : tab === "overview" ? (
         <div className="flex flex-wrap items-start gap-5">
           <section className={`${card} flex min-w-0 flex-[999_1_480px] flex-col gap-1 px-[22px] py-5`}>

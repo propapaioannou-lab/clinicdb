@@ -3,7 +3,8 @@ import { audit, type RequestContext } from "@/lib/audit";
 import type { Prisma } from "@/generated/prisma/client";
 import { canCloseVisit, canEditPatients, canHandleMoney, canReopenVisit } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
-import { EXAM_AREA_KEYS, findProcedure } from "./catalog";
+import { EXAM_AREA_KEYS, findIn, PROCEDURE_AREAS, type Catalog } from "./catalog";
+import { loadCatalog } from "./catalog-db";
 import { EXAMS } from "./exams/areas";
 import { cleanExam, type ExamValue, type FindingValue } from "./exams/engine";
 import { cleanProcedureDetails } from "./procedure-details";
@@ -58,7 +59,8 @@ const num = (v: unknown, min: number, max: number, decimals = 0) => {
 
 // Everything from the browser is rebuilt: unknown areas/procedures/sub-options dropped,
 // texts trimmed, measurements checked against sensible ranges.
-export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "invalid_value" {
+// `catalog`: the company's procedure catalogue (hidden procedures still count, for old visits).
+export function cleanVisitInput(raw: Record<string, unknown>, catalog: Catalog = PROCEDURE_AREAS): VisitInput | "invalid_value" {
   const areas: VisitArea[] = [];
   for (const a of Array.isArray(raw.areas) ? raw.areas : []) {
     const area = (a as Record<string, unknown>)?.area;
@@ -73,7 +75,7 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
   const procedures: VisitProcedure[] = [];
   for (const pr of Array.isArray(raw.procedures) ? raw.procedures : []) {
     const key = (pr as Record<string, unknown>)?.key;
-    const def = typeof key === "string" ? findProcedure(key) : undefined;
+    const def = typeof key === "string" ? findIn(catalog, key) : undefined;
     if (!def || procedures.some((x) => x.key === key)) continue;
     const allowed = new Set((def.subs ?? []).map((s) => s.key));
     const subs = Array.isArray((pr as Record<string, unknown>).subs) ? ((pr as Record<string, unknown>).subs as unknown[]) : [];
@@ -136,7 +138,7 @@ export async function createVisit(
   if (!canEditPatients(actor.level)) return fail("forbidden");
   const patient = await findPatient(actor, patientId);
   if (!patient) return fail("not_found");
-  const input = cleanVisitInput(raw);
+  const input = cleanVisitInput(raw, await loadCatalog(patient.companyId));
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(patient.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");
@@ -163,7 +165,7 @@ export async function updateVisit(actor: Actor, visitId: string, raw: Record<str
   const before = await findVisit(actor, visitId);
   if (!before) return fail("not_found");
   if (before.status === "CLOSED") return fail("closed");
-  const input = cleanVisitInput(raw);
+  const input = cleanVisitInput(raw, await loadCatalog(before.companyId));
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(before.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");

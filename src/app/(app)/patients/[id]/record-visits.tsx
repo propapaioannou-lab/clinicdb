@@ -4,12 +4,12 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { PlusIcon } from "@/components/icons";
 import { Badge, card, Notice, primaryButton } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
-import { findProcedure } from "@/lib/visits/catalog";
 import type { listVisits } from "@/lib/visits/visits";
 
 type Visits = NonNullable<Awaited<ReturnType<typeof listVisits>>>;
 const euros = (cents: number) => `${(cents / 100).toLocaleString("el-GR", { maximumFractionDigits: 2 })} €`;
-const procedureNames = (v: Visits[number]) => v.procedures.map((p) => findProcedure(p.key)?.el ?? p.key).join(", ");
+// names: procedure key → name, from the company's catalogue.
+const procedureList = (v: Visits[number], names: Record<string, string>) => v.procedures.map((p) => names[p.key] ?? p.key).join(", ");
 
 // Επισκέψεις tab (DESIGN.md 2b): newest first, "Νέα επίσκεψη"; money only for money roles.
 export async function VisitsTab({
@@ -18,12 +18,14 @@ export async function VisitsTab({
   canCreate,
   totals,
   saved,
+  names,
 }: {
   patientId: string;
   visits: Visits;
   canCreate: boolean;
   totals: { fees: number; paid: number; balance: number } | null;
   saved?: boolean;
+  names: Record<string, string>;
 }) {
   const t = await getTranslations("visit");
   const format = await getFormatter();
@@ -61,7 +63,7 @@ export async function VisitsTab({
                 {v.doctor && <span className="text-[13px] text-muted">· {v.doctor}</span>}
               </span>
               {(v.findings || v.diagnosis) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.findings].filter(Boolean).join(" — ")}</span>}
-              {v.procedures.length > 0 && <span className="text-[13px] text-ink-3">{procedureNames(v)}</span>}
+              {v.procedures.length > 0 && <span className="text-[13px] text-ink-3">{procedureList(v, names)}</span>}
             </span>
             <span className="flex min-w-[120px] flex-col gap-0.5 text-[13px] text-ink-3">
               {v.weightKg && <span>{t("weightShort")} <b>{num1(v.weightKg)} kg</b></span>}
@@ -83,7 +85,7 @@ export async function VisitsTab({
 }
 
 // "Επισκέψεις και χειρουργεία" on the Overview tab (surgeries join in Phase 4).
-export async function Timeline({ patientId, visits }: { patientId: string; visits: Visits }) {
+export async function Timeline({ patientId, visits, names }: { patientId: string; visits: Visits; names: Record<string, string> }) {
   const t = await getTranslations("patient");
   const format = await getFormatter();
   if (!visits.length) return <p className="border-t border-line-softer py-4 text-sm text-muted">{t("timelineEmpty")}</p>;
@@ -94,7 +96,7 @@ export async function Timeline({ patientId, visits }: { patientId: string; visit
           <span className="w-[70px] shrink-0 text-[13.5px] tabular-nums text-muted">{format.dateTime(v.startedAt, { day: "2-digit", month: "2-digit", year: "2-digit" })}</span>
           <span className="mt-[5px] h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
           <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="text-[15px] font-semibold">{[v.type, procedureNames(v)].filter(Boolean).join(" · ") || "—"}</span>
+            <span className="text-[15px] font-semibold">{[v.type, procedureList(v, names)].filter(Boolean).join(" · ") || "—"}</span>
             {(v.diagnosis || v.findings) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.findings].filter(Boolean).join(" — ")}</span>}
           </span>
         </Link>

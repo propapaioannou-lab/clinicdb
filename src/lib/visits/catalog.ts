@@ -1,10 +1,14 @@
-// Procedures discussed at a visit, by area, and the clinical-evaluation areas with their
-// reminder chips (design/Visit.dc.html, SPEC §4 Visit). Starting values; they move to the
-// Settings lists later. Visits store the keys, so renaming a label never breaks a record.
+// Procedures discussed at a visit, by area, and the clinical-evaluation areas
+// (design/Visit.dc.html, SPEC §4 Visit). PROCEDURE_AREAS is the starting catalogue: each
+// company's own copy lives in the database and is edited in Settings → Επεμβάσεις
+// (catalog-db.ts). Visits store the keys, so renaming a label never breaks a record.
 
 export type Label = { el: string; en: string };
-export type Procedure = Label & { key: string; nonSurgical?: boolean; subs?: (Label & { key: string })[] };
+// hidden: no longer offered for new visits; old visits still show it.
+export type Sub = Label & { key: string; hidden?: boolean };
+export type Procedure = Label & { key: string; nonSurgical?: boolean; hidden?: boolean; subs?: Sub[] };
 export type ProcedureArea = Label & { key: string; procedures: Procedure[] };
+export type Catalog = ProcedureArea[];
 
 const p = (key: string, el: string, en: string, extra: Partial<Procedure> = {}): Procedure => ({ key, el, en, ...extra });
 const s = (key: string, el: string, en: string) => ({ key, el, en });
@@ -134,8 +138,10 @@ export const EXAM_AREAS: (Label & { key: string })[] = [
   { key: "other", el: "Άλλο", en: "Other" },
 ];
 
-const byKey = new Map(PROCEDURE_AREAS.flatMap((a) => a.procedures.map((pr) => [pr.key, pr] as const)));
-export function findProcedure(key: string): Procedure | undefined {
-  return byKey.get(key);
+export function findIn(catalog: Catalog, key: string): Procedure | undefined {
+  for (const a of catalog) for (const pr of a.procedures) if (pr.key === key) return pr;
+  return undefined;
 }
+// "Αυξητική μαστού (…)" names for lists, from a catalogue.
+export const procedureNames = (catalog: Catalog) => Object.fromEntries(catalog.flatMap((a) => a.procedures.map((pr) => [pr.key, pr.el])));
 export const EXAM_AREA_KEYS = new Set(EXAM_AREAS.map((a) => a.key));

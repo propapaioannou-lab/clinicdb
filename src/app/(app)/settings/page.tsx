@@ -23,6 +23,7 @@ export default async function SettingsPage() {
     { href: "/admin/backups", title: t("nav.backups"), text: t("settings.backupsText") },
     { href: "/settings/lists", title: t("settings.lists"), text: t("settings.listsText") },
     { href: "/settings/history", title: t("settings.history"), text: t("settings.historyText") },
+    { href: "/settings/procedures", title: t("settings.procedures"), text: t("settings.proceduresText") },
   ];
   // Fees are money: the Secretary / PA-nurse set them, never the surgeon.
   const money = canHandleMoney(actor);

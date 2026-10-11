@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { PlusIcon } from "@/components/icons";
 import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
-import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
+import { EXAM_AREAS, findIn, type Catalog } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 import { BREAST_PROCEDURES_BY_SEX, EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
 import { summarize, type ExamValue, type FieldValue } from "@/lib/visits/exams/engine";
@@ -41,6 +41,7 @@ export function VisitForm({
   aside,
   age,
   sex,
+  catalog,
 }: {
   types: { id: string; label: string }[];
   initial: VisitFormValues;
@@ -51,13 +52,15 @@ export function VisitForm({
   age: number | null;
   // Patient's recorded gender: picks the breast/chest findings offered.
   sex: string | null;
+  // The company's procedure catalogue (Settings → Επεμβάσεις).
+  catalog: Catalog;
 }) {
   const t = useTranslations("visit");
   const [v, setV] = useState<VisitFormValues>(initial);
   // Open areas of the preoperative assessment: those with chosen procedures, plus any the
   // doctor opened; ✕ closes an area and unselects its procedures.
   const [procAreas, setProcAreas] = useState<string[]>(() =>
-    PROCEDURE_AREAS.filter((a) => a.procedures.some((p) => initial.procedures.some((x) => x.key === p.key))).map((a) => a.key),
+    catalog.filter((a) => a.procedures.some((p) => initial.procedures.some((x) => x.key === p.key))).map((a) => a.key),
   );
   const [state, setState] = useState<VisitActionState>({});
   const [pending, start] = useTransition();
@@ -67,7 +70,7 @@ export function VisitForm({
   const height = Number(v.heightCm.replace(",", "."));
   const b = bmi(weight || undefined, height || undefined);
   const chosen = new Set(v.procedures.map((p) => p.key));
-  const surgical = v.procedures.some((p) => !findProcedure(p.key)?.nonSurgical);
+  const surgical = v.procedures.some((p) => !findIn(catalog, p.key)?.nonSurgical);
 
   const toggleProcedure = (key: string) =>
     setV((x) => ({
@@ -82,23 +85,25 @@ export function VisitForm({
   // The examined areas open their surgical areas and narrow the procedures offered
   // (relevance.ts); breast also follows the gender. Chosen ones always stay visible;
   // "+ Όλες" shows the whole list of an area.
-  const relevant = relevantProcedures(v.areas, sex);
+  const relevant = relevantProcedures(v.areas, sex, catalog);
   const breastFor = sex ? BREAST_PROCEDURES_BY_SEX[sex] : undefined;
   const [closedProc, setClosedProc] = useState<string[]>([]);
   const [showAllProc, setShowAllProc] = useState<string[]>([]);
   // Same order as the examined areas (newest first), then the others.
   const rank = (key: string) => (key in relevant ? Object.keys(relevant).indexOf(key) : 99);
-  const openProc = PROCEDURE_AREAS.filter(
+  const openProc = catalog.filter(
     (a) => a.procedures.some((p) => chosen.has(p.key)) || ((procAreas.includes(a.key) || relevant[a.key]) && !closedProc.includes(a.key)),
   ).sort((a, b) => rank(a.key) - rank(b.key));
   const filterOf = (area: string) => relevant[area] ?? (area === "breast" ? breastFor : undefined);
-  const offered = (area: string, key: string) => showAllProc.includes(area) || chosen.has(key) || !filterOf(area) || filterOf(area)!.includes(key);
+  // Hidden procedures (Settings) are offered only if already chosen on this visit.
+  const offered = (area: string, key: string) =>
+    chosen.has(key) || (!findIn(catalog, key)?.hidden && (showAllProc.includes(area) || !filterOf(area) || filterOf(area)!.includes(key)));
   const openProcArea = (area: string) => {
     setClosedProc((x) => x.filter((a) => a !== area));
     setProcAreas((x) => [...x, area]);
   };
   const closeProcArea = (area: string) => {
-    const keys = new Set(PROCEDURE_AREAS.find((a) => a.key === area)!.procedures.map((p) => p.key));
+    const keys = new Set(catalog.find((a) => a.key === area)!.procedures.map((p) => p.key));
     setProcAreas((x) => x.filter((a) => a !== area));
     setClosedProc((x) => [...x, area]);
     setV((x) => ({ ...x, procedures: x.procedures.filter((p) => !keys.has(p.key)) }));
@@ -227,7 +232,7 @@ export function VisitForm({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-[17px] font-semibold">{t("procedures")}</h2>
               <div role="group" aria-label={t("addArea")} className="flex flex-wrap gap-2">
-                {PROCEDURE_AREAS.filter((a) => !openProc.includes(a)).map((a) => (
+                {catalog.filter((a) => !openProc.includes(a)).map((a) => (
                   <button key={a.key} type="button" onClick={() => openProcArea(a.key)} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-dashed border-line-strong px-3 text-[13px] text-ink-3 hover:border-primary hover:text-primary">
                     <PlusIcon size={14} />{a.el}
                   </button>
@@ -257,8 +262,8 @@ export function VisitForm({
                   )}
                 </div>
                 {/* Latest chosen procedure first (decided 11 Oct 2026). */}
-                {[...v.procedures].reverse().filter((p) => area.procedures.some((x) => x.key === p.key) && (findProcedure(p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
-                  const def = findProcedure(p.key)!;
+                {[...v.procedures].reverse().filter((p) => area.procedures.some((x) => x.key === p.key) && (findIn(catalog, p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
+                  const def = findIn(catalog, p.key)!;
                   const details = PROCEDURE_DETAILS[p.key];
                   const chart = details ? chartFor(p.details ?? {}) : [];
                   return (
@@ -266,7 +271,7 @@ export function VisitForm({
                       <span className="text-sm font-semibold">{def.el}</span>
                       {def.subs && (
                         <div className="flex flex-wrap gap-1.5">
-                          {def.subs.map((s) => (
+                          {def.subs.filter((s) => !s.hidden || p.subs.includes(s.key)).map((s) => (
                             <button key={s.key} type="button" aria-pressed={p.subs.includes(s.key)} onClick={() => toggleSub(p.key, s.key)} className={softChip(p.subs.includes(s.key))}>
                               {p.subs.includes(s.key) ? "✓ " : ""}{s.el}
                             </button>
@@ -302,7 +307,7 @@ export function VisitForm({
               <span className="text-muted">{t("chosen")}: </span>
               {v.procedures.length
                 ? v.procedures.map((p) => {
-                    const def = findProcedure(p.key);
+                    const def = findIn(catalog, p.key);
                     const subs = p.subs.map((s) => def?.subs?.find((x) => x.key === s)?.el).filter(Boolean);
                     const spec = detailsPhrase(p.key, p.details);
                     return `${def?.el}${subs.length ? ` (${subs.join(", ")})` : ""}${spec ? `: ${spec}` : ""}`;

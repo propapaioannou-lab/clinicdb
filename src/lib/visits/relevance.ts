@@ -5,19 +5,20 @@
 
 import { BREAST_PROCEDURES_BY_SEX } from "./exams/areas";
 import type { VisitArea } from "./visits";
-import { PROCEDURE_AREAS } from "./catalog";
+import { PROCEDURE_AREAS, type Catalog } from "./catalog";
 
-type Rule = { procArea: string; all: string[]; byFinding: Record<string, string[]> };
-const ALL = (area: string) => PROCEDURE_AREAS.find((a) => a.key === area)!.procedures.map((p) => p.key);
+type Rule = { procArea: string; all: (catalog: Catalog) => string[]; byFinding: Record<string, string[]> };
+// The whole (visible) list of a surgical area, from the company's catalogue.
+const all = (catalog: Catalog, area: string) => (catalog.find((a) => a.key === area)?.procedures ?? []).filter((p) => !p.hidden).map((p) => p.key);
 
 // Examination area → surgical area, its default list, and finding → procedures.
 const RULES: Record<string, Rule[]> = {
-  breast: [{ procArea: "breast", all: ALL("breast"), byFinding: {} }],
-  nose: [{ procArea: "face", all: ["rhinoplasty"], byFinding: {} }],
+  breast: [{ procArea: "breast", all: (c) => all(c, "breast"), byFinding: {} }],
+  nose: [{ procArea: "face", all: () => ["rhinoplasty"], byFinding: {} }],
   face: [
     {
       procArea: "face",
-      all: ALL("face").filter((k) => k !== "rhinoplasty"),
+      all: (c) => all(c, "face").filter((k) => k !== "rhinoplasty"),
       byFinding: {
         forehead: ["endoBrow", "foreheadLift"],
         brows: ["endoBrow", "temporalLift", "foreheadLift"],
@@ -34,7 +35,7 @@ const RULES: Record<string, Rule[]> = {
   body: [
     {
       procArea: "body",
-      all: ALL("body"),
+      all: (c) => all(c, "body"),
       byFinding: {
         abdomen: ["abdominoplasty", "miniAbdo", "lipoAbdo", "lipo"],
         weightLoss: ["bodyLift", "abdominoplasty", "armLift", "thighLift", "backLift"],
@@ -45,26 +46,26 @@ const RULES: Record<string, Rule[]> = {
         back: ["backLift", "lipo"],
       },
     },
-    { procArea: "genital", all: [], byFinding: { mons: ["monsLipo"] } },
+    { procArea: "genital", all: () => [], byFinding: { mons: ["monsLipo"] } },
   ],
   genital: [
     {
       procArea: "genital",
-      all: ALL("genital"),
+      all: (c) => all(c, "genital"),
       byFinding: { labiaMinora: ["labiaplasty"], hood: ["labiaplasty"], labiaMajora: ["labiaplasty"], mtf: ["vaginoplastyMtf"] },
     },
   ],
-  other: [{ procArea: "other", all: ALL("other"), byFinding: { scar: ["scarRevision"], lesion: ["skinLesion"] } }],
+  other: [{ procArea: "other", all: (c) => all(c, "other"), byFinding: { scar: ["scarRevision"], lesion: ["skinLesion"] } }],
 };
 
 // Surgical area → procedure keys to offer, for every surgical area the examination points
 // to. Findings ticked → their procedures; none ticked → the area's default list.
-export function relevantProcedures(areas: VisitArea[], sex: string | null): Record<string, string[]> {
+export function relevantProcedures(areas: VisitArea[], sex: string | null, catalog: Catalog = PROCEDURE_AREAS): Record<string, string[]> {
   const out: Record<string, Set<string>> = {};
   for (const a of areas) {
     for (const rule of RULES[a.area] ?? []) {
       const ticked = Object.keys(a.exam?.findings ?? {}).filter((f) => rule.byFinding[f]);
-      const keys = ticked.length ? ticked.flatMap((f) => rule.byFinding[f]) : rule.all;
+      const keys = ticked.length ? ticked.flatMap((f) => rule.byFinding[f]) : rule.all(catalog);
       if (!keys.length) continue;
       const set = (out[rule.procArea] ??= new Set());
       for (const k of keys) set.add(k);

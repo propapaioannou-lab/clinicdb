@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Badge, card, ErrorBox, fieldClass, inputClass, primaryButton, secondaryButton } from "@/components/ui";
+import { Badge, card, ErrorBox, inputClass, primaryButton, secondaryButton } from "@/components/ui";
 import type { QuestionState } from "../actions";
+import { PicksEditor, type EditablePick } from "../picks-editor";
 
-type Pick = { key?: string; labelEl: string; labelEn: string; hidden?: boolean };
 export type QuestionRow = {
   id: string;
   key: string;
@@ -19,7 +19,7 @@ export type QuestionRow = {
   sensitive: boolean;
   infection: boolean;
   isActive: boolean;
-  choices: Pick[];
+  choices: EditablePick[];
 };
 
 const arrow = "flex h-9 w-9 items-center justify-center rounded-[8px] border border-line-strong text-ink-3 hover:border-primary hover:text-primary disabled:opacity-30";
@@ -41,12 +41,6 @@ function Editor({
   const th = useTranslations("history");
   const [v, setV] = useState(initial);
   const set = (patch: Partial<typeof v>) => setV((x) => ({ ...x, ...patch }));
-  const setPick = (i: number, patch: Partial<Pick>) => set({ choices: v.choices.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
-  const movePick = (i: number, step: number) => {
-    const list = [...v.choices];
-    [list[i], list[i + step]] = [list[i + step], list[i]];
-    set({ choices: list });
-  };
   const field = (k: "labelEl" | "labelEn" | "detailEl" | "detailEn" | "hintEl" | "hintEn", wide = false) => (
     <label className={`block text-sm text-ink-3 ${wide ? "sm:col-span-2" : ""}`}>{t(`fields.${k}`)}
       <input value={v[k] ?? ""} onChange={(e) => set({ [k]: e.target.value })} className={inputClass} />
@@ -86,29 +80,7 @@ function Editor({
           {field("hintEn")}
         </div>
       </details>
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-semibold">{t("picks")}</span>
-        {v.choices.map((c, i) => (
-          <div key={c.key ?? `new${i}`} className={`flex flex-wrap items-center gap-2 ${c.hidden ? "opacity-55" : ""}`}>
-            <span className="flex gap-1">
-              <button type="button" aria-label={t("pickUp", { label: c.labelEl })} disabled={i === 0} onClick={() => movePick(i, -1)} className={arrow}>↑</button>
-              <button type="button" aria-label={t("pickDown", { label: c.labelEl })} disabled={i === v.choices.length - 1} onClick={() => movePick(i, 1)} className={arrow}>↓</button>
-            </span>
-            <input value={c.labelEl} onChange={(e) => setPick(i, { labelEl: e.target.value })} aria-label={t("pickEl")} placeholder={t("pickEl")} className={`${fieldClass} min-w-0 flex-[1_1_200px]`} />
-            <input value={c.labelEn} onChange={(e) => setPick(i, { labelEn: e.target.value })} aria-label={t("pickEn")} placeholder={t("pickEn")} className={`${fieldClass} min-w-0 flex-[1_1_160px]`} />
-            {c.key ? (
-              <button type="button" onClick={() => setPick(i, { hidden: !c.hidden })} className="min-h-9 px-2 text-[13.5px] font-semibold text-primary">
-                {c.hidden ? t("show") : t("hide")}
-              </button>
-            ) : (
-              <button type="button" aria-label={t("removePick")} onClick={() => set({ choices: v.choices.filter((_, j) => j !== i) })} className="min-h-9 px-2 text-muted hover:text-danger">✕</button>
-            )}
-          </div>
-        ))}
-        <button type="button" onClick={() => set({ choices: [...v.choices, { labelEl: "", labelEn: "" }] })} className="self-start text-[13.5px] font-semibold text-primary">
-          + {t("addPick")}
-        </button>
-      </div>
+      <PicksEditor title={t("picks")} value={v.choices} onChange={(choices) => set({ choices })} />
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={pending || !v.labelEl.trim()} className={primaryButton}>{t("save")}</button>
         <button type="button" onClick={cancel} className={secondaryButton}>{t("cancel")}</button>

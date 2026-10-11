@@ -13,6 +13,7 @@ import { chargeAndCloseAction, setChargeAction, setClosedAction, updateVisitActi
 import { ChargePanel } from "../charge-panel";
 import { PatientStrip } from "../patient-strip";
 import { allergySummary, shortDate, visitTypes } from "../shared";
+import { loadCatalog } from "@/lib/visits/catalog-db";
 import { VisitForm } from "../visit-form";
 import { VisitView } from "../visit-view";
 
@@ -24,6 +25,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
   if (!v || v.patientId !== id) notFound();
   const p = await openPatient(actor, id, await requestContext());
   if (!p) notFound();
+  const catalog = await loadCatalog(p.company.id);
   const [types, allergies, t] = await Promise.all([visitTypes(v.companyId), allergySummary(actor, p.id), getTranslations("visit")]);
   const editable = canEditPatients(actor.level) && v.status === "OPEN";
   const when = athensDateTimeFields(v.startedAt);
@@ -64,6 +66,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
         <VisitForm
           age={ageToday(p.ageFrom)?.years ?? null}
         sex={p.sex}
+        catalog={catalog}
           types={types}
           initial={{
             typeId: v.typeId ?? "", date: when.date, time: when.time, areas: v.areas, procedures: v.procedures,
@@ -74,7 +77,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
           aside={aside}
         />
       ) : (
-        <VisitView v={v} aside={aside} />
+        <VisitView v={v} aside={aside} catalog={catalog} />
       )}
     </main>
   );

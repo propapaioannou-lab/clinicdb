@@ -1,10 +1,10 @@
-import { randomBytes } from "node:crypto";
 import { db } from "@/lib/db";
 import { audit, type RequestContext } from "@/lib/audit";
 import type { Prisma } from "@/generated/prisma/client";
-import { HISTORY_SECTIONS, questionChoices, type QuestionChoice } from "@/lib/history/history";
+import { HISTORY_SECTIONS, questionChoices } from "@/lib/history/history";
 import type { Actor } from "@/lib/users/manage";
 import { canManageSettings } from "./lists";
+import { cleanPicks, newKey } from "./picks";
 
 // Settings → Ιατρικό ιστορικό (Phase 2 step 7b, decided 11 Oct 2026): the questionnaire's
 // questions and their quick picks, per company. Keys never change (stored answers and the
@@ -16,32 +16,13 @@ type Result = { ok: true; id?: string } | { ok: false; error: QuestionError };
 const fail = (error: QuestionError): Result => ({ ok: false, error });
 
 const text = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "");
-const newKey = (prefix: string) => `${prefix}${randomBytes(4).toString("hex")}`;
+
 
 export async function listQuestions(companyId: string) {
   const rows = await db.historyQuestion.findMany({ where: { companyId } });
   return rows
     .map((q) => ({ ...q, choices: questionChoices(q.choices) }))
     .sort((a, b) => HISTORY_SECTIONS.indexOf(a.section) - HISTORY_SECTIONS.indexOf(b.section) || a.sortOrder - b.sortOrder);
-}
-
-// Picks as sent by the editor: kept keys keep their key; new ones get one; picks that
-// were there before but are missing now are kept as hidden.
-function cleanChoices(raw: unknown, before: QuestionChoice[]): QuestionChoice[] | null {
-  if (!Array.isArray(raw)) return null;
-  const known = new Map(before.map((c) => [c.key, c]));
-  const out: QuestionChoice[] = [];
-  for (const r of raw.slice(0, 60)) {
-    if (!r || typeof r !== "object") continue;
-    const o = r as Record<string, unknown>;
-    const labelEl = text(o.labelEl, 120);
-    if (!labelEl) continue;
-    const key = typeof o.key === "string" && known.has(o.key) ? o.key : newKey("c_");
-    if (out.some((c) => c.key === key)) continue;
-    out.push({ key, labelEl, labelEn: text(o.labelEn, 120) || labelEl, ...(o.hidden === true && { hidden: true }) });
-  }
-  for (const c of before) if (!out.some((x) => x.key === c.key)) out.push({ ...c, hidden: true });
-  return out;
 }
 
 function cleanQuestion(raw: Record<string, unknown>) {
@@ -73,7 +54,7 @@ export async function addQuestion(actor: Actor, companyId: string, raw: Record<s
   if (!q) return fail("invalid_value");
   const last = await db.historyQuestion.aggregate({ where: { companyId, section: q.section }, _max: { sortOrder: true } });
   const created = await db.historyQuestion.create({
-    data: { ...q, companyId, key: newKey("q_"), sortOrder: (last._max.sortOrder ?? -1) + 1, choices: cleanChoices(raw.choices ?? [], []) as unknown as Prisma.InputJsonValue },
+    data: { ...q, companyId, key: newKey("q_"), sortOrder: (last._max.sortOrder ?? -1) + 1, choices: cleanPicks(raw.choices ?? [], [], "c_") as unknown as Prisma.InputJsonValue },
   });
   await audit({ action: "settings.question.added", actor, companyId, entityType: "HistoryQuestion", entityId: created.id, details: { key: created.key, label: q.labelEl } }, ctx);
   return { ok: true, id: created.id };
@@ -84,7 +65,7 @@ export async function updateQuestion(actor: Actor, id: string, raw: Record<strin
   const before = await own(actor, id);
   if (!before) return fail("not_found");
   const q = cleanQuestion(raw);
-  const choices = cleanChoices(raw.choices ?? [], questionChoices(before.choices));
+  const choices = cleanPicks(raw.choices ?? [], questionChoices(before.choices), "c_");
   if (!q || !choices) return fail("invalid_value");
   // A question moved to another section goes to the end of it.
   const sortOrder =

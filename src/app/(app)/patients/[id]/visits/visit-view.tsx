@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { num1 } from "@/lib/format";
 import { card } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
-import { EXAM_AREAS, findProcedure } from "@/lib/visits/catalog";
+import { EXAM_AREAS, findIn, type Catalog } from "@/lib/visits/catalog";
 import { difficultyModifiers } from "@/lib/visits/exams/engine";
 import { detailsPhrase } from "@/lib/visits/procedure-details";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
@@ -11,6 +11,7 @@ import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 export async function VisitView({
   v,
   aside,
+  catalog,
 }: {
   v: {
     type: string | null;
@@ -22,6 +23,7 @@ export async function VisitView({
     heightCm: number | null;
   };
   aside?: React.ReactNode;
+  catalog: Catalog;
 }) {
   const t = await getTranslations("visit");
   const tb = await getTranslations("exam");
@@ -50,7 +52,7 @@ export async function VisitView({
           <p className="text-sm">
             {v.procedures.length
               ? v.procedures.map((p) => {
-                  const def = findProcedure(p.key);
+                  const def = findIn(catalog, p.key);
                   const subs = p.subs.map((s) => def?.subs?.find((x) => x.key === s)?.el).filter(Boolean);
                   const spec = detailsPhrase(p.key, p.details);
                   return `${def?.el ?? p.key}${subs.length ? ` (${subs.join(", ")})` : ""}${spec ? `: ${spec}` : ""}`;

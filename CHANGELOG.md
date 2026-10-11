@@ -2,6 +2,18 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 7c: Settings → Επεμβάσεις
+
+- Ρυθμίσεις → **Επεμβάσεις** (you and Admins): the procedures of the "Προεγχειρητική
+  εκτίμηση", by area (Πρόσωπο, Μαστός, Σώμα, Γεννητικά, Άλλο). Rename them (Greek and
+  English), reorder with ↑ ↓, mark as non-surgical, hide them from new visits, and edit
+  their sub-options (e.g. Lifting → Deep plane, Deep neck…). **+ Νέα επέμβαση** adds one.
+- Renaming changes the name on old visits too; hidden ones stay on old visits.
+  Implant specs, technique choices and the "relevant procedures" rules keep working.
+- Each company has its own catalogue. Every change is logged.
+- Check: Ρυθμίσεις → Επεμβάσεις → Μαστός → Αυξητική μαστού → Επεξεργασία → rename →
+  Αποθήκευση; start a new visit → Προεγχειρητική εκτίμηση → + Μαστός: the new name is there.
+
 ## 11 Oct 2026 — Phase 2, Step 7b: Settings → Ιατρικό ιστορικό
 
 - Ρυθμίσεις → **Ιατρικό ιστορικό** (you and Admins): every question of the questionnaire,

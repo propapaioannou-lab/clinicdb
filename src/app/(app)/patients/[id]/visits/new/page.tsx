@@ -12,6 +12,7 @@ import { lastMeasurements, listVisits } from "@/lib/visits/visits";
 import { createVisitAction } from "../actions";
 import { PatientStrip } from "../patient-strip";
 import { allergySummary, shortDate, visitTypes } from "../shared";
+import { loadCatalog } from "@/lib/visits/catalog-db";
 import { VisitForm } from "../visit-form";
 
 // 3 · New visit (DESIGN.md).
@@ -22,6 +23,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
   if (!canEditPatients(actor.level)) notFound();
   const p = await openPatient(actor, id, await requestContext());
   if (!p) notFound();
+  const catalog = await loadCatalog(p.company.id);
   const [types, last, visits, allergies, t] = await Promise.all([
     visitTypes(p.company.id),
     lastMeasurements(p.id),
@@ -42,6 +44,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
       <VisitForm
         age={ageToday(p.ageFrom)?.years ?? null}
         sex={p.sex}
+        catalog={catalog}
         types={types}
         initial={{
           typeId: firstType, date: now.date, time: now.time, areas: [], procedures: [], diagnosis: "",

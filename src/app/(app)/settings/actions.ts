@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { addQuestion, moveQuestion, updateQuestion, type QuestionError } from "@/lib/settings/history-questions";
+import { addProcedure, moveProcedure, updateProcedure, type ProcedureError } from "@/lib/settings/procedures";
 import { addItem, moveItem, renameItem, setItemActive, setVisitFee, type ListError } from "@/lib/settings/lists";
 import { loadActor } from "@/lib/users/manage";
 
 export type SettingsState = { error?: ListError; done?: number };
 export type QuestionState = { error?: QuestionError; done?: number };
+export type ProcedureState = { error?: ProcedureError; done?: number };
 
 async function run<E extends string>(
   fn: (actor: Awaited<ReturnType<typeof loadActor>>, ctx: Awaited<ReturnType<typeof requestContext>>) => Promise<{ ok: true } | { ok: false; error: E }>,
@@ -45,4 +47,14 @@ export async function updateQuestionAction(id: string, v: Record<string, unknown
 }
 export async function moveQuestionAction(id: string, step: -1 | 1) {
   return run((a, c) => moveQuestion(a, id, step === -1 ? -1 : 1, c), "/settings/history");
+}
+
+export async function addProcedureAction(companyId: string, area: string, v: Record<string, unknown>) {
+  return run((a, c) => addProcedure(a, companyId, { ...v, area }, c), "/settings/procedures");
+}
+export async function updateProcedureAction(id: string, v: Record<string, unknown>) {
+  return run((a, c) => updateProcedure(a, id, v, c), "/settings/procedures");
+}
+export async function moveProcedureAction(id: string, step: -1 | 1) {
+  return run((a, c) => moveProcedure(a, id, step === -1 ? -1 : 1, c), "/settings/procedures");
 }

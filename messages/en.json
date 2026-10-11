@@ -541,7 +541,9 @@
     "fees": "Visit fees",
     "feesText": "Which visit types are charged and how much.",
     "history": "Medical history",
-    "historyText": "Questionnaire questions, sections, quick picks, sensitive and infection flags."
+    "historyText": "Questionnaire questions, sections, quick picks, sensitive and infection flags.",
+    "procedures": "Procedures",
+    "proceduresText": "Procedures by area and their sub-options."
   },
   "patientForm": {
     "newTitle": "New patient",
@@ -1047,5 +1049,39 @@
       "not_found": "Not found.",
       "invalid_value": "Type the question."
     }
+  },
+  "settingsProcedures": {
+    "title": "Procedures",
+    "intro": "For: {company}. The procedures of the preoperative assessment, by area, with their sub-options. Never deleted; hiding removes them from new visits, old visits keep them.",
+    "labelEl": "Name (Greek)",
+    "labelEn": "Name (English)",
+    "active": "Shown on new visits",
+    "nonSurgical": "Non-surgical (e.g. injectables, laser)",
+    "nonSurgicalShort": "Non-surgical",
+    "subs": "Sub-options",
+    "hidden": "Hidden",
+    "subCount": "{count, plural, one {1 sub-option} other {# sub-options}}",
+    "edit": "Edit",
+    "add": "New procedure",
+    "save": "Save",
+    "cancel": "Cancel",
+    "up": "Up: {label}",
+    "down": "Down: {label}",
+    "errors": {
+      "forbidden": "Not allowed.",
+      "not_found": "Not found.",
+      "duplicate": "A procedure with this name already exists.",
+      "invalid_value": "Type the name."
+    }
+  },
+  "picksEditor": {
+    "el": "Greek",
+    "en": "English",
+    "up": "Up: {label}",
+    "down": "Down: {label}",
+    "hide": "Hide",
+    "show": "Show",
+    "remove": "Remove",
+    "add": "New option"
   }
 }

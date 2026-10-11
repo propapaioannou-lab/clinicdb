@@ -575,3 +575,27 @@ model Document {
   @@index([companyId, createdAt])
   @@index([visitId])
 }
+
+// The procedure catalogue of a company (Settings → Επεμβάσεις, Phase 2 step 7c). Starts
+// from the list in lib/visits/catalog.ts; the seed adds missing ones and never overwrites
+// edits. Keys never change: visits, implant specs and the "relevant procedures" rules use
+// them. Hidden, never deleted.
+model CatalogProcedure {
+  id          String   @id @default(cuid())
+  companyId   String
+  key         String
+  // face | breast | body | genital | other
+  area        String
+  labelEl     String
+  labelEn     String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  nonSurgical Boolean  @default(false)
+  // Sub-options: [{ "key", "labelEl", "labelEn", "hidden"? }]
+  subs        Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([companyId, key])
+  @@index([companyId, area, sortOrder])
+}

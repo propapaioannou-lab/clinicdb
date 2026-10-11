@@ -202,7 +202,11 @@ services and are NOT rebuilt here.
   decided at import time, once the export is in hand (§10).
 - Diagnosis / comment (free text)
 - **Procedures discussed**: picker by area (Face · Breast · Body · Genital · Other),
-  multi-select across areas; list editable in Settings. Procedures can have
+  multi-select across areas; list editable in Settings (**built Phase 2 step 7c**:
+  Settings → Επεμβάσεις, Admin/Owner, per company: names GR/EN, order, shown/hidden,
+  surgical or not, sub-options; new procedures can be added. Keys and areas never change,
+  so implant specs, the "relevant procedures" rules and breast-measurement warnings keep
+  working; hidden procedures and sub-options stay on old visits). Procedures can have
   sub-options shown when selected, e.g. Facelift (deep plane, deep neck, temporal
   MORE, nanofat, eyelids, mini lift, midface, endoscopic brow, forehead lift, SMG
   reduction, platysmaplasty, fat); Rhinoplasty (open/closed/preservation, revision,

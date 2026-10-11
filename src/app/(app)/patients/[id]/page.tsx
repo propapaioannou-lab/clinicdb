@@ -14,6 +14,8 @@ import type { PatientFormValues } from "../patient-form";
 import type { HistoryData } from "@/lib/history/data";
 import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion, questionChoices } from "@/lib/history/history";
 import { countDocuments, listDocuments } from "@/lib/documents/documents";
+import { procedureNames } from "@/lib/visits/catalog";
+import { loadCatalog } from "@/lib/visits/catalog-db";
 import { setDocumentDeletedAction, updateDocumentAction, uploadDocumentsAction } from "./documents-actions";
 import { DocumentsTab } from "./record-documents";
 import { saveHistoryAction, unverifyHistoryAction, verifyHistoryAction } from "./history-actions";
@@ -146,14 +148,16 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
       ? [{ text: [th(`smokingChip.${hd.smoking.a}`), hd.smoking.perDay && th(`perDayOptions.${hd.smoking.perDay}`)].filter(Boolean).join(" · "), tone: "neutral" as const }]
       : []),
   ];
-  const [visits, totals, series, lastMeas, docCount, docs] = await Promise.all([
+  const [visits, totals, series, lastMeas, docCount, docs, catalog] = await Promise.all([
     listVisits(actor, p.id).then((v) => v ?? []),
     moneyTotals(actor, p.id),
     weightSeries(p.id),
     lastMeasurements(p.id),
     countDocuments(p.id),
     tab === "documents" ? listDocuments(actor, p.id, sp.deleted === "1").then((d) => d ?? []) : Promise.resolve([]),
+    loadCatalog(p.company.id),
   ]);
+  const names = procedureNames(catalog);
   const heightForBmi = lastMeas?.heightCm ?? hd?.heightCm ?? null;
   const viewNumber = typeof sp.v === "string" ? Number(sp.v) : null;
   const oldVersion = tab === "history" && viewNumber ? await loadHistoryVersion(actor, p.id, viewNumber) : null;
@@ -272,7 +276,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
           setDeleted={setDocumentDeletedAction.bind(null, p.id)}
         />
       ) : tab === "visits" ? (
-        <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} saved={sp.saved === "1"} />
+        <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} saved={sp.saved === "1"} names={names} />
       ) : tab === "overview" ? (
         <div className="flex flex-wrap items-start gap-5">
           <section className={`${card} flex min-w-0 flex-[999_1_480px] flex-col gap-1 px-[22px] py-5`}>
@@ -280,7 +284,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
               <h2 className="text-[17px] font-semibold">{t("timeline")}</h2>
               <span className="text-[13.5px] text-muted">{t("newestFirst")}</span>
             </div>
-            <Timeline patientId={p.id} visits={visits} />
+            <Timeline patientId={p.id} visits={visits} names={names} />
           </section>
           <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">
             <section className={`${card} flex flex-col gap-2.5 px-5 py-[18px] opacity-60`}>

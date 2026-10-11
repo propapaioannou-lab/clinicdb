@@ -833,7 +833,6 @@
     "allProcedures": "All",
     "fewerProcedures": "Relevant only",
     "procedureAreaLabel": "{area} preoperative assessment",
-    "sizeChart": "Sizes (chart)",
     "procedureArea": "Area",
     "chosen": "Chosen",
     "noneChosen": "none yet",
@@ -889,7 +888,7 @@
     "saveAndClose": "Save & close visit",
     "findingsText": "Further findings",
     "rewrite": "Rewrite from the choices",
-    "chartRow": "Base {width} cm · projection {projection} cm"
+    "chartRow": "{cc} cc · base {width} · proj. {projection}"
   },
   "exam": {
     "findings": "Findings",

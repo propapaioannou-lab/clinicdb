@@ -42,10 +42,39 @@ export const putSide = (value: MeasureValue | undefined, k: keyof MeasureValue, 
   return Object.keys(next).length ? next : undefined;
 };
 
-// Number inputs for one measurement: one box, or Δ / Α boxes.
-export function MeasureInputs({ field, value, onChange, compact }: { field: Extract<Field, { type: "measure" }>; value: MeasureValue | undefined; onChange: (v: MeasureValue | undefined) => void; compact?: boolean }) {
+// Number inputs for one measurement: one box, or Δ / Α boxes. With `choices` (e.g. an
+// implant size chart) each box is a list to pick from instead.
+export function MeasureInputs({
+  field,
+  value,
+  onChange,
+  compact,
+  choices,
+}: {
+  field: Extract<Field, { type: "measure" }>;
+  value: MeasureValue | undefined;
+  onChange: (v: MeasureValue | undefined) => void;
+  compact?: boolean;
+  choices?: { value: number; label: string }[];
+}) {
   const t = useTranslations("exam");
-  const box = (k: keyof MeasureValue, label: string) => (
+  const box = (k: keyof MeasureValue, label: string) =>
+    choices ? (
+      <label className="flex items-center gap-1 text-[13px] text-muted">
+        {label}
+        <select
+          value={value?.[k] ?? ""}
+          onChange={(e) => onChange(putSide(value, k, e.target.value === "" ? undefined : Number(e.target.value)))}
+          aria-label={`${field.el}${label ? ` ${label}` : ""}`}
+          className={`${fieldClass} min-w-[150px]`}
+        >
+          <option value="">—</option>
+          {/* A size typed earlier that is not in the chart stays visible. */}
+          {value?.[k] !== undefined && !choices.some((c) => c.value === value[k]) && <option value={value[k]}>{value[k]}</option>}
+          {choices.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+        </select>
+      </label>
+    ) : (
     <label className="flex items-center gap-1 text-[13px] text-muted">
       {label}
       <NumberBox
@@ -55,11 +84,11 @@ export function MeasureInputs({ field, value, onChange, compact }: { field: Extr
         className={compact ? "h-9 w-14 rounded-control border border-line-strong bg-surface px-1 text-center text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint" : `${fieldClass} w-[72px] text-center`}
       />
     </label>
-  );
+    );
   return (
     <span className="flex flex-wrap items-center gap-2">
       {field.sides ? <>{box("r", t("right"))}{box("l", t("left"))}</> : box("v", "")}
-      {field.unit && !compact && <span className="text-[13px] text-muted">{field.unit}</span>}
+      {field.unit && !compact && !choices && <span className="text-[13px] text-muted">{field.unit}</span>}
     </span>
   );
 }
@@ -71,11 +100,14 @@ export function FieldsEditor({
   fields,
   value,
   onField,
+  choicesFor,
 }: {
   label: string;
   fields: Field[];
   value: FindingValue;
   onField: (field: string, update: (prev: FieldValue | undefined) => FieldValue | undefined) => void;
+  // Pick-from lists for measurement fields (implant sizes from the chart).
+  choicesFor?: (field: string) => { value: number; label: string }[] | undefined;
 }) {
   const visible = fields.filter((f) => fieldShown(f, value));
   const bools = visible.filter((x) => x.type === "bool");
@@ -96,7 +128,7 @@ export function FieldsEditor({
           <div key={field.key} role="group" aria-label={`${label}: ${field.el}`} className="flex flex-wrap items-center gap-1.5">
             <span className="w-28 shrink-0 text-[13px] text-muted">{field.el}</span>
             {field.type === "measure" ? (
-              <MeasureInputs field={field} value={v as MeasureValue | undefined} onChange={(m) => onField(field.key, () => m)} />
+              <MeasureInputs field={field} value={v as MeasureValue | undefined} onChange={(m) => onField(field.key, () => m)} choices={choicesFor?.(field.key)} />
             ) : (
               field.options.map((o) => {
                 const on = field.type === "one" ? v === o.key : Array.isArray(v) && v.includes(o.key);

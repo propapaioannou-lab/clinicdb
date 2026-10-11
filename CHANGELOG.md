@@ -6,11 +6,11 @@ Plain-language record of what changed and how to check it.
 
 - The implant selector now knows the Motiva charts you sent: Round and Ergonomix (Mini,
   Demi, Full, Corsé) and Ergonomix 2 (Full, Corsé). Pick type and projection, then type the
-  size (e.g. 230) on each side, or tap it in the "Μεγέθη (πίνακας)" list: base width and
-  projection fill in by themselves. Different sizes left and right work too.
+  size from the list in each Μέγεθος box (Δ and Α), e.g. "230 cc · βάση 10,5 · προβ. 3,6":
+  base width and projection fill in by themselves. Different sizes left and right work.
 - Mentor and Ergonomix 2 Mini/Demi still need their charts; until then type the numbers.
 - Check: Νέα επίσκεψη → Προεγχειρητική εκτίμηση → + Μαστός → Αυξητική → Motiva →
-  Ergonomix → Demi → 230: Διάμετρος 10,5 · Προβολή 3,6.
+  Ergonomix → Demi → Μέγεθος Δ: 230 cc → Διάμετρος 10,5 · Προβολή 3,6.
 
 ## 11 Oct 2026 — Phase 2, Step 7d: Research export
 

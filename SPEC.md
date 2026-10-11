@@ -288,7 +288,8 @@ services and are NOT rebuilt here.
   Benelli, vertical Lejour / Hall-Findlay, L/J, Wise / keyhole inverted-T, no vertical
   scar), pedicle, extras (auto-augmentation, mesh, fat). Gynaecomastia / top surgery:
   technique. The choices are written as one line next to the procedure. **Size charts**:
-  choosing a size (typed, or tapped in the size list) fills base width and projection
+  choosing a size (once type and projection are set, each size box is a list of the
+  chart's sizes) fills base width and projection
   for that side from the chart. **Loaded (11 Oct 2026)** from the Motiva charts the
   surgeon supplied: Round and Ergonomix (Mini, Demi, Full, Corsé; Ergonomix Corsé up to
   12.5 cm), Ergonomix 2 (Full, Corsé). Mentor and Ergonomix 2 Mini/Demi: typed until their

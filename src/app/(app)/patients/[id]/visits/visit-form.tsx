@@ -281,24 +281,19 @@ export function VisitForm({
                           ))}
                         </div>
                       )}
-                      {details && <FieldsEditor label={def.el} fields={details.fields} value={p.details ?? {}} onField={(field, u) => setDetail(p.key, field, u)} />}
-                      {chart.length > 0 && (
-                        <div role="group" aria-label={t("sizeChart")} className="flex flex-wrap items-center gap-1.5">
-                          <span className="w-28 shrink-0 text-[13px] text-muted">{t("sizeChart")}</span>
-                          {chart.map((row) => (
-                            <button
-                              key={row.cc}
-                              type="button"
-                              // Both sides; base width and projection follow from the chart.
-                              onClick={() => setDetail(p.key, "cc", () => ({ r: row.cc, l: row.cc }))}
-                              aria-pressed={(p.details?.cc as { r?: number } | undefined)?.r === row.cc}
-                              className={softChip((p.details?.cc as { r?: number } | undefined)?.r === row.cc)}
-                              title={t("chartRow", { width: cm(row.diameter), projection: cm(row.projection) })}
-                            >
-                              {row.cc} cc · {cm(row.diameter)}
-                            </button>
-                          ))}
-                        </div>
+                      {details && (
+                        <FieldsEditor
+                          label={def.el}
+                          fields={details.fields}
+                          value={p.details ?? {}}
+                          onField={(field, u) => setDetail(p.key, field, u)}
+                          // Once type and projection are chosen, the size is picked from the chart.
+                          choicesFor={(field) =>
+                            field === "cc" && chart.length
+                              ? chart.map((row) => ({ value: row.cc, label: t("chartRow", { cc: row.cc, width: cm(row.diameter), projection: cm(row.projection) }) }))
+                              : undefined
+                          }
+                        />
                       )}
                     </div>
                   );

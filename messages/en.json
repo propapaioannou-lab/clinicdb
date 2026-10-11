@@ -1266,6 +1266,74 @@
       "invalid_value": "Check date (DD/MM/YYYY), time (HH:MM) and length.",
       "clash": "This time is not free",
       "not_allowed": "This step is not possible from the current status."
-    }
+    },
+    "todayShort": "today",
+    "freeShort": "free {free}",
+    "holidayShort": "Holiday",
+    "past": "past",
+    "full": "Full",
+    "legend": {
+      "confirmed": "confirmed",
+      "waiting": "awaiting reply",
+      "outOfHours": "Out of hours",
+      "lanes": "Columns: {list}",
+      "enough": "Enough time (≥ 2h)",
+      "little": "Little (< 2h)",
+      "full": "Full",
+      "surgeriesLater": "Surgeries appear with Phase 4/6b."
+    },
+    "fullBanner": "New patients: full for {days} days.",
+    "fullBannerText": "Online booking will show no times; new requests come to you (with GHL, 6d).",
+    "firstFree": "First free",
+    "weekdays": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    },
+    "nowPill": "now",
+    "waiting": "Waiting",
+    "video": "Video",
+    "new": "New",
+    "nowCard": "Now",
+    "nextCard": "Next · {time}",
+    "waitingFor": "waiting {minutes}′",
+    "years": "{age} years",
+    "infectious": "Infectious ⚠",
+    "historyState": {
+      "VERIFIED": "History verified",
+      "PENDING": "History to verify",
+      "NONE": "No history"
+    },
+    "openRecord": "Open record",
+    "noMore": "No more patients today.",
+    "glance": "The day at a glance",
+    "appointmentsWord": "appointments",
+    "newPatients": "new patients",
+    "lastEnds": "last",
+    "tomorrowCount": "Tomorrow: {count} appointments",
+    "surgeriesLater": "surgeries: with Phase 4/6b",
+    "officeChip": "Office",
+    "dayLink": "Day",
+    "officeAppointments": "office appointments",
+    "subtitleDoctor": {
+      "day": "My schedule · office",
+      "week": "My schedule · week summary",
+      "month": "My schedule · month"
+    },
+    "subtitleDesk": {
+      "day": "Front desk · day",
+      "week": "Front desk · week",
+      "month": "Front desk · month availability"
+    },
+    "viewLabel": "View",
+    "show": "Show",
+    "noOwnColumn": "No doctor column found for you: link it in Settings → Calendar → Resources.",
+    "deskView": "Front-desk schedule",
+    "myView": "My schedule",
+    "closed": "closed"
   }
 }

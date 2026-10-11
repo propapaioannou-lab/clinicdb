@@ -2,6 +2,23 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 6a-3: week, month and your own calendar
+
+- **Ημέρα | Εβδομάδα | Μήνας** switch at the top of Ημερολόγιο.
+- **You (surgeon)** now see only your own schedule, no money and no booking buttons:
+  - Ημέρα: one timeline with "τώρα", "Στην αναμονή", "Νέα", "Βίντεο"; on the right the
+    **next patient** (flag and reasons, high risk, infectious, history verified or not,
+    "Άνοιγμα καρτέλας") and the day at a glance;
+  - Εβδομάδα: a card per day with office hours, count, **new patients by name and
+    reason**, online and blocks; totals on top;
+  - Μήνας: appointments per day and holidays.
+  - "Πρόγραμμα γραμματείας →" at the bottom opens the front-desk view.
+- **Front desk**: Εβδομάδα (Mon–Sat, ✓/?, "ελεύθερα X" per day, "+ Νοσηλεύτρια") and
+  Μήνας (green / amber / red availability, holidays; a banner if new patients can't be
+  seen for more than 10 days).
+- Surgeries (chips, load bars) appear once surgeries exist (Phase 4/6b).
+- Check: Ημερολόγιο → Εβδομάδα, Μήνας; and "Πρόγραμμα γραμματείας →".
+
 ## 11 Oct 2026 — SPEC v1.9: new build order
 
 - Build order now: finish 6a (calendar) → 4 surgeries, consents, brief → 6b surgery

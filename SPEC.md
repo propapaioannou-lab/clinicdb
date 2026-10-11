@@ -592,6 +592,18 @@ appointment titles; more than one location.
   cancel with reason, restore, one step back, move with clash check, history); side
   panel: booking requests (with GHL, 6d) and tomorrow's confirmations. WhatsApp /
   reminder / intake / deposit switches appear but wait for GHL (6d).
+- **Built (6a-3, 11 Oct 2026):** Day / Week / Month switch. A **surgeon** sees their own
+  column only (the resource linked to their user, else the first doctor): day = one
+  timeline with "τώρα / Στην αναμονή / Νέα / Βίντεο" pills, "Τώρα" and **"Επόμενος"** cards
+  (flag + reasons, high-risk reasons, infectious alert, history verified / pending /
+  none, "Άνοιγμα καρτέλας"), the day at a glance; week = day cards (office hours, count,
+  new patients by name + reason, online, blocks; totals); month = appointments per day,
+  holidays. No money, no booking buttons; the Owner-surgeon has a link to the front-desk
+  view. **Front desk**: week = Mon–Sat compact grid (✓/?), "ελεύθερα X" per day ("κλειστά"
+  on days without hours), "+ Νοσηλεύτρια" adds her lane; month = availability map (green
+  ≥ 2 h, amber < 2 h, red full, past, holidays) + banner when the first free new-patient
+  slot is > 10 days away. **New patient** = no earlier visit and no earlier kept
+  appointment. Surgery chips, load bars and tomorrow's surgeries come with Phase 4/6b.
 **Views**: day (one column per resource, more detail), week (Mon–Sat, layers on/off,
 surgical load bar per day), month (counts per day + surgery load). Click empty slot →
 new appointment. Clash warning and suggested free slots when booking.

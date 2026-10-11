@@ -129,7 +129,7 @@ describe("openPatient", () => {
   it("logs every view", async () => {
     const user = await makeActor("USER", [c.surgery]);
     const p = await openPatient(user, ids.maria, ctx);
-    expect(p?.amka).toBe("15068012345");
+    expect(p?.contacts?.amka).toBe("15068012345");
     const log = await db.auditLog.findFirst({ where: { action: "patient.viewed", actorUserId: user.id }, orderBy: { id: "desc" } });
     expect(log?.entityId).toBe(ids.maria);
     expect(log?.companyId).toBe(c.surgery);
@@ -138,8 +138,11 @@ describe("openPatient", () => {
   it("hides AMKA and date of birth from Guests but still gives the age", async () => {
     const guest = await makeActor("GUEST", [c.surgery]);
     const p = await openPatient(guest, ids.maria, ctx);
-    expect(p?.amka).toBeNull();
-    expect(p?.birthDate).toBeNull();
+    expect(p?.contacts).toBeNull();
+    expect(p?.flag).toBe("NONE");
+    expect(p?.comments).toBeNull();
+    expect(JSON.stringify(p)).not.toContain("15068012345");
+    expect(JSON.stringify(p)).not.toContain("6945551212");
     expect(p?.ageFrom).toBeInstanceOf(Date);
     expect(await db.auditLog.count({ where: { action: "patient.viewed", actorUserId: guest.id } })).toBe(1);
   });

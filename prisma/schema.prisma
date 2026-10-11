@@ -319,14 +319,16 @@ model Patient {
   createdById        String?
   updatedAt          DateTime        @updatedAt
 
-  company        Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  maritalStatus  ListItem?           @relation("MaritalStatus", fields: [maritalStatusId], references: [id], onDelete: SetNull)
-  referralSource ListItem?           @relation("ReferralSource", fields: [referralSourceId], references: [id], onDelete: SetNull)
-  taxOffice      ListItem?           @relation("TaxOffice", fields: [taxOfficeId], references: [id], onDelete: SetNull)
-  treatingDoctor User?               @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id], onDelete: SetNull)
+  company        Company               @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  maritalStatus  ListItem?             @relation("MaritalStatus", fields: [maritalStatusId], references: [id], onDelete: SetNull)
+  referralSource ListItem?             @relation("ReferralSource", fields: [referralSourceId], references: [id], onDelete: SetNull)
+  taxOffice      ListItem?             @relation("TaxOffice", fields: [taxOfficeId], references: [id], onDelete: SetNull)
+  treatingDoctor User?                 @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id], onDelete: SetNull)
   phones         PatientPhone[]
   emails         PatientEmail[]
   flagReasons    PatientFlagReason[]
+  notDupA        PatientNotDuplicate[] @relation("NotDupA")
+  notDupB        PatientNotDuplicate[] @relation("NotDupB")
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -376,4 +378,19 @@ model PatientFlagReason {
 
   @@id([patientId, listItemId])
   @@index([listItemId])
+}
+
+// Staff said "not the same person" for this pair, so the duplicate warning does not
+// repeat (SPEC §6b). Stored once per pair, smaller id first.
+model PatientNotDuplicate {
+  companyId   String
+  patientAId  String
+  patientBId  String
+  createdAt   DateTime @default(now())
+  createdById String?
+  patientA    Patient  @relation("NotDupA", fields: [patientAId], references: [id], onDelete: Cascade)
+  patientB    Patient  @relation("NotDupB", fields: [patientBId], references: [id], onDelete: Cascade)
+
+  @@id([patientAId, patientBId])
+  @@index([patientBId])
 }

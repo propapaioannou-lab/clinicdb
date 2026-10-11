@@ -2,6 +2,38 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 3c: Patient record and new patients
+
+- **Patient record** in the approved design: the patient card (name, flag, code, age,
+  sex, AMKA, main phone, email, communication language, red infectious-disease alert),
+  the **Βάρος** and **Ιατρικό ιστορικό** cards (filled in the next steps), and tabs:
+  Επισκόπηση · Ιατρικό ιστορικό · Επισκέψεις · Έγγραφα, with Χειρουργεία, Θεραπείες,
+  Φωτογραφίες, Οικονομικά greyed out until their phase.
+- **"Όλα τα στοιχεία ▾"** opens every detail right under the card. From there:
+  **Επεξεργασία** (all fields: several phones with one main/WhatsApp, several emails,
+  address, AMKA, ΑΦΜ/ΔΟΥ, e-prescription, referral, treating doctor, notes…),
+  **Σήμανση** (yellow/red flag with reasons and a note) and, for Owners only,
+  **Αρχειοθέτηση** (hidden from search and lists, nothing deleted, "Επαναφορά" undoes it).
+- **Νέος ασθενής**: same form; the new patient gets the next free number of the company.
+- **Duplicate check** before saving (SPEC §6b): same AMKA, phone or email (strong);
+  same name and birth date (medium); similar name, also in Greeklish, or same first
+  name and birthday under another surname (weak). The look-alikes appear side by side:
+  - **"Ίδιο πρόσωπο"** → choose field by field what to keep; new phones/emails are added
+    to the existing record; no new record is made;
+  - **"Δεν είναι ο ίδιος"** → saves anyway and remembers it, so that pair never warns again.
+  Editing contact details runs the same check.
+- **Birth date is typed as ηη/μμ/εεεε** (e.g. 5/3/1990), whatever language the computer
+  is set to, so 01/02 can never be mistaken for 2 January.
+- The treating-doctor list shows users whose role is **Χειρουργός**.
+- **Guests** see name, code, age, sex and clinical alerts only: no contact details,
+  AMKA/ΑΦΜ, birth date, flag or comments, and no edit buttons.
+- Every opening, creation, change (with old and new values), flag change, archive and
+  "not the same person" goes to the audit log.
+
+**Check it:** Ασθενείς → **Νέος ασθενής**; type a name and the phone of an existing
+patient → the warning appears. Try both buttons. Open a patient → "Όλα τα στοιχεία" →
+Επεξεργασία, Σήμανση. Then Ρυθμίσεις → Αρχείο καταγραφής → Ασθενείς.
+
 ## 11 Oct 2026 — Phase 2, Step 3b: Patients page in the new design
 
 - **Ασθενείς** now matches the approved design: a large search box that updates the list

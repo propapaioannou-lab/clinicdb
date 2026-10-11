@@ -58,18 +58,17 @@ export async function lastMailTo(to: string): Promise<{ subject: string; text: s
   return { subject: msg.Subject, text: msg.Text };
 }
 
-let patientNo = 100000;
 // A fake patient with derived search fields filled in, as the app would store it.
 export async function makePatient(
   companyId: string,
   p: { surname: string; firstName?: string; birthDate?: Date; amka?: string; phones?: string[]; emails?: string[]; archived?: boolean; number?: number },
 ) {
   const { patientSearchName, patientSortName, phoneDigits, normalizeEmail } = await import("@/lib/patients/normalize");
-  patientNo += 1;
+  const max = await db.patient.aggregate({ where: { companyId }, _max: { number: true } });
   return db.patient.create({
     data: {
       companyId,
-      number: p.number ?? patientNo,
+      number: p.number ?? (max._max.number ?? 0) + 1,
       surname: p.surname,
       firstName: p.firstName ?? "",
       searchName: patientSearchName(p),

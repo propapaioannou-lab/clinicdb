@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ageOn, phoneDigits, searchKey, sortKey } from "./normalize";
+import { ageOn, parseDayMonthYear, phoneDigits, searchKey, sortKey } from "./normalize";
 
 describe("searchKey", () => {
   it("ignores accents and capitals", () => {
@@ -60,5 +60,17 @@ describe("ageOn", () => {
   });
   it("returns null for a birth date in the future", () => {
     expect(ageOn(bd, { year: 1980, month: 1, day: 1 })).toBeNull();
+  });
+});
+
+describe("parseDayMonthYear", () => {
+  it("reads day/month/year, with or without leading zeros", () => {
+    expect(parseDayMonthYear("15/06/1980")).toEqual(new Date(Date.UTC(1980, 5, 15)));
+    expect(parseDayMonthYear("1/2/1986")).toEqual(new Date(Date.UTC(1986, 1, 1)));
+  });
+  it("rejects impossible or badly written dates, and leaves empty as empty", () => {
+    expect(parseDayMonthYear("31/02/1990")).toBe("invalid");
+    expect(parseDayMonthYear("1986-02-01")).toBe("invalid");
+    expect(parseDayMonthYear("  ")).toBeNull();
   });
 });

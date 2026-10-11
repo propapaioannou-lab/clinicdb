@@ -75,3 +75,15 @@ export function ageOn(birthDate: Date, today: { year: number; month: number; day
   if (months < 0) return null;
   return { years: Math.floor(months / 12), months: months % 12 };
 }
+
+// "15/6/1980" (day/month/year, as typed in the form) -> a date. Impossible dates such as
+// 31/02 are rejected rather than rolled over. Empty -> null.
+export function parseDayMonthYear(v: string | null): Date | null | "invalid" {
+  if (!v?.trim()) return null;
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(v.trim());
+  if (!m) return "invalid";
+  const [day, month, year] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const d = new Date(Date.UTC(year, month - 1, day));
+  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return "invalid";
+  return d;
+}

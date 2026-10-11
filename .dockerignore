@@ -1,8 +1,18 @@
-node_modules
-.next
-.git
-.env*
-!.env.example
-coverage
-backups
-*.md
+# Allowlist (decided 11 Oct 2026): nothing goes into an image build unless listed here,
+# so personal or secret files dropped into this folder (.env, backup keys, exports,
+# consents drafts…) can never reach an image. Add a line when the build needs a new file.
+*
+!package.json
+!package-lock.json
+!next.config.ts
+!next-env.d.ts
+!tsconfig.json
+!prisma.config.ts
+!prisma/
+!src/
+!public/
+!messages/
+# Generated / local-only, even inside allowed folders.
+src/generated/
+**/*.test.ts
+**/.DS_Store

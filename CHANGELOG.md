@@ -2,6 +2,15 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Load test and safer image builds
+
+- Tested the production version with 15,600 fake patients and 10 users searching and
+  opening patients at once: search answers in ~10 ms, a patient opens in ~30 ms, no
+  errors even at 150 requests a second. Memory: app up to ~600 MB, database ~170 MB.
+  For the Synology: upgrade to 6 GB RAM and cap the app's memory (deployment checklist).
+- Image builds now take only the app's own files (an allowlist), so personal or secret
+  files left in the project folder can never end up in a build.
+
 ## 11 Oct 2026 — Red "incomplete" warnings
 
 - Patient card: if surname, first name, date of birth, phone or email is missing, a red

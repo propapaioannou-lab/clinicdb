@@ -8,6 +8,8 @@ Plain-language record of what changed and how to check it.
   Demi, Full, Corsé) and Ergonomix 2 (Full, Corsé). Pick type and projection, then type the
   size from the list in each Μέγεθος box (Δ and Α), e.g. "230 cc · βάση 10,5 · προβ. 3,6":
   base width and projection fill in by themselves. Different sizes left and right work.
+- The size list is our own drop-down: it always opens downwards, rounded, in the app's
+  style (↑ ↓ and Enter work too).
 - Works in every procedure with an implant: Αυξητική, Αυξητική-ανορθωτική, Αφαίρεση/αλλαγή
   ενθεμάτων, Αποκατάσταση (άμεσο ένθεμα), and now also **Σωληνοειδείς μαστοί** and
   **Παραμόρφωση μαστού**, which gained the implant and lift options.

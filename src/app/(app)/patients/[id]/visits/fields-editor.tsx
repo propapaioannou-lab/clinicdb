@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Dropdown } from "@/components/dropdown";
 import { fieldClass } from "@/components/ui";
 import { fieldShown, type Field, type FieldValue, type FindingValue, type MeasureValue } from "@/lib/visits/exams/engine";
 
@@ -62,17 +63,14 @@ export function MeasureInputs({
     choices ? (
       <label className="flex items-center gap-1 text-[13px] text-muted">
         {label}
-        <select
-          value={value?.[k] ?? ""}
-          onChange={(e) => onChange(putSide(value, k, e.target.value === "" ? undefined : Number(e.target.value)))}
-          aria-label={`${field.el}${label ? ` ${label}` : ""}`}
-          className={`${fieldClass} min-w-[150px]`}
-        >
-          <option value="">—</option>
-          {/* A size typed earlier that is not in the chart stays visible. */}
-          {value?.[k] !== undefined && !choices.some((c) => c.value === value[k]) && <option value={value[k]}>{value[k]}</option>}
-          {choices.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-        </select>
+        <Dropdown
+          value={value?.[k]}
+          // A size typed earlier that is not in the chart stays visible.
+          options={value?.[k] !== undefined && !choices.some((c) => c.value === value[k]) ? [{ value: value[k]!, label: String(value[k]) }, ...choices] : choices}
+          onChange={(n) => onChange(putSide(value, k, n))}
+          label={`${field.el}${label ? ` ${label}` : ""}`}
+          className="min-w-[230px]"
+        />
       </label>
     ) : (
     <label className="flex items-center gap-1 text-[13px] text-muted">

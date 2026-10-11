@@ -389,6 +389,18 @@ to the ΗΔΙΚΑ portal.
 ### Document
 - Today: name, file type, file name, date; comment, download, edit, delete;
   "show images" gallery view. Keep all of these.
+- **Built (Phase 2 step 6, 11 Oct 2026):** Έγγραφα tab with upload (several files at
+  once, drag & drop; PDF, JPG/PNG/WebP/GIF/HEIC, Word, Excel; up to 25 MB each, checked by
+  content, not name), list and "Εικόνες" gallery, open in the browser or download, edit
+  (name, type, date, visit, comment — never the file), delete. Delete hides the document;
+  only the Owner sees deleted ones and restores them. Types: general consent, procedure
+  consent, lab results, imaging, referral, letter/report, history, surgical brief, photo,
+  other. Files are stored outside the app in a volume under random names, never cached by
+  the browser; every open/download is in the audit log. **Guests** open only clinical
+  files (lab results, imaging, history, surgical brief, photos), not consents, letters,
+  referrals or "other" (they may carry contact details or AMKA). Backups: each file is
+  encrypted once (incremental), checked nightly, restored and fingerprint-checked by the
+  restore check.
 - Type (general consent, procedure consent, lab result, history, other), file (PDF), date
 - Optionally linked to a visit or surgery
 - Signed documents store: signature image, timestamp, signer device/IP, file hash

@@ -13,6 +13,9 @@ import { setArchivedAction, setFlagAction, updatePatientAction } from "../action
 import type { PatientFormValues } from "../patient-form";
 import type { HistoryData } from "@/lib/history/data";
 import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion, questionChoices } from "@/lib/history/history";
+import { countDocuments, listDocuments } from "@/lib/documents/documents";
+import { setDocumentDeletedAction, updateDocumentAction, uploadDocumentsAction } from "./documents-actions";
+import { DocumentsTab } from "./record-documents";
 import { saveHistoryAction, unverifyHistoryAction, verifyHistoryAction } from "./history-actions";
 import { HistoryForm, type QuestionView } from "./history-form";
 import { HistoryStatusLine, HistoryView } from "./history-view";
@@ -63,6 +66,10 @@ function formValues(p: PatientView): PatientFormValues | null {
     emails: c.emails,
   };
 }
+
+// "11/10/26 · Πρώτη επίσκεψη", for linking a document to a visit.
+const visitLabel = (v: { startedAt: Date; type: string | null }) =>
+  [new Intl.DateTimeFormat("el-GR", { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "Europe/Athens" }).format(v.startedAt), v.type].filter(Boolean).join(" · ");
 
 // 2b · Patient record (DESIGN.md): three header cards, then tabs.
 export default async function PatientPage({ params, searchParams }: PageProps<"/patients/[id]">) {
@@ -139,11 +146,13 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
       ? [{ text: [th(`smokingChip.${hd.smoking.a}`), hd.smoking.perDay && th(`perDayOptions.${hd.smoking.perDay}`)].filter(Boolean).join(" · "), tone: "neutral" as const }]
       : []),
   ];
-  const [visits, totals, series, lastMeas] = await Promise.all([
+  const [visits, totals, series, lastMeas, docCount, docs] = await Promise.all([
     listVisits(actor, p.id).then((v) => v ?? []),
     moneyTotals(actor, p.id),
     weightSeries(p.id),
     lastMeasurements(p.id),
+    countDocuments(p.id),
+    tab === "documents" ? listDocuments(actor, p.id, sp.deleted === "1").then((d) => d ?? []) : Promise.resolve([]),
   ]);
   const heightForBmi = lastMeas?.heightCm ?? hd?.heightCm ?? null;
   const viewNumber = typeof sp.v === "string" ? Number(sp.v) : null;
@@ -208,7 +217,8 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
 
       <nav aria-label={t("tabsLabel")} className="flex gap-1 overflow-x-auto border-b border-line">
         {TABS.map((x) => {
-          const label = x.key === "visits" && visits.length ? `${t("tabs.visits")} · ${visits.length}` : t(`tabs.${x.key}`);
+          const count = x.key === "visits" ? visits.length : x.key === "documents" ? docCount : 0;
+          const label = count ? `${t(`tabs.${x.key}`)} · ${count}` : t(`tabs.${x.key}`);
           if ("soon" in x) {
             return (
               <span key={x.key} aria-disabled="true" title={t("soon")} className="whitespace-nowrap px-3.5 py-3 text-[14.5px] font-medium text-ink-3 opacity-45">
@@ -245,6 +255,22 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
             viewing={oldVersion && history?.current ? { number: oldVersion.number, current: history.current.number } : null}
           />
         )
+      ) : tab === "documents" ? (
+        <DocumentsTab
+          patientId={p.id}
+          docs={docs.map((d) => ({
+            ...d,
+            documentDate: d.documentDate.toISOString().slice(0, 10),
+            visit: d.visit ? { id: d.visit.id, label: visitLabel(d.visit) } : null,
+          }))}
+          visits={visits.map((v) => ({ id: v.id, label: visitLabel(v) }))}
+          canEdit={canEditPatients(actor.level)}
+          canRestore={canArchivePatients(actor.level)}
+          showingDeleted={sp.deleted === "1"}
+          upload={uploadDocumentsAction.bind(null, p.id)}
+          update={updateDocumentAction.bind(null, p.id)}
+          setDeleted={setDocumentDeletedAction.bind(null, p.id)}
+        />
       ) : tab === "visits" ? (
         <VisitsTab patientId={p.id} visits={visits} canCreate={canEditPatients(actor.level)} totals={totals} saved={sp.saved === "1"} />
       ) : tab === "overview" ? (

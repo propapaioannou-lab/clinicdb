@@ -48,6 +48,8 @@ services:
       - .:/app:z
       - /app/node_modules
       - next-cache:/app/.next
+      # Patients' documents (never inside the project folder).
+      - documents:/data/documents
     ports:
       - "127.0.0.1:3000:3000"
 
@@ -64,6 +66,7 @@ services:
     volumes:
       - ./backups:/backups:z
       - ./.env:/config/app.env:ro,z
+      - documents:/documents:ro
     depends_on:
       db:
         condition: service_healthy
@@ -71,3 +74,4 @@ services:
 volumes:
   db-data:
   next-cache:
+  documents:

@@ -896,5 +896,59 @@
     "extraTime": "+{minutes}′ operating time",
     "standard": "standard time",
     "difficultyShort": "Difficulty {rank}/10"
+  },
+  "documents": {
+    "count": "{count, plural, =0 {Documents} one {1 document} other {# documents}}",
+    "upload": "Upload",
+    "choose": "Choose files or drop them here",
+    "allowed": "PDF, images (JPG, PNG, WebP, HEIC), Word, Excel · up to 25 MB each",
+    "removeFile": "Remove {name}",
+    "type": "Type",
+    "date": "Document date",
+    "visit": "Visit",
+    "comment": "Comment",
+    "name": "Name",
+    "save": "{count, plural, =0 {Save} one {Save 1 file} other {Save # files}}",
+    "saveEdit": "Save",
+    "uploading": "Saving…",
+    "cancel": "Cancel",
+    "saved": "{count, plural, one {1 document saved.} other {# documents saved.}}",
+    "viewLabel": "View",
+    "views": {
+      "list": "List",
+      "gallery": "Images"
+    },
+    "none": "No documents yet.",
+    "noImages": "No images.",
+    "download": "Download",
+    "edit": "Edit",
+    "delete": "Delete",
+    "restore": "Restore",
+    "deleted": "Deleted",
+    "confirmDelete": "Delete “{name}”? Only the Owner can restore it.",
+    "showDeleted": "Show deleted",
+    "hideDeleted": "Hide deleted",
+    "ofVisit": "visit {visit}",
+    "types": {
+      "GENERAL_CONSENT": "General consent",
+      "PROCEDURE_CONSENT": "Procedure consent",
+      "LAB_RESULT": "Lab results",
+      "IMAGING": "Imaging",
+      "REFERRAL": "Referral",
+      "LETTER": "Letter / report",
+      "HISTORY": "History",
+      "SURGICAL_BRIEF": "Surgical brief",
+      "PHOTO": "Photo",
+      "OTHER": "Other"
+    },
+    "errors": {
+      "forbidden": "You may not do this.",
+      "not_found": "Not found.",
+      "no_files": "Choose at least one file.",
+      "too_many": "Up to 20 files at a time.",
+      "too_big": "“{file}” is larger than 25 MB.",
+      "bad_type": "“{file}” is not a PDF, image, Word or Excel file.",
+      "invalid_value": "Check the date and the visit."
+    }
   }
 }

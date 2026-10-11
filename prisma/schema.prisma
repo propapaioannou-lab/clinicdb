@@ -341,6 +341,7 @@ model Patient {
   history         PatientHistory?
   historyVersions PatientHistoryVersion[]
   visits          Visit[]
+  documents       Document[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -521,7 +522,56 @@ model Visit {
   patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Restrict)
   type          ListItem?   @relation(fields: [typeId], references: [id], onDelete: SetNull)
   doctor        User?       @relation("VisitDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
+  documents     Document[]
 
   @@index([patientId, startedAt])
   @@index([companyId, startedAt])
+}
+
+// What a document is (SPEC §4 Document). Consents are created by the app in later phases.
+enum DocumentType {
+  GENERAL_CONSENT
+  PROCEDURE_CONSENT
+  LAB_RESULT
+  IMAGING
+  REFERRAL
+  LETTER
+  HISTORY
+  SURGICAL_BRIEF
+  PHOTO
+  OTHER
+}
+
+// A patient's file (SPEC §4 Document, decided 11 Oct 2026). The file itself lives in
+// DOCUMENTS_DIR under `storageKey` (made from the id; never the user's file name) and is
+// never changed: editing changes only the description. Deleting hides it (deletedAt);
+// the Owner can restore it. The file stays, and stays in the backups.
+model Document {
+  id           String       @id @default(cuid())
+  companyId    String
+  patientId    String
+  // Optionally the visit it belongs to (surgeries in Phase 4).
+  visitId      String?
+  type         DocumentType @default(OTHER)
+  // Shown name; starts as the uploaded file name without extension.
+  name         String
+  // Date of the document itself (e.g. of the lab result), not of the upload.
+  documentDate DateTime     @db.Date
+  comment      String?
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  sha256       String
+  storageKey   String       @unique
+  uploadedById String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  deletedAt    DateTime?
+  deletedById  String?
+  patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  visit        Visit?       @relation(fields: [visitId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, documentDate])
+  @@index([companyId, createdAt])
+  @@index([visitId])
 }

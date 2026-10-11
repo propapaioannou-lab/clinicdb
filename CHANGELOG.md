@@ -2,6 +2,25 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 6: Documents
+
+- New **Έγγραφα** tab on the patient record (with the count on the tab).
+- **Μεταφόρτωση**: choose several files or drag them in; pick the type (e.g.
+  Εργαστηριακές εξετάσεις), the date of the document, optionally the visit, and a comment.
+  PDF, images, Word and Excel, up to 25 MB each. A file that is really something else
+  (e.g. a web page renamed to .pdf) is refused.
+- Click a name to open it (PDF and images open in the browser); **Λήψη** downloads it.
+  **Επεξεργασία** changes the name, type, date, visit or comment (the file itself never
+  changes). **Διαγραφή** hides it; you (Owner) can see deleted ones with "Εμφάνιση
+  διαγραμμένων" and bring them back with **Επαναφορά**.
+- **Εικόνες** shows all images as a gallery.
+- Guests (students) can open lab results, imaging and photos, not consents or letters.
+- Every opening or download is in the audit log.
+- Backups now include the documents, encrypted, and the restore check opens every one and
+  compares it with its fingerprint.
+- Check: open a patient → Έγγραφα → Μεταφόρτωση → drop a PDF and a photo → Αποθήκευση;
+  then try Εικόνες, open the PDF, edit its name, delete it and restore it.
+
 ## 11 Oct 2026 — Load test and safer image builds
 
 - Tested the production version with 15,600 fake patients and 10 users searching and

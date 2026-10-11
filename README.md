@@ -72,6 +72,10 @@ Every night at 02:30 (Athens) the `backup` container copies the database, **test
 the copy** into a scratch database, bundles it with `.env` (which holds APP_SECRET),
 encrypts it and keeps 14 daily, 8 weekly and 12 monthly copies in `./backups/`.
 If the computer was off at 02:30, a backup is made as soon as it starts.
+**Documents** (patients' files) are backed up too: each file is encrypted once into
+`./backups/documents/` and kept (documents are never changed or removed), so each night
+adds only the new ones. Every backup checks that each document in the database has its
+encrypted copy.
 Status: in the app, Αντίγραφα (Owner/Admin). A red bar appears on every page if there
 has been no good backup for 26 hours or the last one failed.
 
@@ -94,7 +98,8 @@ List backups:
     podman compose exec backup dropdb --force clinicdb_restore_check
 
 **Monthly restore test** (SPEC §3): run the check above on the newest backup and confirm
-the numbers of users and audit entries look right.
+the numbers of users and audit entries look right, and that it says "Documents: N restored
+and checked, 0 missing or damaged".
 
 **Disaster recovery** (replaces the live database; the old one is kept, renamed
 `clinicdb_before_restore_…`):
@@ -103,4 +108,6 @@ the numbers of users and audit entries look right.
 
 If the whole server is lost: install the app on the new machine, put the backup's
 `app.env` back as `.env` (it holds APP_SECRET, so 2FA keeps working), start it, then
-run the disaster-recovery command above.
+run the disaster-recovery command above. It also decrypts the documents into
+`~/ClinicDB/backups/restored-documents-…/` and prints the one command that puts them back
+into the app's documents volume.

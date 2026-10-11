@@ -1,6 +1,8 @@
 // FAKE patients for development and speed tests. Never run on the real server.
 //   npm run db:fake               adds fake patients if there are none yet
-//   npm run db:fake -- --replace  removes ALL patients first, then adds fake ones
+//   npm run db:fake -- --replace  removes ALL patients (and their documents) first, then adds fake ones
+import { rm } from "node:fs/promises";
+import path from "node:path";
 import { db } from "../src/lib/db";
 import type { PatientFlag, PhoneType, Sex } from "../src/generated/prisma/client";
 import { normalizeEmail, patientSearchName, patientSortName, phoneDigits, searchKey } from "../src/lib/patients/normalize";
@@ -135,6 +137,10 @@ async function main() {
     return;
   }
   if (replace) {
+    // Documents go first (they point to patients and visits), with their files.
+    const dir = process.env.DOCUMENTS_DIR || "/data/documents";
+    for (const d of await db.document.findMany({ select: { storageKey: true } })) await rm(path.join(dir, d.storageKey), { force: true });
+    await db.document.deleteMany();
     await db.visit.deleteMany();
     await db.patientFlagReason.deleteMany();
     await db.patient.deleteMany();

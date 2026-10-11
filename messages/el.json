@@ -896,5 +896,59 @@
     "extraTime": "+{minutes}′ χειρουργικός χρόνος",
     "standard": "συνήθης χρόνος",
     "difficultyShort": "Βαθμός δυσκολίας {rank}/10"
+  },
+  "documents": {
+    "count": "{count, plural, =0 {Έγγραφα} one {1 έγγραφο} other {# έγγραφα}}",
+    "upload": "Μεταφόρτωση",
+    "choose": "Επιλέξτε αρχεία ή σύρετέ τα εδώ",
+    "allowed": "PDF, εικόνες (JPG, PNG, WebP, HEIC), Word, Excel · έως 25 MB το καθένα",
+    "removeFile": "Αφαίρεση {name}",
+    "type": "Είδος",
+    "date": "Ημερομηνία εγγράφου",
+    "visit": "Επίσκεψη",
+    "comment": "Σχόλιο",
+    "name": "Όνομα",
+    "save": "{count, plural, =0 {Αποθήκευση} one {Αποθήκευση 1 αρχείου} other {Αποθήκευση # αρχείων}}",
+    "saveEdit": "Αποθήκευση",
+    "uploading": "Αποθήκευση…",
+    "cancel": "Ακύρωση",
+    "saved": "{count, plural, one {Αποθηκεύτηκε 1 έγγραφο.} other {Αποθηκεύτηκαν # έγγραφα.}}",
+    "viewLabel": "Προβολή",
+    "views": {
+      "list": "Λίστα",
+      "gallery": "Εικόνες"
+    },
+    "none": "Δεν υπάρχουν έγγραφα ακόμη.",
+    "noImages": "Δεν υπάρχουν εικόνες.",
+    "download": "Λήψη",
+    "edit": "Επεξεργασία",
+    "delete": "Διαγραφή",
+    "restore": "Επαναφορά",
+    "deleted": "Διαγραμμένο",
+    "confirmDelete": "Διαγραφή του «{name}»; Μόνο ο Owner μπορεί να το επαναφέρει.",
+    "showDeleted": "Εμφάνιση διαγραμμένων",
+    "hideDeleted": "Απόκρυψη διαγραμμένων",
+    "ofVisit": "επίσκεψη {visit}",
+    "types": {
+      "GENERAL_CONSENT": "Γενική συναίνεση",
+      "PROCEDURE_CONSENT": "Συναίνεση επέμβασης",
+      "LAB_RESULT": "Εργαστηριακές εξετάσεις",
+      "IMAGING": "Απεικονιστικές",
+      "REFERRAL": "Παραπεμπτικό",
+      "LETTER": "Επιστολή / γνωμάτευση",
+      "HISTORY": "Ιστορικό",
+      "SURGICAL_BRIEF": "Brief χειρουργείου",
+      "PHOTO": "Φωτογραφία",
+      "OTHER": "Άλλο"
+    },
+    "errors": {
+      "forbidden": "Δεν έχετε δικαίωμα για αυτή την ενέργεια.",
+      "not_found": "Δεν βρέθηκε.",
+      "no_files": "Επιλέξτε τουλάχιστον ένα αρχείο.",
+      "too_many": "Έως 20 αρχεία κάθε φορά.",
+      "too_big": "Το «{file}» είναι μεγαλύτερο από 25 MB.",
+      "bad_type": "Το «{file}» δεν είναι PDF, εικόνα, Word ή Excel.",
+      "invalid_value": "Ελέγξτε την ημερομηνία και την επίσκεψη."
+    }
   }
 }

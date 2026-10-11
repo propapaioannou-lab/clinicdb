@@ -4,7 +4,7 @@
 set -eu
 umask 077
 : "${BACKUP_AGE_RECIPIENT:?BACKUP_AGE_RECIPIENT is not set (public backup key in .env)}"
-OUT=/backups
+OUT="${BACKUP_DIR:-/backups}"
 STAMP=$(date +%Y%m%d-%H%M%S)
 NAME="clinicdb-${STAMP}.tar.age"
 WORK=$(mktemp -d)
@@ -33,9 +33,37 @@ COUNTS=$(psql -d "$VERIFY_DB" -v ON_ERROR_STOP=1 -tAc "SELECT jsonb_build_object
   'users', (SELECT count(*) FROM \"User\"),
   'auditLog', (SELECT count(*) FROM \"AuditLog\"),
   'companies', (SELECT count(*) FROM \"Company\"),
-  'migrations', (SELECT count(*) FROM _prisma_migrations))") || fail "verify counts"
+  'migrations', (SELECT count(*) FROM _prisma_migrations),
+  'documents', (SELECT count(*) FROM \"Document\"))") || fail "verify counts"
 [ "$(echo "$COUNTS" | sed 's/.*"companies": \([0-9]*\).*/\1/')" -ge 1 ] || fail "verify: no companies in restored copy"
+psql -d "$VERIFY_DB" -v ON_ERROR_STOP=1 -tAc 'SELECT "storageKey" FROM "Document"' > "$WORK/document-keys" || fail "verify: document list"
 dropdb --force "$VERIFY_DB"
+
+# Documents: each file is encrypted once into backups/documents/<storage key>.age and never
+# changes (documents are never edited or removed), so each night adds only new files.
+DOCS_IN="${DOCUMENTS_DIR:-/documents}"
+DOCS_OUT="$OUT/documents"
+NEW_DOCS=0
+if [ -d "$DOCS_IN" ]; then
+  mkdir -p "$DOCS_OUT"
+  while IFS= read -r key; do
+    [ -n "$key" ] || continue
+    dest="$DOCS_OUT/$key.age"
+    [ -f "$dest" ] && continue
+    [ -f "$DOCS_IN/$key" ] || fail "document file missing on the server: $key"
+    mkdir -p "$(dirname "$dest")"
+    age -r "$BACKUP_AGE_RECIPIENT" -o "$dest.part" "$DOCS_IN/$key" || fail "document encryption: $key"
+    mv "$dest.part" "$dest"
+    NEW_DOCS=$((NEW_DOCS + 1))
+  done < "$WORK/document-keys"
+fi
+# Test: every document in this backup has its encrypted file.
+MISSING=0
+while IFS= read -r key; do
+  [ -n "$key" ] && [ ! -f "$DOCS_OUT/$key.age" ] && MISSING=$((MISSING + 1))
+done < "$WORK/document-keys"
+[ "$MISSING" -eq 0 ] || fail "verify: $MISSING document files have no backup copy"
+COUNTS=$(echo "$COUNTS" | sed "s/}\$/, \"newDocuments\": $NEW_DOCS}/")
 
 # Settings (.env) travel with the database: APP_SECRET is needed to read 2FA secrets.
 [ -f /config/app.env ] && cp /config/app.env "$WORK/app.env"

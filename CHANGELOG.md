@@ -2,6 +2,34 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 4: Medical history
+
+- **Ιατρικό ιστορικό** tab: the questionnaire from your design (Ναι / Όχι buttons, a details
+  box opens on Ναι, "x / y απαντήθηκαν" stays visible while scrolling). 37 questions in 11
+  sections (heart, lungs, blood & clotting incl. G6PD, stomach/liver/kidneys, nervous system
+  & mental health, endocrine, infections, habits, healing & anaesthesia, gynaecological incl.
+  children, first-degree family history), plus medication, allergies, smoking (Ναι · Όχι ·
+  Πρώην with per-day and product), weight, highest weight, height with live BMI, previous
+  surgeries table (+ Προσθήκη), and free notes. Questions are stored in the database, ready
+  for the Settings editor; "Χρήση ουσιών" is confidential (hidden from Guests).
+- **Every save is a new version**; nothing is overwritten. "Ιστορικό αλλαγών" lists them and
+  opens any earlier one — so a patient's original answers stay readable after corrections.
+- **Verification**: a history saved by a Χειρουργός or Βοηθός/νοσηλεύτρια counts as verified;
+  saved by anyone else it shows **Εκκρεμεί επιβεβαίωση** with an **Επιβεβαίωση ✓** button
+  (surgeon or PA/nurse only). Verified shows "✓ Επιβεβαιώθηκε · name (role) · time" with
+  **Αναίρεση**. All logged.
+- The **red infectious-disease alert** now comes from the verified Infections answers (any
+  Ναι is listed with its details; all Όχι clears it).
+- Header cards: **Ιατρικό ιστορικό** shows Φάρμακα, Αλλεργίες, Χειρουργεία, Οικ. ιστορικό and
+  the verification line; **Βάρος** shows weight, BMI and highest weight (the trend arrives
+  with visits). The patient card shows **Αλλεργία: …** (red) and smoking chips.
+- Patient form: phone numbers have a **country code** (Greece +30 by default); a wrong email
+  is flagged as soon as you leave the field.
+
+**Check it:** open a patient → Ιατρικό ιστορικό → Συμπλήρωση; answer a few, say Ναι to
+Ηπατίτιδα C with a detail, add an allergy, save. Look at the red alert and chips. Edit
+again and change something: "Ιστορικό αλλαγών" now has two versions.
+
 ## 11 Oct 2026 — Fixes: back links, saving patient edits
 
 - Every page inside **Ρυθμίσεις** has a **← Ρυθμίσεις** link at the top (a user's page,

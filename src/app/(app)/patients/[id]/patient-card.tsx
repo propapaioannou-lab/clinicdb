@@ -24,8 +24,11 @@ export function PatientCard({
   flagAction,
   archiveAction,
   widgets,
+  alerts = [],
 }: {
   widgets: React.ReactNode;
+  // Chips from the medical history (allergy, smoking).
+  alerts?: { text: string; tone: "danger" | "neutral" }[];
   p: PatientView;
   age: { years: number; months: number } | null;
   editable: boolean;
@@ -86,9 +89,14 @@ export function PatientCard({
                 {c?.emails[0] && <a href={`mailto:${c.emails[0]}`} className="text-primary hover:text-primary-hover">{c.emails[0]}</a>}
                 <span>{t("language", { language: tf(`languages.${p.language}`) })}</span>
               </div>
-              {p.infectiousDiseases && (
+              {(p.infectiousDiseases || alerts.length > 0) && (
                 <div className="mt-1 flex flex-wrap gap-2">
-                  <span className="rounded-lg bg-danger-bg px-2.5 py-1 text-[13px] font-semibold text-danger-ink">{t("infectious", { text: p.infectiousDiseases })}</span>
+                  {p.infectiousDiseases && (
+                    <span className="rounded-lg bg-danger-bg px-2.5 py-1 text-[13px] font-semibold text-danger-ink">{t("infectious", { text: p.infectiousDiseases })}</span>
+                  )}
+                  {alerts.map((a) => (
+                    <span key={a.text} className={`rounded-lg px-2.5 py-1 text-[13px] ${a.tone === "danger" ? "bg-danger-bg font-semibold text-danger-ink" : "bg-line-softer text-ink-3"}`}>{a.text}</span>
+                  ))}
                 </div>
               )}
             </div>

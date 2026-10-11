@@ -17,7 +17,7 @@ import { createInvitation, sendInvitationEmail } from "./invitations";
 // Every user-management action goes through here: permissions are checked on the
 // server for every call, and every change is written to the audit log.
 
-export type Actor = { id: string; email: string; name: string; level: Level; companyIds: string[] };
+export type Actor = { id: string; email: string; name: string; level: Level; role: Role; companyIds: string[] };
 
 export type ManageError =
   | "forbidden"
@@ -36,7 +36,7 @@ const fail = (error: ManageError): Fail => ({ ok: false, error });
 // Fresh from the database on every action, so a just-changed level applies at once.
 export async function loadActor(userId: string): Promise<Actor> {
   const u = await db.user.findUniqueOrThrow({ where: { id: userId }, include: { memberships: true } });
-  return { id: u.id, email: u.email, name: u.name, level: u.level, companyIds: u.memberships.map((m) => m.companyId) };
+  return { id: u.id, email: u.email, name: u.name, level: u.level, role: u.role, companyIds: u.memberships.map((m) => m.companyId) };
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;

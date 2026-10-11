@@ -1,6 +1,7 @@
 // Reference data only. Never real patient data.
 import { db } from "../src/lib/db";
 import type { ListKind } from "../src/generated/prisma/client";
+import { HISTORY_QUESTIONS } from "../src/lib/history/questions-seed";
 
 const companies = [
   { code: "surgery", name: "Πλαστική Χειρουργική" },
@@ -42,8 +43,15 @@ async function main() {
         skipDuplicates: true,
       });
     }
+    await db.historyQuestion.createMany({
+      data: HISTORY_QUESTIONS.map(([key, section, labelEl, detailEl, hintEl, labelEn, detailEn, flags], i) => ({
+        companyId: company.id, key, section, labelEl, detailEl: detailEl || null, hintEl: hintEl || null,
+        labelEn, detailEn: detailEn || null, sortOrder: i, sensitive: flags?.sensitive ?? false, infection: flags?.infection ?? false,
+      })),
+      skipDuplicates: true,
+    });
   }
-  console.log(`Companies and lists ready: ${companies.map((c) => c.code).join(", ")}`);
+  console.log(`Companies, lists and history questions ready: ${companies.map((c) => c.code).join(", ")}`);
 }
 
 main().finally(() => db.$disconnect());

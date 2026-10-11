@@ -10,6 +10,11 @@ import { openPatient, type PatientView } from "@/lib/patients/record";
 import { loadActor } from "@/lib/users/manage";
 import { setArchivedAction, setFlagAction, updatePatientAction } from "../actions";
 import type { PatientFormValues } from "../patient-form";
+import { bmi, type HistoryData } from "@/lib/history/data";
+import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion } from "@/lib/history/history";
+import { saveHistoryAction, unverifyHistoryAction, verifyHistoryAction } from "./history-actions";
+import { HistoryForm, type QuestionView } from "./history-form";
+import { HistoryStatusLine, HistoryView } from "./history-view";
 import { PatientCard } from "./patient-card";
 
 const TABS = [
@@ -73,6 +78,58 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
   const age = ageToday(p.ageFrom);
   const archiveAction = setArchivedAction.bind(null, p.id);
 
+  const history = await loadHistory(actor, p.id);
+  const th = await getTranslations("history");
+  const questions: QuestionView[] = (history?.questions ?? [])
+    .map((q) => ({ key: q.key, section: q.section, label: q.labelEl, detail: q.detailEl, hint: q.hintEl, order: q.sortOrder }))
+    .sort((a, b) => HISTORY_SECTIONS.indexOf(a.section) - HISTORY_SECTIONS.indexOf(b.section) || a.order - b.order)
+    .map(({ order: _order, ...q }) => q);
+  const hd: HistoryData | null = history?.data ?? null;
+  const status = history ? (
+    <HistoryStatusLine
+      status={history.status}
+      current={history.current}
+      verifiedAt={history.verifiedAt}
+      verifiedByName={history.verifiedByName}
+      verifiedRole={history.verifiedRole}
+      canVerify={canVerifyHistory(actor)}
+      verifyAction={verifyHistoryAction.bind(null, p.id)}
+      unverifyAction={unverifyHistoryAction.bind(null, p.id)}
+    />
+  ) : null;
+  const ynShort = (a?: { a: string; d?: string }) => (!a ? "—" : a.a === "yes" ? a.d || th("yes") : th("no"));
+  const familyYes = questions.filter((q) => q.section === "family" && hd?.answers[q.key]?.a === "yes");
+  const keyAnswers = hd
+    ? [
+        { label: th("short.medication"), value: ynShort(hd.medication) },
+        { label: th("short.allergies"), value: ynShort(hd.allergies) },
+        {
+          label: th("short.surgeries"),
+          value: !hd.surgeries ? "—" : hd.surgeries.a === "no" || !hd.surgeries.items.length ? th("no") : hd.surgeries.items.map((i) => [i.procedure, i.year].filter(Boolean).join(" ")).join(", "),
+        },
+        {
+          label: th("short.family"),
+          value: familyYes.length
+            ? familyYes
+                .map((q) => {
+                  const name = th.has(`short.${q.key}`) ? th(`short.${q.key}` as "short.family") : q.label;
+                  return hd.answers[q.key].d ? `${name} (${hd.answers[q.key].d})` : name;
+                })
+                .join(", ") : questions.some((q) => q.section === "family" && hd.answers[q.key]) ? th("no") : "—",
+        },
+      ]
+    : [];
+  // Shown on the patient card next to the infectious-disease alert.
+  const alerts = [
+    ...(hd?.allergies?.a === "yes" ? [{ text: th("allergyChip", { text: hd.allergies.d || th("yes") }), tone: "danger" as const }] : []),
+    ...(hd?.smoking && hd.smoking.a !== "no"
+      ? [{ text: [th(`smokingChip.${hd.smoking.a}`), hd.smoking.perDay && th(`perDayOptions.${hd.smoking.perDay}`)].filter(Boolean).join(" · "), tone: "neutral" as const }]
+      : []),
+  ];
+  const b = bmi(hd?.weightKg, hd?.heightCm);
+  const viewNumber = typeof sp.v === "string" ? Number(sp.v) : null;
+  const oldVersion = tab === "history" && viewNumber ? await loadHistoryVersion(actor, p.id, viewNumber) : null;
+
   return (
     <main className="mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-4 py-6 md:px-8">
       {p.archivedAt && (
@@ -96,19 +153,45 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
         updateAction={updatePatientAction.bind(null, p.id)}
         flagAction={setFlagAction.bind(null, p.id)}
         archiveAction={archiveAction}
+        alerts={alerts}
         widgets={
           <>
             <section aria-label={t("weight")} className={`${card} flex min-w-0 flex-[1_1_260px] flex-col gap-2.5 px-5 py-[18px]`}>
               <div className="flex items-baseline justify-between">
                 <h2 className="text-[17px] font-semibold">{t("weight")}</h2>
-                <span className="text-[22px] font-semibold text-muted">—</span>
+                {hd?.weightKg ? (
+                  <span className="text-[22px] font-semibold">
+                    {hd.weightKg} kg {b && <span className="text-[13px] font-medium text-muted">BMI {b}</span>}
+                  </span>
+                ) : (
+                  <span className="text-[22px] font-semibold text-muted">—</span>
+                )}
               </div>
               <div className="flex h-[90px] items-center justify-center rounded-[10px] bg-surface-2 text-[13px] text-muted">{t("weightEmpty")}</div>
+              {hd?.maxWeightKg && <span className="text-[13px] text-muted">{t("maxWeight", { kg: hd.maxWeightKg })}</span>}
             </section>
             <section aria-label={t("history")} className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 px-5 py-[18px]`}>
-              <h2 className="text-[17px] font-semibold">{t("history")}</h2>
-              <p className="text-sm text-muted">{t("historyEmpty")}</p>
-              <div className="mt-auto border-t border-line-softer pt-2 text-[12.5px] text-muted">{t("historySoon")}</div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-[17px] font-semibold">{t("history")}</h2>
+                {editable && (
+                  <Link href={`/patients/${p.id}?tab=history&edit=1`} className="text-[13.5px] font-semibold text-primary hover:text-primary-hover">
+                    {hd ? th("edit") : th("fillIn")}
+                  </Link>
+                )}
+              </div>
+              {hd ? (
+                <dl className="grid grid-cols-2 gap-x-3.5 gap-y-2.5 text-sm">
+                  {keyAnswers.map((k) => (
+                    <div key={k.label} className="min-w-0">
+                      <dt className="text-[12.5px] text-muted">{k.label}</dt>
+                      <dd className="break-words">{k.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : (
+                <p className="text-sm text-muted">{t("historyEmpty")}</p>
+              )}
+              {status && <div className="mt-auto border-t border-line-softer pt-2">{status}</div>}
             </section>
           </>
         }
@@ -138,7 +221,21 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
         })}
       </nav>
 
-      {tab === "overview" ? (
+      {tab === "history" ? (
+        editable && sp.edit === "1" ? (
+          <HistoryForm patientId={p.id} questions={questions} initial={hd ?? { answers: {} }} action={saveHistoryAction.bind(null, p.id)} />
+        ) : (
+          <HistoryView
+            patientId={p.id}
+            questions={questions}
+            data={oldVersion ? oldVersion.data : hd}
+            editable={editable}
+            status={oldVersion ? null : status}
+            versions={history?.versions ?? []}
+            viewing={oldVersion && history?.current ? { number: oldVersion.number, current: history.current.number } : null}
+          />
+        )
+      ) : tab === "overview" ? (
         <div className="flex flex-wrap items-start gap-5">
           <section className={`${card} flex min-w-0 flex-[999_1_480px] flex-col gap-1 px-[22px] py-5`}>
             <div className="mb-2.5 flex items-center justify-between">

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
-import type { Level } from "@/generated/prisma/client";
+import type { Level, Role } from "@/generated/prisma/client";
 import { encrypt } from "@/lib/secrets";
 import { base32Decode, currentStep, generateTotpSecret, hotp } from "@/lib/totp";
 
@@ -40,12 +40,13 @@ export async function companies() {
 }
 
 // An Actor for the user-management service, with company access.
-export async function makeActor(level: Level, companyIds: string[]) {
+export async function makeActor(level: Level, companyIds: string[], role: Role = "OTHER") {
   // Guests always have an end date (the database insists).
   const accessExpiresAt = level === "GUEST" ? new Date(Date.now() + 86_400_000) : null;
   const { user } = await makeUser({ level, accessExpiresAt });
   await db.membership.createMany({ data: companyIds.map((companyId) => ({ userId: user.id, companyId })) });
-  return { id: user.id, email: user.email, name: user.name, level, companyIds };
+  await db.user.update({ where: { id: user.id }, data: { role } });
+  return { id: user.id, email: user.email, name: user.name, level, role, companyIds };
 }
 
 // Latest email to `to` in the local test mailbox (Mailpit), or null.

@@ -26,13 +26,14 @@ enum Role {
 
 // A legal/business unit that owns records: "surgery" or "spa".
 model Company {
-  id          String       @id @default(cuid())
-  code        String       @unique
-  name        String
-  createdAt   DateTime     @default(now())
-  memberships Membership[]
-  patients    Patient[]
-  listItems   ListItem[]
+  id               String            @id @default(cuid())
+  code             String            @unique
+  name             String
+  createdAt        DateTime          @default(now())
+  memberships      Membership[]
+  patients         Patient[]
+  listItems        ListItem[]
+  historyQuestions HistoryQuestion[]
 }
 
 model User {
@@ -319,16 +320,18 @@ model Patient {
   createdById        String?
   updatedAt          DateTime        @updatedAt
 
-  company        Company               @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  maritalStatus  ListItem?             @relation("MaritalStatus", fields: [maritalStatusId], references: [id], onDelete: SetNull)
-  referralSource ListItem?             @relation("ReferralSource", fields: [referralSourceId], references: [id], onDelete: SetNull)
-  taxOffice      ListItem?             @relation("TaxOffice", fields: [taxOfficeId], references: [id], onDelete: SetNull)
-  treatingDoctor User?                 @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id], onDelete: SetNull)
-  phones         PatientPhone[]
-  emails         PatientEmail[]
-  flagReasons    PatientFlagReason[]
-  notDupA        PatientNotDuplicate[] @relation("NotDupA")
-  notDupB        PatientNotDuplicate[] @relation("NotDupB")
+  company         Company                 @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  maritalStatus   ListItem?               @relation("MaritalStatus", fields: [maritalStatusId], references: [id], onDelete: SetNull)
+  referralSource  ListItem?               @relation("ReferralSource", fields: [referralSourceId], references: [id], onDelete: SetNull)
+  taxOffice       ListItem?               @relation("TaxOffice", fields: [taxOfficeId], references: [id], onDelete: SetNull)
+  treatingDoctor  User?                   @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id], onDelete: SetNull)
+  phones          PatientPhone[]
+  emails          PatientEmail[]
+  flagReasons     PatientFlagReason[]
+  notDupA         PatientNotDuplicate[]   @relation("NotDupA")
+  notDupB         PatientNotDuplicate[]   @relation("NotDupB")
+  history         PatientHistory?
+  historyVersions PatientHistoryVersion[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -393,4 +396,80 @@ model PatientNotDuplicate {
 
   @@id([patientAId, patientBId])
   @@index([patientBId])
+}
+
+// One question of the medical-history questionnaire (SPEC §4): Yes/No + details when Yes.
+// Editable in Settings, so new questions need no code change.
+model HistoryQuestion {
+  id        String   @id @default(cuid())
+  companyId String
+  // Stable name used in stored answers, e.g. "hyper", "hepc".
+  key       String
+  // Section key, e.g. "heart", "infections" (titles in the translation files).
+  section   String
+  labelEl   String
+  labelEn   String
+  detailEl  String?
+  detailEn  String?
+  hintEl    String?
+  hintEn    String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  // Hidden from Guests (e.g. substance use).
+  sensitive Boolean  @default(false)
+  // A verified Yes fills the infectious-disease alert on the patient header.
+  infection Boolean  @default(false)
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  @@unique([companyId, key])
+  @@index([companyId, section, sortOrder])
+}
+
+enum HistoryStatus {
+  PENDING
+  VERIFIED
+}
+
+enum HistorySource {
+  STAFF
+  PATIENT
+  IMPORT
+}
+
+// Where a patient's history stands: which version is current and whether a physician
+// or PA/nurse has verified it (SPEC §4 "Verification").
+model PatientHistory {
+  patientId        String                @id
+  companyId        String
+  currentVersionId String                @unique
+  status           HistoryStatus         @default(PENDING)
+  verifiedAt       DateTime?
+  verifiedById     String?
+  verifiedByName   String?
+  verifiedRole     Role?
+  updatedAt        DateTime              @updatedAt
+  patient          Patient               @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  currentVersion   PatientHistoryVersion @relation("CurrentHistory", fields: [currentVersionId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, status])
+}
+
+// Every saved state of the answers is kept; nothing is overwritten. The patient's own
+// answers stay readable after staff corrections.
+model PatientHistoryVersion {
+  id            String          @id @default(cuid())
+  patientId     String
+  companyId     String
+  number        Int
+  source        HistorySource
+  createdById   String?
+  createdByName String?
+  createdAt     DateTime        @default(now())
+  data          Json
+  patient       Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  currentOf     PatientHistory? @relation("CurrentHistory")
+
+  @@unique([patientId, number])
+  @@index([companyId])
 }

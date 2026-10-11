@@ -309,7 +309,10 @@
       "patient_flag_changed": "Patient flag changed",
       "patient_archived": "Patient archived",
       "patient_unarchived": "Patient restored",
-      "patient_not_duplicate": "'Not the same person' (duplicate)"
+      "patient_not_duplicate": "'Not the same person' (duplicate)",
+      "history_saved": "Medical history saved",
+      "history_verified": "Medical history verified",
+      "history_unverified": "History verification undone"
     },
     "reasons": {
       "wrong_password": "wrong password",
@@ -465,7 +468,6 @@
     "weightEmpty": "Recorded at every visit",
     "history": "Medical history",
     "historyEmpty": "Not filled in yet.",
-    "historySoon": "Questionnaire and verification: next step",
     "tabsLabel": "Record sections",
     "soon": "soon",
     "tabs": {
@@ -496,7 +498,8 @@
       "NONE": "No flag",
       "YELLOW": "Yellow flag",
       "RED": "Red flag"
-    }
+    },
+    "maxWeight": "Highest weight {kg} kg"
   },
   "roles": {
     "SURGEON": "Surgeon",
@@ -621,5 +624,103 @@
     "createAnyway": "Not the same — create new patient",
     "saveAnyway": "Not the same — save",
     "back": "Back to the form"
+  },
+  "history": {
+    "title": "Medical history",
+    "yes": "Yes",
+    "no": "No",
+    "edit": "Edit",
+    "fillIn": "Fill in",
+    "save": "Save history",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "progress": "{answered} / {total} answered",
+    "basics": "Medication, allergies, smoking, body measurements",
+    "medication": "Regular medication",
+    "medicationDetail": "Which and dose",
+    "medicationHint": "e.g. Eltroxin 50 mcg, contraceptive pill",
+    "allergies": "Allergies (medicines, food, other)",
+    "allergiesDetail": "To what and which reaction",
+    "allergiesHint": "e.g. Penicillin — rash",
+    "smoking": "Smoking",
+    "smokingStatus": {
+      "no": "No",
+      "yes": "Yes",
+      "former": "Former"
+    },
+    "perDay": "Per day",
+    "perDayOptions": {
+      "0-5": "0–5/day",
+      "5-20": "5–20/day",
+      "20+": ">20/day"
+    },
+    "product": "Product",
+    "products": {
+      "cigarette": "Cigarette",
+      "ecig": "E-cigarette",
+      "heated": "Heated tobacco"
+    },
+    "quit": "When did they stop?",
+    "quitHint": "e.g. 2019",
+    "weight": "Weight (kg)",
+    "maxWeight": "Highest weight ever (kg)",
+    "height": "Height (cm)",
+    "surgeries": "Previous surgeries",
+    "procedure": "Procedure",
+    "year": "Year",
+    "complications": "Complications",
+    "addSurgery": "Add surgery",
+    "notes": "History notes",
+    "family": "Family history",
+    "sections": {
+      "heart": "Heart and circulation",
+      "lungs": "Lungs",
+      "blood": "Blood and clotting",
+      "gi": "Stomach, liver, kidneys",
+      "neuro": "Nervous system and mental health",
+      "endocrine": "Endocrine",
+      "infections": "Infections",
+      "habits": "Habits",
+      "healing": "Healing and anaesthesia",
+      "gyn": "Gynaecological",
+      "family": "Family history (first-degree relatives)"
+    },
+    "empty": "No medical history has been filled in for this patient yet.",
+    "filledBy": "Entered by {name} · {date}",
+    "filledByPatient": "Filled in by the patient · {date}",
+    "pending": "Awaiting verification",
+    "verify": "Verify ✓",
+    "verified": "✓ Verified · {name} ({role}) · {date}",
+    "undo": "Undo",
+    "noList": "No: {list}",
+    "unanswered": "{count, plural, one {# not answered} other {# not answered}}",
+    "versions": "Change history",
+    "version": "Version {number}",
+    "current": "current",
+    "sourcePatient": "the patient",
+    "viewingOld": "You are viewing version {number} (older).",
+    "backToCurrent": "Current version →",
+    "allergyChip": "Allergy: {text}",
+    "smokingChip": {
+      "yes": "Smoker",
+      "former": "Former smoker"
+    },
+    "errors": {
+      "invalid": "Something went wrong; please try again.",
+      "forbidden": "You are not allowed to do this.",
+      "not_found": "Patient not found.",
+      "not_verifier": "Only a surgeon or PA/nurse can verify.",
+      "nothing_to_verify": "Nothing to verify."
+    },
+    "short": {
+      "medication": "Medication",
+      "allergies": "Allergies",
+      "surgeries": "Surgeries",
+      "family": "Family history",
+      "fam_breast": "Breast cancer",
+      "fam_diab": "Diabetes",
+      "fam_clot": "Clotting disorder"
+    }
   }
 }

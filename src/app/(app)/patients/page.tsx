@@ -12,20 +12,22 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
   const sp = await searchParams;
   const companyId = typeof sp.company === "string" ? sp.company : undefined;
   const page = Number(sp.page) || 1;
+  const q = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
 
   const [{ rows, total, pages }, companies] = await Promise.all([
-    listPatients(actor, { page, companyId }),
+    listPatients(actor, { page, companyId, q }),
     listUserCompanies(actor),
   ]);
   const t = await getTranslations("patients");
   const contacts = canSeeContactDetails(actor.level);
   const showCompany = companies.length > 1 && !companyId;
 
-  const href = (p: number, c = companyId) => {
-    const q = new URLSearchParams();
-    if (c) q.set("company", c);
-    if (p > 1) q.set("page", String(p));
-    const s = q.toString();
+  const href = (p: number, c = companyId, query = q) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (c) params.set("company", c);
+    if (p > 1) params.set("page", String(p));
+    const s = params.toString();
     return s ? `/patients?${s}` : "/patients";
   };
   const tab = (active: boolean) =>
@@ -35,7 +37,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
     <main className="mx-auto w-full max-w-6xl p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">
-          {t("title")} <span className="text-base font-normal text-neutral-500">{t("count", { count: total })}</span>
+          {q ? t("resultsFor", { q }) : t("title")} <span className="text-base font-normal text-neutral-500">{t("count", { count: total })}</span>
         </h1>
         {companies.length > 1 && (
           <nav className="flex gap-1">
@@ -47,6 +49,12 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
         )}
       </div>
 
+      {q && (
+        <p className="mb-3 text-sm">
+          <Link href={href(1, companyId, "")} className="underline-offset-2 hover:underline">{t("clearSearch")}</Link>
+        </p>
+      )}
+      {rows.length === 0 && <p className="text-sm text-neutral-500">{t("none")}</p>}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-neutral-200 text-neutral-500 dark:border-neutral-800">
@@ -68,7 +76,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
                   <td className="py-2 pr-4 tabular-nums text-neutral-500">{p.number}</td>
                   <td className="py-2 pr-4">
                     <span className="flex items-center gap-2">
-                      <span className="font-medium">{p.surname} {p.firstName}</span>
+                      <Link href={`/patients/${p.id}`} className="font-medium underline-offset-2 hover:underline">{p.surname} {p.firstName}</Link>
                       <FlagDot flag={p.flag} label={t(`flag.${p.flag}`)} />
                       {p.infectiousDiseases && <span title={t("infectious")} className="text-xs font-semibold text-red-700 dark:text-red-400">⚠</span>}
                     </span>

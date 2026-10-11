@@ -6,6 +6,7 @@ export const ACTION_GROUPS = {
   logins: ["auth.login.success", "auth.login.password_ok"],
   failures: ["auth.login.failure", "auth.login.locked"],
   security: ["auth.2fa.", "auth.recovery_code.", "auth.trusted_device.", "auth.session."],
+  patients: ["patient."],
   users: ["user."],
   audit: ["audit."],
   system: ["backup."],
@@ -41,9 +42,14 @@ export async function queryAudit(f: AuditFilters) {
     const d = r.details as Record<string, unknown> | null;
     if (d && typeof d.userId === "string") ids.add(d.userId);
   }
-  const [users, deleted] = await Promise.all([
+  const patientIds = page.filter((r) => r.entityType === "Patient" && r.entityId).map((r) => r.entityId!);
+  const [users, deleted, patients] = await Promise.all([
     db.user.findMany({ where: { id: { in: [...ids] } }, select: { id: true, name: true, email: true } }),
     db.deletedUser.findMany({ where: { userId: { in: [...ids] } }, select: { userId: true, name: true, email: true } }),
+    db.patient.findMany({
+      where: { id: { in: patientIds } },
+      select: { id: true, number: true, surname: true, firstName: true },
+    }),
   ]);
   const people = new Map<string, { name: string; email: string; deleted: boolean }>();
   for (const u of users) people.set(u.id, { name: u.name, email: u.email, deleted: false });
@@ -62,6 +68,7 @@ export async function queryAudit(f: AuditFilters) {
         actorEmail: r.actorEmail,
         target: targetId && targetId !== r.actorUserId ? (people.get(targetId) ?? null) : null,
         targetId: targetId && targetId !== r.actorUserId ? targetId : null,
+        patient: r.entityType === "Patient" ? (patients.find((p) => p.id === r.entityId) ?? null) : null,
         details: d,
         ip: r.ip,
         userAgent: r.userAgent,

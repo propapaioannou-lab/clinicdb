@@ -2,20 +2,19 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { canSeeContactDetails } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
+import { companyFilter } from "./scope";
+import { parseQuery, searchWhere } from "./search";
 
 export const PATIENT_PAGE_SIZE = 50;
 
-// Only the companies the user belongs to; a requested company outside them gives nothing.
-export function companyFilter(actor: Actor, companyId?: string): string[] {
-  if (!companyId) return actor.companyIds;
-  return actor.companyIds.includes(companyId) ? [companyId] : [];
-}
-
-// Alphabetical list, archived patients left out. Contact details only for non-Guests.
-export async function listPatients(actor: Actor, opts: { page: number; companyId?: string }) {
+// Alphabetical list, archived patients left out, optionally only those matching a search.
+// Contact details only for non-Guests.
+export async function listPatients(actor: Actor, opts: { page: number; companyId?: string; q?: string }) {
+  const match = opts.q ? searchWhere(actor, parseQuery(opts.q)) : null;
   const where: Prisma.PatientWhereInput = {
     companyId: { in: companyFilter(actor, opts.companyId) },
     archivedAt: null,
+    ...match,
   };
   const contacts = canSeeContactDetails(actor.level);
   const page = Math.max(1, opts.page);

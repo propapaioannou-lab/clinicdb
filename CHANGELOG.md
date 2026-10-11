@@ -2,6 +2,28 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 2: Search bar on every screen
+
+- A **search box in the header** of every page. Results appear as you type (about
+  0.05 s with 15,600 patients), best matches first: exact patient number, then
+  surnames starting with what you typed, then everything else.
+- Finds by **name** (accents, capitals and word order don't matter; Greek or Greeklish:
+  "papadopoulou maria" = "Μαρία Παπαδοπούλου"), **phone** in any format (+30, spaces,
+  part of the number), **email**, **AMKA** and **patient number**.
+- Small **spelling mistakes** are forgiven when nothing matches exactly
+  ("Παπαδοπόλου" still finds Παπαδοπούλου).
+- Keyboard: **/** or **Ctrl+K** jumps to the box; ↑ ↓ to choose; **Enter** opens the
+  patient, or the full results list if none is chosen; **Esc** closes.
+- **Guests** can search only by name or patient number (a phone search would let
+  them identify people) and never see phone numbers in the results.
+- Clicking a result opens a first **patient page** (name, number, age in years and
+  months, father's name, AMKA, flag, red infectious-disease bar). The full record
+  comes in the next steps. **Every opening is in the audit log** (new filter
+  "Ασθενείς"), with patient number and name.
+
+**Check it:** type in the header box from any page — try a surname in Greek, then
+the same in Latin letters, then part of a phone number from the list.
+
 ## 11 Oct 2026 — Phase 2, Step 1: Patient records and fake patients
 
 - The database now holds patients with every "Basic info" field from SPEC §4: several

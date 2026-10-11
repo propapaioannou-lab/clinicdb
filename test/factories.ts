@@ -41,7 +41,9 @@ export async function companies() {
 
 // An Actor for the user-management service, with company access.
 export async function makeActor(level: Level, companyIds: string[]) {
-  const { user } = await makeUser({ level });
+  // Guests always have an end date (the database insists).
+  const accessExpiresAt = level === "GUEST" ? new Date(Date.now() + 86_400_000) : null;
+  const { user } = await makeUser({ level, accessExpiresAt });
   await db.membership.createMany({ data: companyIds.map((companyId) => ({ userId: user.id, companyId })) });
   return { id: user.id, email: user.email, name: user.name, level, companyIds };
 }
@@ -54,4 +56,29 @@ export async function lastMailTo(to: string): Promise<{ subject: string; text: s
   if (!id) return null;
   const msg = await fetch(`${base}/message/${id}`).then((r) => r.json());
   return { subject: msg.Subject, text: msg.Text };
+}
+
+let patientNo = 100000;
+// A fake patient with derived search fields filled in, as the app would store it.
+export async function makePatient(
+  companyId: string,
+  p: { surname: string; firstName?: string; birthDate?: Date; amka?: string; phones?: string[]; emails?: string[]; archived?: boolean; number?: number },
+) {
+  const { patientSearchName, patientSortName, phoneDigits, normalizeEmail } = await import("@/lib/patients/normalize");
+  patientNo += 1;
+  return db.patient.create({
+    data: {
+      companyId,
+      number: p.number ?? patientNo,
+      surname: p.surname,
+      firstName: p.firstName ?? "",
+      searchName: patientSearchName(p),
+      sortName: patientSortName(p),
+      birthDate: p.birthDate ?? null,
+      amka: p.amka ?? null,
+      archivedAt: p.archived ? new Date() : null,
+      phones: { create: (p.phones ?? []).map((n, i) => ({ companyId, number: n, digits: phoneDigits(n), isMain: i === 0, sortOrder: i })) },
+      emails: { create: (p.emails ?? []).map((e, i) => ({ companyId, email: normalizeEmail(e), sortOrder: i })) },
+    },
+  });
 }

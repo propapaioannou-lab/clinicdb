@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/current";
 import { backupHealth } from "@/lib/backups";
-import { canManageUsers } from "@/lib/permissions";
+import { canManageUsers, canSeeContactDetails } from "@/lib/permissions";
+import { PatientSearch } from "@/components/patient-search";
 import { logoutAction } from "./actions";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -27,6 +28,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </>
           )}
         </nav>
+        <PatientSearch limited={!canSeeContactDetails(user.level)} />
         <div className="flex items-center gap-4 text-sm">
           <span className="hidden text-neutral-500 sm:inline">
             {t("nav.sessionEnds", {

@@ -247,7 +247,8 @@
       "security": "2FA, devices, logins",
       "users": "User management",
       "audit": "Audit log views",
-      "system": "Backups"
+      "system": "Backups",
+      "patients": "Patients"
     },
     "when": "When",
     "who": "Who",
@@ -284,7 +285,8 @@
       "user_deleted": "User deleted",
       "audit_viewed": "Audit log viewed",
       "backup_completed": "Backup made",
-      "backup_failed": "Backup failed"
+      "backup_failed": "Backup failed",
+      "patient_viewed": "Patient record opened"
     },
     "reasons": {
       "wrong_password": "wrong password",
@@ -334,7 +336,8 @@
       "auditLog": "audit entries",
       "migrations": "schema versions",
       "error": "error"
-    }
+    },
+    "patient": "Patient {number}"
   },
   "backups": {
     "title": "Backups",
@@ -384,6 +387,25 @@
       "NONE": "No flag",
       "YELLOW": "Yellow flag",
       "RED": "Red flag"
-    }
+    },
+    "resultsFor": "Search “{q}”",
+    "clearSearch": "← All patients",
+    "none": "No patients."
+  },
+  "search": {
+    "label": "Search patients",
+    "placeholder": "Search: name, phone, email, AMKA, no.   ( / )",
+    "placeholderLimited": "Search: patient name or number   ( / )",
+    "none": "No patients.",
+    "showAll": "All results (Enter) →",
+    "father": "son/daughter of {name}"
+  },
+  "patient": {
+    "number": "No. {number}",
+    "age": "{years} y{months, plural, =0 {} other { # m}}",
+    "father": "son/daughter of {name}",
+    "amka": "AMKA {amka}",
+    "infectiousAlert": "Infectious disease: {text}",
+    "comingSoon": "The full patient record (details, history, visits, files) comes in the next steps."
   }
 }

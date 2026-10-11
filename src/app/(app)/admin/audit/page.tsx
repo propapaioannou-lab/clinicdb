@@ -156,6 +156,11 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
                     {actionLabel(e.action)}
                   </td>
                   <td className="py-2 pr-4">
+                    {e.patient && (
+                      <Link href={`/patients/${e.patient.id}`} className="underline-offset-2 hover:underline">
+                        {t("patient", { number: e.patient.number })} · {e.patient.surname} {e.patient.firstName}
+                      </Link>
+                    )}
                     {e.targetId && (
                       <Link href={keep({ user: e.targetId, before: "" })} className="underline-offset-2 hover:underline">{person(e.target, e.targetId)}</Link>
                     )}

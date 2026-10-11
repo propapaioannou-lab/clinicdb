@@ -31,6 +31,10 @@ services and are NOT rebuilt here.
   area — it can never read patient data. Staff review and accept submissions.
 - Photos: stay in their existing Synology folders; the app reads them (read-only mount).
 - Backups: encrypted, off-site, versioned, nightly. Restore tested monthly.
+  Built (Phase 1): nightly 02:30 Athens; each copy test-restored before it is kept;
+  bundle includes settings (.env with APP_SECRET); encrypted with a public key, the
+  private key kept off the server by the owner; keeps 14 daily, 8 weekly, 12 monthly;
+  status page and warning bar in the app; every run in the audit log.
 - Development on the Linux laptop; deployment to the Synology with the same containers.
 
 ## 4. Core data

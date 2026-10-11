@@ -51,6 +51,23 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
 
+  # Nightly encrypted backups into ./backups (see README "Backups").
+  backup:
+    build: ./backup
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      BACKUP_AGE_RECIPIENT: ${BACKUP_AGE_RECIPIENT:-}
+    volumes:
+      - ./backups:/backups:z
+      - ./.env:/config/app.env:ro,z
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   db-data:
   next-cache:

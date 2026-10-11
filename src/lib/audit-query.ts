@@ -8,6 +8,7 @@ export const ACTION_GROUPS = {
   security: ["auth.2fa.", "auth.recovery_code.", "auth.trusted_device.", "auth.session."],
   users: ["user."],
   audit: ["audit."],
+  system: ["backup."],
 } as const;
 export type ActionGroup = keyof typeof ACTION_GROUPS;
 

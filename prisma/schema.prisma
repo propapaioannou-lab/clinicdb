@@ -182,3 +182,19 @@ model DeletedUser {
   @@index([deletedAt])
   @@index([email])
 }
+
+// One nightly (or manual) backup run, written by the backup container.
+model BackupRun {
+  id         String    @id @default(cuid())
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  // "running", "ok", "failed"
+  status     String
+  fileName   String?
+  sizeBytes  BigInt?
+  // The copy was restored into a scratch database and checked.
+  verified   Boolean   @default(false)
+  details    Json?
+
+  @@index([startedAt])
+}

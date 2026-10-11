@@ -2,6 +2,26 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 1, Step 7: Backups
+
+- **Every night at 02:30** the database is copied, **test-restored** into a scratch
+  database (so a broken copy is caught the same night), bundled with the settings
+  file (it holds the key that unlocks everyone's 2FA) and **encrypted**.
+- Kept: 14 daily, 8 weekly, 12 monthly copies, in `~/ClinicDB/backups/`.
+- Encrypted with a public key; only the **private key, kept off the server**, can
+  open them. A stolen backup — or a stolen Synology — is unreadable.
+- If the computer was off at 02:30, a backup is made as soon as it is back on.
+- New page **Αντίγραφα** (Owner/Admin): each run with result, restore check, contents,
+  size. A **red bar on every page** if there is no good backup for 26 hours or the
+  last one failed. Every run is in the audit log.
+- Restore commands: "check" (separate database, live untouched) and "disaster
+  recovery" (replaces the live database, keeps the old one). Both were rehearsed
+  today: wrong key refused, right key restored, the app kept running.
+- Not yet: the **off-site copy** (Synology C2 / Backblaze / USB) — set up at
+  deployment once you choose. Photos are backed up separately on the Synology.
+
+**Check it:** see README, "Backups".
+
 ## 11 Oct 2026 — Phase 1, Step 6: Audit log screen
 
 - New **Αρχείο καταγραφής** link (Owner and Admin). Every login, failed login,

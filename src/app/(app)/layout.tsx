@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/current";
+import { backupHealth } from "@/lib/backups";
 import { canManageUsers } from "@/lib/permissions";
 import { logoutAction } from "./actions";
 
@@ -8,6 +9,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const { user, expiresAt } = await requireSession();
   const t = await getTranslations();
   const format = await getFormatter();
+  // Owners/Admins see a warning on every page if backups are not working.
+  const backupProblem = canManageUsers(user.level) && !(await backupHealth()).ok;
 
   return (
     <>
@@ -19,6 +22,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
               <Link href="/admin/users" className="text-sm hover:underline">{t("nav.users")}</Link>
               <Link href="/admin/devices" className="text-sm hover:underline">{t("nav.devices")}</Link>
               <Link href="/admin/audit" className="text-sm hover:underline">{t("nav.audit")}</Link>
+              <Link href="/admin/backups" className="text-sm hover:underline">{t("nav.backups")}</Link>
             </>
           )}
         </nav>
@@ -38,6 +42,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </form>
         </div>
       </header>
+      {backupProblem && (
+        <div role="alert" className="bg-red-700 px-4 py-2 text-sm text-white">
+          {t("backups.banner")} <Link href="/admin/backups" className="underline">{t("backups.bannerLink")}</Link>
+        </div>
+      )}
       {children}
     </>
   );

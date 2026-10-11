@@ -26,7 +26,8 @@
     "sessionEnds": "Session ends: {date}",
     "users": "Users",
     "devices": "Devices",
-    "audit": "Audit log"
+    "audit": "Audit log",
+    "backups": "Backups"
   },
   "levels": {
     "OWNER": "Owner",
@@ -244,7 +245,8 @@
       "failures": "Failures & lockouts",
       "security": "2FA, devices, logins",
       "users": "User management",
-      "audit": "Audit log views"
+      "audit": "Audit log views",
+      "system": "Backups"
     },
     "when": "When",
     "who": "Who",
@@ -279,7 +281,9 @@
       "user_suspended": "User suspended",
       "user_reactivated": "User reactivated",
       "user_deleted": "User deleted",
-      "audit_viewed": "Audit log viewed"
+      "audit_viewed": "Audit log viewed",
+      "backup_completed": "Backup made",
+      "backup_failed": "Backup failed"
     },
     "reasons": {
       "wrong_password": "wrong password",
@@ -322,7 +326,41 @@
       "email": "email",
       "stage": "stage",
       "companies": "companies",
-      "filters": "filters"
+      "filters": "filters",
+      "file": "file",
+      "sizeBytes": "size (bytes)",
+      "users": "users",
+      "auditLog": "audit entries",
+      "migrations": "schema versions",
+      "error": "error"
     }
+  },
+  "backups": {
+    "title": "Backups",
+    "intro": "Every night at 02:30 the database is copied, checked with a test restore and encrypted. 14 daily, 8 weekly and 12 monthly copies are kept.",
+    "healthy": "Last successful backup: {date}.",
+    "stale": "No successful backup in the last {hours} hours.",
+    "failed": "The last backup failed: {error}",
+    "never": "No backup has been made yet.",
+    "banner": "Warning: problem with backups.",
+    "bannerLink": "Details",
+    "when": "When",
+    "status": "Status",
+    "file": "File",
+    "size": "Size",
+    "verified": "Restore check",
+    "contents": "Contents",
+    "statuses": {
+      "ok": "Success",
+      "failed": "Failed",
+      "running": "Running"
+    },
+    "verifiedYes": "Passed",
+    "verifiedNo": "—",
+    "contentsLine": "{users} users, {audit} audit entries",
+    "whereTitle": "Where they are",
+    "where": "In the server's backups folder, encrypted. Opening them needs the private key, which is kept off the server.",
+    "offsite": "Off-site copy: set up at installation on the Synology (destination still to choose).",
+    "none": "No runs yet."
   }
 }

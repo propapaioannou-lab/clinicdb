@@ -58,3 +58,42 @@ Unlock an account that hit 5 wrong passwords (otherwise it unlocks after 15 minu
 
     podman compose exec app npm run db:migrate -- --name what_changed
     podman compose restart app
+
+## Backups
+
+Every night at 02:30 (Athens) the `backup` container copies the database, **test-restores
+the copy** into a scratch database, bundles it with `.env` (which holds APP_SECRET),
+encrypts it and keeps 14 daily, 8 weekly and 12 monthly copies in `./backups/`.
+If the computer was off at 02:30, a backup is made as soon as it starts.
+Status: in the app, Αντίγραφα (Owner/Admin). A red bar appears on every page if there
+has been no good backup for 26 hours or the last one failed.
+
+**The key.** Backups are encrypted with the public key in `.env` (`BACKUP_AGE_RECIPIENT`).
+Only the private key can open them, and it is kept **off the server** (password manager
+or printed). Lose it and the backups cannot be opened. On this laptop the test key is
+`.backup-key.dev.txt`; the Synology gets its own key at deployment.
+
+Make a backup now:
+
+    podman compose exec backup backup.sh
+
+List backups:
+
+    ls -l ~/ClinicDB/backups
+
+**Check a backup** (restores into a separate database; the live one is untouched):
+
+    podman compose exec -T backup restore.sh clinicdb-YYYYMMDD-HHMMSS.tar.age < /path/to/private-key.txt
+    podman compose exec backup dropdb --force clinicdb_restore_check
+
+**Monthly restore test** (SPEC §3): run the check above on the newest backup and confirm
+the numbers of users and audit entries look right.
+
+**Disaster recovery** (replaces the live database; the old one is kept, renamed
+`clinicdb_before_restore_…`):
+
+    podman compose exec -T backup restore.sh clinicdb-YYYYMMDD-HHMMSS.tar.age --replace-live < /path/to/private-key.txt
+
+If the whole server is lost: install the app on the new machine, put the backup's
+`app.env` back as `.env` (it holds APP_SECRET, so 2FA keeps working), start it, then
+run the disaster-recovery command above.

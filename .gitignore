@@ -46,3 +46,7 @@ next-env.d.ts
 # Personal secrets that must never be committed
 2fapasses.txt
 *recovery*codes*.txt
+
+# Backups and backup keys never go into git
+/backups/
+.backup-key*

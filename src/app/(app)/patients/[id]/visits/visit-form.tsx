@@ -11,6 +11,7 @@ import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 import { BREAST_PROCEDURES_BY_SEX, EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
 import { summarize, type ExamValue, type FieldValue } from "@/lib/visits/exams/engine";
 import { chartFor, detailsPhrase, PROCEDURE_DETAILS } from "@/lib/visits/procedure-details";
+import { relevantProcedures } from "@/lib/visits/relevance";
 import type { VisitActionState } from "./actions";
 import { ExamPanel } from "./exam-panel";
 import { FieldsEditor } from "./fields-editor";
@@ -78,13 +79,28 @@ export function VisitForm({
       ...x,
       procedures: x.procedures.map((p) => (p.key !== key ? p : { ...p, subs: p.subs.includes(sub) ? p.subs.filter((s) => s !== sub) : [...p.subs, sub] })),
     }));
-  // Breast procedures for the patient's gender; chosen ones always stay visible.
-  const [allBreast, setAllBreast] = useState(false);
+  // The examined areas open their surgical areas and narrow the procedures offered
+  // (relevance.ts); breast also follows the gender. Chosen ones always stay visible;
+  // "+ Όλες" shows the whole list of an area.
+  const relevant = relevantProcedures(v.areas, sex);
   const breastFor = sex ? BREAST_PROCEDURES_BY_SEX[sex] : undefined;
-  const offered = (area: string, key: string) => area !== "breast" || allBreast || !breastFor || breastFor.includes(key) || chosen.has(key);
+  const [closedProc, setClosedProc] = useState<string[]>([]);
+  const [showAllProc, setShowAllProc] = useState<string[]>([]);
+  // Same order as the examined areas (newest first), then the others.
+  const rank = (key: string) => (key in relevant ? Object.keys(relevant).indexOf(key) : 99);
+  const openProc = PROCEDURE_AREAS.filter(
+    (a) => a.procedures.some((p) => chosen.has(p.key)) || ((procAreas.includes(a.key) || relevant[a.key]) && !closedProc.includes(a.key)),
+  ).sort((a, b) => rank(a.key) - rank(b.key));
+  const filterOf = (area: string) => relevant[area] ?? (area === "breast" ? breastFor : undefined);
+  const offered = (area: string, key: string) => showAllProc.includes(area) || chosen.has(key) || !filterOf(area) || filterOf(area)!.includes(key);
+  const openProcArea = (area: string) => {
+    setClosedProc((x) => x.filter((a) => a !== area));
+    setProcAreas((x) => [...x, area]);
+  };
   const closeProcArea = (area: string) => {
     const keys = new Set(PROCEDURE_AREAS.find((a) => a.key === area)!.procedures.map((p) => p.key));
     setProcAreas((x) => x.filter((a) => a !== area));
+    setClosedProc((x) => [...x, area]);
     setV((x) => ({ ...x, procedures: x.procedures.filter((p) => !keys.has(p.key)) }));
   };
   const setDetail = (key: string, field: string, update: (prev: FieldValue | undefined) => FieldValue | undefined) =>
@@ -99,7 +115,8 @@ export function VisitForm({
         return { ...p, details };
       }),
     }));
-  const addArea = (area: string) => setV((x) => ({ ...x, areas: [...x.areas, { area, text: "" }] }));
+  // A newly added area opens at the top, next to the "+ area" chips (decided 11 Oct 2026).
+  const addArea = (area: string) => setV((x) => ({ ...x, areas: [{ area, text: "" }, ...x.areas] }));
   const removeArea = (area: string) => setV((x) => ({ ...x, areas: x.areas.filter((a) => a.area !== area) }));
   const setAreaText = (area: string, text: string) => setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, text } : a)) }));
   // The written-up findings land in "Επιπλέον ευρήματα" and follow the taps until the
@@ -210,14 +227,14 @@ export function VisitForm({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-[17px] font-semibold">{t("procedures")}</h2>
               <div role="group" aria-label={t("addArea")} className="flex flex-wrap gap-2">
-                {PROCEDURE_AREAS.filter((a) => !procAreas.includes(a.key)).map((a) => (
-                  <button key={a.key} type="button" onClick={() => setProcAreas((x) => [...x, a.key])} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-dashed border-line-strong px-3 text-[13px] text-ink-3 hover:border-primary hover:text-primary">
+                {PROCEDURE_AREAS.filter((a) => !openProc.includes(a)).map((a) => (
+                  <button key={a.key} type="button" onClick={() => openProcArea(a.key)} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-dashed border-line-strong px-3 text-[13px] text-ink-3 hover:border-primary hover:text-primary">
                     <PlusIcon size={14} />{a.el}
                   </button>
                 ))}
               </div>
             </div>
-            {PROCEDURE_AREAS.filter((a) => procAreas.includes(a.key)).map((area) => (
+            {openProc.map((area) => (
               <div key={area.key} aria-label={t("procedureAreaLabel", { area: area.el })} className="flex flex-col gap-3 rounded-[12px] border border-line-soft bg-surface-2 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-[15px] font-semibold">{area.el}</h3>
@@ -229,9 +246,13 @@ export function VisitForm({
                       {chosen.has(p.key) ? "✓ " : "+ "}{p.el}
                     </button>
                   ))}
-                  {area.key === "breast" && breastFor && (
-                    <button type="button" onClick={() => setAllBreast((x) => !x)} className="self-center text-[13px] font-semibold text-primary hover:text-primary-hover">
-                      {allBreast ? t("fewerProcedures") : `+ ${t("allProcedures")}`}
+                  {filterOf(area.key) && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllProc((x) => (x.includes(area.key) ? x.filter((a) => a !== area.key) : [...x, area.key]))}
+                      className="self-center text-[13px] font-semibold text-primary hover:text-primary-hover"
+                    >
+                      {showAllProc.includes(area.key) ? t("fewerProcedures") : `+ ${t("allProcedures")}`}
                     </button>
                   )}
                 </div>

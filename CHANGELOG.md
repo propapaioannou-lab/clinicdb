@@ -2,6 +2,16 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Fewer taps
+
+- A newly added evaluation area opens at the top, right under the "+ area" chips.
+- Examining an area opens its part of the Προεγχειρητική εκτίμηση with only the fitting
+  procedures: Μύτη → Ρινοπλαστική; Μαστός → breast procedures (by gender); Άνω βλέφαρα →
+  Βλεφαροπλαστική άνω; Τράχηλος → Lifting, λιποαναρρόφηση υπογενείου; Λιποίδημα → its
+  liposuction… "+ Όλες" shows the rest.
+- Check: Νέα επίσκεψη → + Μύτη, then + Μαστός / θώρακας: breast opens on top; scroll to
+  Προεγχειρητική εκτίμηση: Μαστός and Πρόσωπο (only Ρινοπλαστική) are already open.
+
 ## 11 Oct 2026 — Breast reconstruction: expanders
 
 - "Αποκατάσταση μαστού" asks first for the type: διατατήρας ιστών (Mentor CPX4, CPX4

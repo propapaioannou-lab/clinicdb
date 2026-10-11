@@ -243,6 +243,11 @@ services and are NOT rebuilt here.
   laxity). Genital — labia minora (Franco, length), clitoral hood, labia majora, vaginal,
   MtF prerequisites. Other — scar (Vancouver), skin lesion (ABCDE). Write-ups never
   assume the patient's gender.
+- **Fewer taps** (decided 11 Oct 2026): a newly added evaluation area opens at the top.
+  Each examined area opens its surgical area in the preoperative assessment (same order)
+  and offers only the fitting procedures (Μύτη → rhinoplasty; Μαστός → breast list by
+  gender; face/body/genital/other findings map to their procedures, e.g. Άνω βλέφαρα →
+  upper blepharoplasty, Λιποίδημα → lipoedema liposuction); "+ Όλες" shows the full list.
 - **Προεγχειρητική εκτίμηση** (decided 11 Oct 2026; was "Επεμβάσεις που συζητήθηκαν" —
   it is my-medical's "Προεγχειρητική εκτίμηση"): areas (Πρόσωπο, Μαστός, Σώμα, Γεννητικά,
   Άλλο) are added like the evaluation areas; an area opens its procedures; ✕ closes it

@@ -8,7 +8,8 @@ import { riskFactors } from "./risk";
 
 // Medical history (SPEC §4): every save is a new version; a Surgeon or PA/nurse verifies.
 
-export type QuestionChoice = { key: string; labelEl: string; labelEn: string };
+// hidden: no longer offered (Settings), kept so old answers keep their wording.
+export type QuestionChoice = { key: string; labelEl: string; labelEn: string; hidden?: boolean };
 
 // The quick picks stored with a question (JSON), checked for shape.
 export function questionChoices(raw: unknown): QuestionChoice[] {

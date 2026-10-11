@@ -539,7 +539,9 @@
     "lists": "Lists",
     "listsText": "Visit types, flag reasons, referral sources, marital status, tax offices.",
     "fees": "Visit fees",
-    "feesText": "Which visit types are charged and how much."
+    "feesText": "Which visit types are charged and how much.",
+    "history": "Medical history",
+    "historyText": "Questionnaire questions, sections, quick picks, sensitive and infection flags."
   },
   "patientForm": {
     "newTitle": "New patient",
@@ -999,6 +1001,51 @@
       "not_found": "Not found.",
       "duplicate": "—",
       "invalid_value": "Enter an amount in euros (e.g. 100) for charged types."
+    }
+  },
+  "settingsHistory": {
+    "title": "Medical history",
+    "intro": "For: {company}. The questionnaire's questions, in the order the form shows them, and their quick picks. Questions and picks are never deleted; hiding takes them off the form and old answers stay.",
+    "fields": {
+      "labelEl": "Question (Greek)",
+      "labelEn": "Question (English)",
+      "detailEl": "Details box (on Yes)",
+      "detailEn": "Details box (English)",
+      "hintEl": "Example",
+      "hintEn": "Example (English)",
+      "section": "Section"
+    },
+    "flags": {
+      "isActive": "Shown on the form",
+      "sensitive": "Sensitive (surgeon, PA/nurse, front desk only)",
+      "infection": "Infection (a verified Yes shows as an alert)"
+    },
+    "badges": {
+      "hidden": "Hidden",
+      "sensitive": "Sensitive",
+      "infection": "Infection"
+    },
+    "english": "English texts",
+    "picks": "Quick picks (on Yes)",
+    "pickEl": "Pick",
+    "pickEn": "English",
+    "pickUp": "Up: {label}",
+    "pickDown": "Down: {label}",
+    "removePick": "Remove pick",
+    "addPick": "New pick",
+    "hide": "Hide",
+    "show": "Show",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "addQuestion": "New question",
+    "up": "Up: {label}",
+    "down": "Down: {label}",
+    "pickCount": "{count, plural, =0 {no picks} one {1 pick} other {# picks}}",
+    "errors": {
+      "forbidden": "Not allowed.",
+      "not_found": "Not found.",
+      "invalid_value": "Type the question."
     }
   }
 }

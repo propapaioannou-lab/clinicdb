@@ -2,6 +2,19 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 7b: Settings → Ιατρικό ιστορικό
+
+- Ρυθμίσεις → **Ιατρικό ιστορικό** (you and Admins): every question of the questionnaire,
+  by section, in the order the form shows them. **Επεξεργασία** changes the wording
+  (Greek and English), the details box and example, the section, whether it is shown,
+  sensitive (only surgeon, PA/nurse, front desk see it) or an infection (a verified Yes
+  shows as the red alert), and its **quick picks** (add, rename, reorder, hide).
+  **+ Νέα ερώτηση** adds a question to a section. ↑ ↓ reorder.
+- Nothing is deleted: a hidden question or pick leaves the form, but old answers keep
+  their wording. Every change is logged.
+- Check: Ρυθμίσεις → Ιατρικό ιστορικό → Υπέρταση → Επεξεργασία → add the pick "Άλλο φάρμακο",
+  Αποθήκευση; open a patient's history → Επεξεργασία → Υπέρταση → Ναι: the pick is there.
+
 ## 11 Oct 2026 — Fix: medical-history answers could be lost
 
 - Staff who may not see sensitive answers (e.g. Spa staff) did not have them in their

@@ -166,6 +166,13 @@ services and are NOT rebuilt here.
   prothrombin, protein C/S, antithrombin, APS, MTHFR; Ψυχική υγεία incl. body dysmorphic
   disorder), shown on Yes, plus the notes box. Stored with each question, editable in
   Settings (decided 11 Oct 2026).
+  **Built (Phase 2 step 7b):** Settings → Ιατρικό ιστορικό (Admin/Owner, per company):
+  wording GR/EN, details box, example, section, order, shown/hidden, sensitive,
+  infection, and the quick picks (add, rename, reorder, hide). Keys never change;
+  questions and picks are hidden, never deleted, so old answers keep their wording. A
+  history save carries over answers the editor could not see (sensitive) or that the
+  form no longer shows (hidden question), unchanged. Medication / allergy / previous-
+  surgery picks stay in code for now.
 - **"Όλα Όχι"** button (whole form and per section) sets every *unanswered* item to No;
   answers are never pre-filled, so every No was given by someone.
 - **High-risk profile** (decided 11 Oct 2026), worked out from the latest answers

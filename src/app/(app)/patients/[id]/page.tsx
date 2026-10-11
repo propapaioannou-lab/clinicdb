@@ -96,7 +96,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
       label: q.labelEl,
       detail: q.detailEl,
       hint: q.hintEl,
-      choices: questionChoices(q.choices).map((c) => ({ key: c.key, label: c.labelEl })),
+      choices: questionChoices(q.choices).map((c) => ({ key: c.key, label: c.labelEl, ...(c.hidden && { hidden: true }) })),
       order: q.sortOrder,
     }))
     .sort((a, b) => HISTORY_SECTIONS.indexOf(a.section) - HISTORY_SECTIONS.indexOf(b.section) || a.order - b.order)

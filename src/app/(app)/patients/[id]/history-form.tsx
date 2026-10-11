@@ -16,7 +16,8 @@ export type QuestionView = {
   detail: string | null;
   hint: string | null;
   // Quick picks shown on Ναι.
-  choices: { key: string; label: string }[];
+  // hidden: no longer offered, but its label still shows on old answers.
+  choices: { key: string; label: string; hidden?: boolean }[];
 };
 
 // Ναι / Όχι as two big buttons (DESIGN.md 4b), selected state clearly marked.
@@ -273,7 +274,7 @@ export function HistoryForm({
               <PickRow
                 key={q.key}
                 label={q.label}
-                choices={q.choices.map((c) => c.key)}
+                choices={q.choices.filter((c) => !c.hidden || data.answers[q.key]?.items?.includes(c.key)).map((c) => c.key)}
                 choiceLabel={(k) => q.choices.find((c) => c.key === k)?.label ?? k}
                 notesLabel={q.detail ?? t("notesShort")}
                 notesHint={q.hint ?? ""}

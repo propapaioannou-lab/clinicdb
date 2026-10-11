@@ -145,7 +145,9 @@ services and are NOT rebuilt here.
   - Healing & anaesthesia: `keloid`, `anaest` anaesthesia problems (self/relatives),
     `latex` latex/tape/antiseptic allergy
   - Gynaecological: `preg` possible pregnancy/breastfeeding, `futurepreg` future plans
-  - Plus medication, allergies, smoking, weight/max weight/height (step 2a) and a
+  - A free-text "history notes" box at the end of the questionnaire stays (decided
+  11 Oct 2026).
+- Plus medication, allergies, smoking, weight/max weight/height (step 2a) and a
     **previous surgeries table** (procedure, year, complications; add rows).
 - Any Yes in Infections also fills the "Infectious diseases" alert on the patient
   header (§4) — after verification.
@@ -197,8 +199,9 @@ services and are NOT rebuilt here.
   examine (editable in Settings) + free text. AI transcript fills these sections.
 - Money per visit: fee, amount collected → patient totals: fees, collected, balance
   (as in my-medical). **Decided 11 Oct 2026:** consultation visits carry a charge,
-  follow-ups none (default per visit type); entered and collected by the **secretary**;
-  never shown on the surgeon's screens.
+  follow-ups none (default per visit type); entered and collected by the **secretary or
+  PA/nurse** only; never shown on the surgeon's screens. In the Spa (set up later) the
+  aestheticians may also charge.
 - **Vitals / measurements on every visit:** weight (required prompt), height,
   BMI (auto), blood pressure, pulse — list extensible. Weight shown as a trend chart.
 - Optional: audio recording + AI transcript + AI review (§9)

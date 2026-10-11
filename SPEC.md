@@ -800,6 +800,14 @@ Decided 11 Oct 2026.
 contact details, address, AMKA/ΑΦΜ or date of birth (age only); patients appear under a
 research code, not their patient number. Every export logged. Free-text notes may still
 contain identifying details — the guest's confidentiality agreement (§13) covers this.
+**Built (Phase 2 step 7d):** two buttons on the Patients page for Guests and Owner/Admin —
+"Εξαγωγή έρευνας: ασθενείς" (age, sex, BMI, high-risk reasons, history status, smoking,
+medication, allergies, number of visits, Yes/No per history question) and "…: επισκέψεις"
+(month, visit type, procedures, diagnosis, findings text, weight, BMI). CSV for Greek
+Excel (semicolons, decimal commas, UTF-8), of the company in the Ιατρείο | Spa switch,
+archived patients left out. Research code = keyed fingerprint of the patient (same in
+every export, not traceable without APP_SECRET). Sensitive questions only for users who
+may see them (never Guests). Cells cannot run as spreadsheet formulas.
 
 ### Roles (decided 11 Oct 2026: role is separate from level)
 The role decides the home screen (§4e, DESIGN.md), who may verify medical history,

@@ -437,7 +437,10 @@
     "suggestedHint": "From today's appointments and surgeries",
     "suggestedSoon": "They will appear here once the calendar is connected.",
     "recent": "Recently opened",
-    "recentNone": "You have not opened a patient record yet."
+    "recentNone": "You have not opened a patient record yet.",
+    "exportPatients": "Research export: patients",
+    "exportVisits": "Research export: visits",
+    "exportHint": "Excel (CSV) file without names, contact details, AMKA or date of birth; research code instead of patient number. Logged."
   },
   "search": {
     "label": "Search patients",

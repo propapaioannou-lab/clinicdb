@@ -2,6 +2,21 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 7d: Research export
+
+- On the Patients page, Guests (students) and you see two buttons: **Εξαγωγή έρευνας:
+  ασθενείς** and **Εξαγωγή έρευνας: επισκέψεις**. Each downloads a spreadsheet (opens in
+  Excel) of the current company (Ιατρείο or Spa).
+- No names, phones, emails, address, AMKA/ΑΦΜ, patient number or date of birth: each
+  patient has a research code (e.g. R-616CF902AA) that is the same in every export, so the
+  two files can be linked, but cannot be traced back to the patient.
+- Patients file: age, sex, BMI, high-risk reasons, smoking, medication, allergies,
+  number of visits and Ναι/Όχι for every history question (HIV, hepatitis, mental health
+  never for students). Visits file: month, type, procedures, diagnosis, findings.
+- Free text (diagnosis, findings) is included as written: it may contain identifying
+  details, which the student's confidentiality agreement covers.
+- Every export is logged. 15,000 patients take a few seconds.
+
 ## 11 Oct 2026 — Phase 2, Step 7c: Settings → Επεμβάσεις
 
 - Ρυθμίσεις → **Επεμβάσεις** (you and Admins): the procedures of the "Προεγχειρητική

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PlusIcon } from "@/components/icons";
 import { ageToday, FlagDot, RiskBadge } from "@/components/patient-bits";
-import { Avatar, Badge, card, primaryButton } from "@/components/ui";
+import { Avatar, Badge, card, primaryButton, secondaryButton } from "@/components/ui";
+import { canExportResearch } from "@/lib/export/research";
 import { requireSession } from "@/lib/auth/current";
 import { activeCompany, userCompanies } from "@/lib/company";
 import { canEditPatients, canSeeContactDetails } from "@/lib/permissions";
@@ -62,9 +63,18 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
     <main className="mx-auto flex w-full max-w-[1180px] flex-col gap-[22px] px-4 py-7 md:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-[28px] font-semibold">{t("title")}</h1>
-        {canEditPatients(actor.level) && (
-          <Link href="/patients/new" className={primaryButton}><PlusIcon />{t("new")}</Link>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {/* Research export without names or contact details (Guests, Owner/Admin). */}
+          {canExportResearch(actor) && (
+            <>
+              <a href="/api/export/research?kind=patients" className={secondaryButton} title={t("exportHint")}>{t("exportPatients")}</a>
+              <a href="/api/export/research?kind=visits" className={secondaryButton} title={t("exportHint")}>{t("exportVisits")}</a>
+            </>
+          )}
+          {canEditPatients(actor.level) && (
+            <Link href="/patients/new" className={primaryButton}><PlusIcon />{t("new")}</Link>
+          )}
+        </div>
       </div>
 
       <SearchBox placeholder={contacts ? t("bigPlaceholder") : t("bigPlaceholderLimited")} label={t("searchLabel")} />

@@ -546,7 +546,9 @@
     "history": "Medical history",
     "historyText": "Questionnaire questions, sections, quick picks, sensitive and infection flags.",
     "procedures": "Procedures",
-    "proceduresText": "Procedures by area and their sub-options."
+    "proceduresText": "Procedures by area and their sub-options.",
+    "calendar": "Calendar",
+    "calendarText": "Appointment types, columns and hours, blocked time."
   },
   "patientForm": {
     "newTitle": "New patient",
@@ -1086,5 +1088,96 @@
     "show": "Show",
     "remove": "Remove",
     "add": "New option"
+  },
+  "settingsCalendar": {
+    "title": "Calendar",
+    "intro": "For: {company}. Practice and Spa have separate calendars.",
+    "tabs": {
+      "types": "Appointment types",
+      "resources": "Resources & hours",
+      "blocks": "Blocked time"
+    },
+    "help": {
+      "types": "Colour, length and calendar layer of each type. The length fills in on a new appointment.",
+      "resources": "The calendar's columns (doctor, nurse, operating room, cabins) and their hours. Outside the hours the calendar warns.",
+      "blocks": "Congress, leave, break: no appointments. Public holidays are worked out automatically."
+    },
+    "labelEl": "Name (Greek)",
+    "labelEn": "Name (English)",
+    "minutes": "Length (minutes)",
+    "layer": "Layer",
+    "color": "Colour",
+    "active": "Active",
+    "hidden": "Hidden",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "up": "Up: {label}",
+    "down": "Down: {label}",
+    "addType": "New type",
+    "addResource": "New resource",
+    "layers": {
+      "OFFICE": "Office",
+      "ONLINE": "Online",
+      "SURGERY": "Surgery",
+      "SPA": "Spa"
+    },
+    "colors": {
+      "teal": "Teal",
+      "tealLight": "Light",
+      "amber": "Amber",
+      "purple": "Purple",
+      "blue": "Dark blue",
+      "rose": "Red",
+      "grey": "Grey",
+      "online": "Dashed"
+    },
+    "resourceLabel": "Column name",
+    "kind": "Kind",
+    "user": "User (optional)",
+    "hours": "Hours",
+    "closed": "closed",
+    "addRange": "hours",
+    "removeRange": "Remove hours",
+    "from": "From",
+    "to": "To",
+    "fromTime": "Time from",
+    "toTime": "Time to",
+    "kinds": {
+      "DOCTOR": "Doctor",
+      "NURSE": "Nurse",
+      "ROOM": "Room",
+      "OPERATING_ROOM": "Operating room",
+      "CABIN": "Cabin"
+    },
+    "days": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun"
+    },
+    "noBlocks": "No blocked time ahead.",
+    "everyone": "Everyone",
+    "who": "For",
+    "blockKind": "Kind",
+    "blockLabel": "Description",
+    "addBlock": "Add blocked time",
+    "remove": "Remove",
+    "confirmRemove": "Remove this blocked time?",
+    "blockKinds": {
+      "BREAK": "Break",
+      "CONGRESS": "Congress",
+      "LEAVE": "Leave",
+      "OTHER": "Other"
+    },
+    "errors": {
+      "forbidden": "Not allowed.",
+      "not_found": "Not found.",
+      "duplicate": "That name already exists.",
+      "invalid_value": "Check the details (name, length 5–720′, times HH:MM, dates DD/MM/YYYY)."
+    }
   }
 }

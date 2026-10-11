@@ -1,6 +1,6 @@
 // FAKE patients for development and speed tests. Never run on the real server.
 //   npm run db:fake               adds fake patients if there are none yet
-//   npm run db:fake -- --replace  removes ALL patients (and their documents) first, then adds fake ones
+//   npm run db:fake -- --replace  removes ALL patients (and their documents and appointments) first, then adds fake ones
 import { rm } from "node:fs/promises";
 import path from "node:path";
 import { db } from "../src/lib/db";
@@ -141,6 +141,9 @@ async function main() {
     const dir = process.env.DOCUMENTS_DIR || "/data/documents";
     for (const d of await db.document.findMany({ select: { storageKey: true } })) await rm(path.join(dir, d.storageKey), { force: true });
     await db.document.deleteMany();
+    // Appointments point to patients too (with their status history).
+    await db.appointmentEvent.deleteMany();
+    await db.appointment.deleteMany();
     await db.visit.deleteMany();
     await db.patientFlagReason.deleteMany();
     await db.patient.deleteMany();

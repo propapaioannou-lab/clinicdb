@@ -29,6 +29,25 @@ const shared: Partial<Record<ListKind, string[]>> = {
 // Charged visit types and their default fee in cents (decided 11 Oct 2026: €100).
 const CHARGED_VISIT_TYPES: Record<string, number> = { "Πρώτη επίσκεψη": 10000 };
 
+// Appointment types (SPEC §4c seeds): [Greek, English, minutes, colour, layer].
+type TypeSeed = [string, string, number, string, "OFFICE" | "ONLINE" | "SURGERY" | "SPA"];
+const PRACTICE_TYPES: TypeSeed[] = [
+  ["Πρώτη επίσκεψη", "First visit", 30, "teal", "OFFICE"],
+  ["Επανέλεγχος", "Follow-up", 15, "tealLight", "OFFICE"],
+  ["Προεγχειρητική εκτίμηση", "Pre-op", 30, "amber", "OFFICE"],
+  ["Μετεγχειρητικός", "Post-op", 15, "tealLight", "OFFICE"],
+  ["Online", "Online", 30, "online", "ONLINE"],
+  ["Ενέσιμα", "Injectables", 30, "purple", "OFFICE"],
+  ["Χειρουργείο", "Surgery", 120, "blue", "SURGERY"],
+];
+const SPA_TYPES: TypeSeed[] = [
+  ["Laser", "Laser", 60, "purple", "SPA"],
+  ["Peeling", "Peel", 45, "amber", "SPA"],
+  ["Hydrafacial", "Hydrafacial", 60, "teal", "SPA"],
+  ["Μεσοθεραπεία", "Mesotherapy", 45, "rose", "SPA"],
+  ["Πακέτο σώματος", "Body package", 90, "tealLight", "SPA"],
+];
+
 const perCompany: Record<string, Partial<Record<ListKind, string[]>>> = {
   surgery: {
     // Clean list from the approved design; old my-medical types are mapped at import.
@@ -85,8 +104,26 @@ async function main() {
         if (added.length) await db.catalogProcedure.update({ where: { id: existing.id }, data: { subs: [...have, ...added] } });
       }
     }
+    // Calendar (SPEC §4c): appointment types and resources — added only if missing.
+    const types = c.code === "spa" ? SPA_TYPES : PRACTICE_TYPES;
+    await db.appointmentType.createMany({
+      data: types.map(([labelEl, labelEn, defaultMinutes, color, layer], i) => ({ companyId: company.id, labelEl, labelEn, defaultMinutes, color, layer, sortOrder: i })),
+      skipDuplicates: true,
+    });
+    if (!(await db.resource.count({ where: { companyId: company.id } }))) {
+      const surgeons = await db.user.findMany({ where: { role: "SURGEON", isActive: true, memberships: { some: { companyId: company.id } } }, orderBy: { name: "asc" } });
+      const resources =
+        c.code === "spa"
+          ? [{ kind: "CABIN" as const, label: "Καμπίνα 1" }, { kind: "CABIN" as const, label: "Καμπίνα 2" }]
+          : [
+              ...(surgeons.length ? surgeons.map((u) => ({ kind: "DOCTOR" as const, label: u.name, userId: u.id })) : [{ kind: "DOCTOR" as const, label: "Ιατρός" }]),
+              { kind: "NURSE" as const, label: "Νοσηλεύτρια" },
+              { kind: "OPERATING_ROOM" as const, label: "Χειρουργείο", hours: [1, 2, 3, 4, 5].map((day) => ({ day, from: "08:00", to: "16:00" })) },
+            ];
+      await db.resource.createMany({ data: resources.map((r, i) => ({ companyId: company.id, sortOrder: i, ...r })) });
+    }
   }
-  console.log(`Companies, lists, history questions and procedures ready: ${companies.map((c) => c.code).join(", ")}`);
+  console.log(`Companies, lists, history questions, procedures and calendar ready: ${companies.map((c) => c.code).join(", ")}`);
 }
 
 main().finally(() => db.$disconnect());

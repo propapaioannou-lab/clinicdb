@@ -4,12 +4,14 @@ import { revalidatePath } from "next/cache";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { addQuestion, moveQuestion, updateQuestion, type QuestionError } from "@/lib/settings/history-questions";
 import { addProcedure, moveProcedure, updateProcedure, type ProcedureError } from "@/lib/settings/procedures";
+import { addBlock, moveCalendarItem, removeBlock, saveResource, saveType, type CalendarSettingsError } from "@/lib/settings/calendar";
 import { addItem, moveItem, renameItem, setItemActive, setVisitFee, type ListError } from "@/lib/settings/lists";
 import { loadActor } from "@/lib/users/manage";
 
 export type SettingsState = { error?: ListError; done?: number };
 export type QuestionState = { error?: QuestionError; done?: number };
 export type ProcedureState = { error?: ProcedureError; done?: number };
+export type CalendarSettingsState = { error?: CalendarSettingsError; done?: number };
 
 async function run<E extends string>(
   fn: (actor: Awaited<ReturnType<typeof loadActor>>, ctx: Awaited<ReturnType<typeof requestContext>>) => Promise<{ ok: true } | { ok: false; error: E }>,
@@ -57,4 +59,20 @@ export async function updateProcedureAction(id: string, v: Record<string, unknow
 }
 export async function moveProcedureAction(id: string, step: -1 | 1) {
   return run((a, c) => moveProcedure(a, id, step === -1 ? -1 : 1, c), "/settings/procedures");
+}
+
+export async function saveTypeAction(companyId: string, id: string | null, v: Record<string, unknown>) {
+  return run((a, c) => saveType(a, companyId, id, v, c), "/settings/calendar");
+}
+export async function saveResourceAction(companyId: string, id: string | null, v: Record<string, unknown>) {
+  return run((a, c) => saveResource(a, companyId, id, v, c), "/settings/calendar");
+}
+export async function moveCalendarItemAction(what: "type" | "resource", id: string, step: -1 | 1) {
+  return run((a, c) => moveCalendarItem(a, what === "type" ? "type" : "resource", id, step === -1 ? -1 : 1, c), "/settings/calendar");
+}
+export async function addBlockAction(companyId: string, v: Record<string, unknown>) {
+  return run((a, c) => addBlock(a, companyId, v, c), "/settings/calendar");
+}
+export async function removeBlockAction(id: string) {
+  return run((a, c) => removeBlock(a, id, c), "/settings/calendar");
 }

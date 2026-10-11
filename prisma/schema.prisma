@@ -342,6 +342,7 @@ model Patient {
   historyVersions PatientHistoryVersion[]
   visits          Visit[]
   documents       Document[]
+  appointments    Appointment[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -598,4 +599,168 @@ model CatalogProcedure {
 
   @@unique([companyId, key])
   @@index([companyId, area, sortOrder])
+}
+
+// ── Calendar (SPEC §4c, Phase 6a, decided 11 Oct 2026) ────────────────────────────────
+
+// ONE status list for the whole app (SPEC §4c). Every change is logged (AppointmentEvent).
+enum AppointmentStatus {
+  BOOKED // Κλείστηκε
+  CONFIRMED // Επιβεβαιώθηκε
+  ARRIVED // Στην αναμονή
+  READY // Έτοιμος · Δωμάτιο X
+  WITH_DOCTOR // Με τον γιατρό
+  TO_PAY // Προς πληρωμή
+  DONE // Ολοκληρώθηκε
+  CANCELLED // Ακυρώθηκε
+  NO_SHOW // Δεν ήρθε
+}
+
+// Calendar layers that can be switched on and off (DESIGN §6).
+enum CalendarLayer {
+  OFFICE
+  ONLINE
+  SURGERY
+  SPA
+}
+
+enum ResourceKind {
+  DOCTOR
+  NURSE
+  ROOM
+  OPERATING_ROOM
+  CABIN
+}
+
+enum BlockKind {
+  BREAK
+  CONGRESS
+  LEAVE
+  OTHER
+}
+
+enum AppointmentSource {
+  STAFF
+  ONLINE
+}
+
+model Location {
+  id        String     @id @default(cuid())
+  companyId String
+  name      String
+  address   String?
+  sortOrder Int        @default(0)
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  resources Resource[]
+
+  @@unique([companyId, name])
+}
+
+// Editable in Settings → Ημερολόγιο. `color` is a palette key from the design
+// (teal, tealLight, amber, purple, blue, rose, grey).
+model AppointmentType {
+  id             String        @id @default(cuid())
+  companyId      String
+  labelEl        String
+  labelEn        String
+  color          String        @default("teal")
+  defaultMinutes Int           @default(30)
+  layer          CalendarLayer @default(OFFICE)
+  sortOrder      Int           @default(0)
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  appointments   Appointment[]
+
+  @@unique([companyId, labelEl])
+  @@index([companyId, sortOrder])
+}
+
+// Who or what an appointment is with: surgeon, nurse, room, operating room, spa cabin.
+// `hours`: weekly working hours [{ "day": 1-6 (Mon=1), "from": "09:00", "to": "14:00" }, …].
+model Resource {
+  id           String          @id @default(cuid())
+  companyId    String
+  kind         ResourceKind
+  label        String
+  // A doctor or nurse who is also an app user (their own calendar).
+  userId       String?
+  locationId   String?
+  hours        Json?
+  sortOrder    Int             @default(0)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  location     Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  appointments Appointment[]
+  blocks       CalendarBlock[]
+
+  @@unique([companyId, label])
+  @@index([companyId, sortOrder])
+}
+
+model Appointment {
+  id             String             @id @default(cuid())
+  companyId      String
+  patientId      String?
+  typeId         String
+  resourceId     String
+  startsAt       DateTime
+  endsAt         DateTime
+  status         AppointmentStatus  @default(BOOKED)
+  // Room when "ready" (Δωμάτιο 1 …).
+  room           String?
+  // Short administrative reason shown on the calendar ("πρώτη · μαστός"); never clinical notes.
+  reason         String?
+  source         AppointmentSource  @default(STAFF)
+  ghlId          String?
+  confirmedAt    DateTime?
+  confirmChannel String?
+  visitId        String?
+  createdById    String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  patient        Patient?           @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  type           AppointmentType    @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  resource       Resource           @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+  events         AppointmentEvent[]
+
+  @@index([companyId, startsAt])
+  @@index([resourceId, startsAt])
+  @@index([patientId, startsAt])
+  @@index([companyId, status, startsAt])
+}
+
+// Every status change, move or cancel: who, when, from → to (SPEC §4c "every change is
+// logged with user + time"). Never edited.
+model AppointmentEvent {
+  id            String             @id @default(cuid())
+  appointmentId String
+  companyId     String
+  action        String
+  fromStatus    AppointmentStatus?
+  toStatus      AppointmentStatus?
+  byId          String?
+  byName        String?
+  details       Json?
+  at            DateTime           @default(now())
+  appointment   Appointment        @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  @@index([appointmentId, at])
+}
+
+// Blocked time: break, congress, leave… for one resource or (resourceId null) everyone.
+// Greek public holidays are worked out in code, not stored.
+model CalendarBlock {
+  id          String    @id @default(cuid())
+  companyId   String
+  resourceId  String?
+  kind        BlockKind @default(OTHER)
+  label       String?
+  startsAt    DateTime
+  endsAt      DateTime
+  createdById String?
+  createdAt   DateTime  @default(now())
+  resource    Resource? @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, startsAt])
 }

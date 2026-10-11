@@ -2,6 +2,25 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — SPEC v1.7 and Phase 6a-1: calendar foundations
+
+- Your SPEC v1.6 is merged with the decisions made here (v1.7). Changed by your answers:
+  auto-logout after 10 minutes with a PIN (built with 8c); the secretary keeps full
+  access. Next steps follow your new order: 6a calendar → 6f tasks → 8c integrity → …
+- **Ρυθμίσεις → Ημερολόγιο**:
+  - **Τύποι ραντεβού** (you and Admins): name, colour, length, layer (Ιατρείο, Online,
+    Χειρουργεία, Spa). Started with first visit 30′, follow-up 15′, pre-op 30′, post-op
+    15′, online 30′, injectables 30′, surgery; Spa: laser, peel, hydrafacial,
+    mesotherapy, body package.
+  - **Πόροι & ωράρια** (you and Admins): the calendar's columns (you, the nurse, the
+    operating room; Spa cabins) and their weekly hours. Please enter your real hours.
+  - **Αποκλεισμοί** (all staff): congress, leave, break.
+- Behind the scenes (used by the calendar screens next): Greek public holidays worked out
+  automatically, clash check with the next free slots, the single status list with
+  every change logged.
+- Check: Ρυθμίσεις → Ημερολόγιο → Πόροι & ωράρια → your column → Επεξεργασία → set your
+  hours; Αποκλεισμοί → add a congress.
+
 ## 11 Oct 2026 — All drop-down lists in the app's own style
 
 - Every drop-down list now looks and works the same: rounded, opens downwards, closes as

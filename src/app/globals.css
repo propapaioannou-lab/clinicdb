@@ -42,6 +42,28 @@
   --color-info-bg: #eef2f7;
   --color-spa-ink: #6b3e7d;
   --color-spa-bg: #f3eaf6;
+  /* Calendar appointment colours (design/Cal*.dc.html, 11 Oct 2026). */
+  --color-cal-teal: #0e5e63;
+  --color-cal-teal-bg: #e6f0ef;
+  --color-cal-teal-ink: #0b4b4f;
+  --color-cal-light: #7fa9a6;
+  --color-cal-light-bg: #eff5f4;
+  --color-cal-light-ink: #2c4f4d;
+  --color-cal-amber: #c27a1a;
+  --color-cal-amber-bg: #fcf1e3;
+  --color-cal-amber-ink: #8a4b08;
+  --color-cal-purple: #8a5a9e;
+  --color-cal-purple-bg: #f3eaf6;
+  --color-cal-purple-ink: #57306a;
+  --color-cal-blue: #2f4b6e;
+  --color-cal-blue-bg: #eef2f7;
+  --color-cal-blue-ink: #1e3550;
+  --color-cal-rose: #c8312a;
+  --color-cal-rose-bg: #fbe9e7;
+  --color-cal-rose-ink: #8c1d18;
+  --color-cal-grey: #9a958b;
+  --color-cal-grey-bg: #f1f0ec;
+  --color-cal-grey-ink: #3b4249;
 
   /* Older screens use Tailwind's greys; mapped onto the design's warm greys. */
   --color-neutral-50: #fbfaf8;

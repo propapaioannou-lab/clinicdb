@@ -563,6 +563,14 @@ appointment titles; more than one location.
   its own entries. Greek public holidays pre-loaded.
 - **Practice and Spa are separate calendars** (company switch). Never shown together.
 
+- **Built (6a-1, 11 Oct 2026):** the data (appointments, types, resources with weekly
+  hours, locations, blocked time; status history per appointment), Greek public holidays
+  worked out automatically (incl. Clean Monday, Good Friday, Easter Monday, Whit Monday),
+  clash check (other appointment of the resource, blocked time, holiday, outside hours,
+  same patient elsewhere, in the past) with the next free slots, override with reason
+  logged; status rules (one step back allowed and logged; "done" after "to pay" is money:
+  secretary / PA). Settings → Ημερολόγιο: types and resources (Owner/Admin), blocked
+  time (any staff member).
 **Views**: day (one column per resource, more detail), week (Mon–Sat, layers on/off,
 surgical load bar per day), month (counts per day + surgery load). Click empty slot →
 new appointment. Clash warning and suggested free slots when booking.
@@ -1099,6 +1107,8 @@ secretary or PA; outcomes/complications record — yes.
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
+- **Office hours** per resource: set to Mon–Fri 09:00–14:00 + 17:00–21:00 until you
+  enter the real ones (Settings → Ημερολόγιο → Πόροι & ωράρια)
 - Real locations (offices, hospitals) — "Ιατρείο Αθήνας" in mockups is a placeholder
 - Appointment default lengths (30′ / 15′ guessed)
 - Who may collect payments and issue receipts (secretary? PA? surgeon only?)

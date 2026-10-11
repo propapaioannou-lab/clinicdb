@@ -3,7 +3,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { Avatar, card, secondaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { activeCompany, userCompanies } from "@/lib/company";
-import { canHandleMoney, canManageUsers } from "@/lib/permissions";
+import { canEditPatients, canHandleMoney, canManageUsers } from "@/lib/permissions";
 import { loadActor } from "@/lib/users/manage";
 import { logoutAction, switchCompanyAction } from "../actions";
 
@@ -73,6 +73,15 @@ export default async function SettingsPage() {
               <span className="text-sm text-ink-3">{a.text}</span>
             </Link>
           ))}
+        </section>
+      )}
+      {/* Calendar: blocked time for every staff member; types/resources inside for Owner/Admin. */}
+      {canEditPatients(user.level) && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          <Link href="/settings/calendar" className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
+            <span className="text-[17px] font-semibold text-primary">{t("settings.calendar")}</span>
+            <span className="text-sm text-ink-3">{t("settings.calendarText")}</span>
+          </Link>
         </section>
       )}
       {money && (

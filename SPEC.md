@@ -449,6 +449,18 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   matched); when empty, shows "Suggested today" (patients with appointments or
   surgeries today) and "Recently opened"; filters: all, practice, spa, flagged,
   surgery within 30 days.
+- **"Προτεινόμενοι σήμερα" — contents and order** (decided 11 Oct 2026):
+  1. **Surgical patients** of the previous, current and next week: today's first, then
+     tomorrow's, then ranked by how many days their surgery is from today (closest
+     first; on a tie, the upcoming one before the past one). Phase 4 (surgeries).
+  2. **Today's patients from the calendar** (appointments). Phase 6.
+  3. **Calls arranged for today** (phone / online). Phase 6.
+  4. **Things the doctor must check today** that belong to a patient: emails, photos
+     sent for evaluation, follow-up photos, results — the patient-linked items of the
+     "Για έλεγχο σήμερα" list (§4e). Phases 5–6.
+  Each row says why the patient is suggested (e.g. "Χειρουργείο σήμερα 08:00",
+  "Ραντεβού 11:30", "Κλήση 14:00", "Φωτογραφίες για έλεγχο"). Until those phases exist
+  the box says it will fill in; "Πρόσφατα ανοιγμένοι" stays below it.
 - Patient selector from the calendar (built-in or GHL — **decision pending**).
 
 ## 6. New-patient intake (guest mode)

@@ -213,7 +213,9 @@ services and are NOT rebuilt here.
 - Built (Phase 2): the doctor saves the visit and returns to the patient's visits; the
   surgeon has no close button. The **secretary (or PA/nurse) closes the visit after
   payment** ("Αποθήκευση & κλείσιμο"), which locks the clinical part; they or a surgeon
-  can reopen it. Visit type chosen from a dropdown (decided 11 Oct 2026). Procedure catalogue and exam
+  can reopen it. Visit type chosen from a dropdown (decided 11 Oct 2026).
+  Visits without a default charge (e.g. follow-ups) also stay open until the secretary
+  closes them by hand: they may still be charged (e.g. a triamcinolone injection). Procedure catalogue and exam
   areas from the design, in code for now; they move to the Settings lists.
 - **Vitals / measurements on every visit:** weight (required prompt), height,
   BMI (auto). Weight shown as a trend chart. (Blood pressure and pulse dropped —

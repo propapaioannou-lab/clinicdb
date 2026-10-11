@@ -3,7 +3,8 @@
 // size, plane); lifts and reductions record pattern and pedicle. Same field engine as the
 // examination, so the choices are also written up as one line of text.
 
-import { cleanValues, findingPhrase, opt as o, type Field, type FindingValue } from "./exams/engine";
+import { cleanValues, findingPhrase, opt as o, type Field, type FindingValue, type MeasureValue } from "./exams/engine";
+import { IMPLANT_CHARTS, type ChartRow } from "./implant-charts";
 
 export type ProcedureDetails = { fields: Field[]; parts: string[] };
 
@@ -94,13 +95,26 @@ export const PROCEDURE_DETAILS: Record<string, ProcedureDetails> = {
   buttockImplants: { fields: BUTTOCK_IMPLANT, parts: ["{maker} {shape} {cc}", "{plane}"] },
 };
 
-// Official size charts by "maker:line:profile" → rows (cc, diameter cm, projection cm).
-// Empty until loaded from the manufacturers' tables (never typed from memory).
-export type ChartRow = { cc: number; diameter: number; projection: number };
-export const IMPLANT_CHARTS: Record<string, ChartRow[]> = {};
+export type { ChartRow } from "./implant-charts";
 export function chartFor(v: FindingValue): ChartRow[] {
   const line = v.maker === "motiva" ? [v.motivaLine, v.motivaProfile] : v.maker === "mentor" ? [v.mentorLine, v.mentorProfile] : [];
   return line.every(Boolean) && line.length ? (IMPLANT_CHARTS[`${v.maker}:${line.join(":")}`] ?? []) : [];
+}
+
+// Size chosen → base width and projection from the chart, side by side (decided 11 Oct
+// 2026). A size that is not in the chart leaves what was typed.
+export function fillFromChart(v: FindingValue): FindingValue {
+  const chart = chartFor(v);
+  const cc = v.cc as MeasureValue | undefined;
+  if (!chart.length || !cc) return v;
+  const out = { ...v, diameter: { ...((v.diameter as MeasureValue) ?? {}) }, projection: { ...((v.projection as MeasureValue) ?? {}) } };
+  for (const side of ["r", "l"] as const) {
+    const row = chart.find((r) => r.cc === cc[side]);
+    if (!row) continue;
+    out.diameter[side] = row.diameter;
+    out.projection[side] = row.projection;
+  }
+  return out;
 }
 
 export const cleanProcedureDetails = (key: string, raw: unknown): FindingValue | null => {

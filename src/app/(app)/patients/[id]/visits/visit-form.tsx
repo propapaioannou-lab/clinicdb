@@ -10,7 +10,7 @@ import { EXAM_AREAS, findIn, type Catalog } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 import { BREAST_PROCEDURES_BY_SEX, EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
 import { summarize, type ExamValue, type FieldValue } from "@/lib/visits/exams/engine";
-import { chartFor, detailsPhrase, PROCEDURE_DETAILS } from "@/lib/visits/procedure-details";
+import { chartFor, detailsPhrase, fillFromChart, PROCEDURE_DETAILS } from "@/lib/visits/procedure-details";
 import { relevantProcedures } from "@/lib/visits/relevance";
 import type { VisitActionState } from "./actions";
 import { ExamPanel } from "./exam-panel";
@@ -27,6 +27,8 @@ export type VisitFormValues = {
   heightCm: string;
 };
 
+// Chart widths have two decimals (11,25 cm).
+const cm = (n: number) => n.toLocaleString("el-GR", { maximumFractionDigits: 2 });
 const chip = (on: boolean) =>
   `min-h-10 rounded-full px-3.5 py-1.5 text-sm ${on ? "border border-primary bg-primary font-semibold text-white" : "border border-line-strong bg-surface text-ink-2 hover:border-primary"}`;
 const softChip = (on: boolean) =>
@@ -117,7 +119,8 @@ export function VisitForm({
         const val = update(details[field]);
         if (val === undefined || val === false || (Array.isArray(val) && !val.length)) delete details[field];
         else details[field] = val;
-        return { ...p, details };
+        // Implant size from the chart fills base width and projection.
+        return { ...p, details: fillFromChart(details) };
       }),
     }));
   // A newly added area opens at the top, next to the "+ area" chips (decided 11 Oct 2026).
@@ -286,14 +289,13 @@ export function VisitForm({
                             <button
                               key={row.cc}
                               type="button"
-                              onClick={() => {
-                                setDetail(p.key, "cc", () => ({ r: row.cc, l: row.cc }));
-                                setDetail(p.key, "diameter", () => ({ r: row.diameter, l: row.diameter }));
-                                setDetail(p.key, "projection", () => ({ r: row.projection, l: row.projection }));
-                              }}
-                              className={softChip(false)}
+                              // Both sides; base width and projection follow from the chart.
+                              onClick={() => setDetail(p.key, "cc", () => ({ r: row.cc, l: row.cc }))}
+                              aria-pressed={(p.details?.cc as { r?: number } | undefined)?.r === row.cc}
+                              className={softChip((p.details?.cc as { r?: number } | undefined)?.r === row.cc)}
+                              title={t("chartRow", { width: cm(row.diameter), projection: cm(row.projection) })}
                             >
-                              {row.cc} cc · {num1(row.diameter)} × {num1(row.projection)}
+                              {row.cc} cc · {cm(row.diameter)}
                             </button>
                           ))}
                         </div>

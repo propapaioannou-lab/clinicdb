@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanProcedureDetails, detailsPhrase } from "./procedure-details";
+import { chartFor, cleanProcedureDetails, detailsPhrase, fillFromChart } from "./procedure-details";
 import { cleanVisitInput } from "./visits";
 
 describe("procedure details", () => {
@@ -35,5 +35,31 @@ describe("breast reconstruction", () => {
     expect(d.maker).toBeUndefined();
     expect(detailsPhrase("reconstruction", d)).toBe("διατατήρας ιστών, διατατήρας Mentor CPX4 Δ 400 cc, αρχική πλήρωση Δ 150 cc, προθωρακικά");
     expect(cleanProcedureDetails("reconstruction", { device: "dti", maker: "mentor", mentorLine: "xtra" })).toEqual({ device: "dti", maker: "mentor", mentorLine: "xtra" });
+  });
+});
+
+describe("implant size charts (Motiva)", () => {
+  it("your example: Ergonomix Demi 230 cc → base 10,5 cm, projection 3,6 cm on both sides", () => {
+    const v = fillFromChart({ maker: "motiva", motivaLine: "ergonomix", motivaProfile: "demi", cc: { r: 230, l: 230 } });
+    expect(v.diameter).toEqual({ r: 10.5, l: 10.5 });
+    expect(v.projection).toEqual({ r: 3.6, l: 3.6 });
+  });
+  it("each side on its own; a size not in the chart leaves what was typed", () => {
+    const v = fillFromChart({ maker: "motiva", motivaLine: "round", motivaProfile: "full", cc: { r: 335, l: 999 }, diameter: { l: 12 } });
+    expect(v.diameter).toEqual({ r: 11.25, l: 12 });
+    expect(v.projection).toEqual({ r: 4.6 });
+  });
+  it("Ergonomix 2 has its own sizes; Ergonomix Corsé stops at 12.5 cm; spot checks", () => {
+    expect(chartFor({ maker: "motiva", motivaLine: "ergonomix2", motivaProfile: "corse" }).find((r) => r.cc === 1060)).toEqual({ diameter: 15, projection: 7.8, cc: 1060 });
+    expect(chartFor({ maker: "motiva", motivaLine: "ergonomix", motivaProfile: "corse" }).at(-1)).toEqual({ diameter: 12.5, projection: 6.3, cc: 590 });
+    expect(chartFor({ maker: "motiva", motivaLine: "round", motivaProfile: "corse" }).at(-1)).toEqual({ diameter: 15, projection: 7.8, cc: 1050 });
+    expect(chartFor({ maker: "motiva", motivaLine: "round", motivaProfile: "mini" })[0]).toEqual({ diameter: 8.5, projection: 2.2, cc: 105 });
+    expect(chartFor({ maker: "motiva", motivaLine: "ergonomix2", motivaProfile: "mini" })).toEqual([]);
+    expect(chartFor({ maker: "mentor", mentorLine: "memoryGel", mentorProfile: "high" })).toEqual([]);
+    // Volumes grow with the base width in every chart.
+    for (const k of ["round", "ergonomix", "ergonomix2"]) for (const prof of ["mini", "demi", "full", "corse"]) {
+      const rows = chartFor({ maker: "motiva", motivaLine: k, motivaProfile: prof });
+      rows.slice(1).forEach((r, i) => expect(r.cc, `${k} ${prof} ${r.diameter}`).toBeGreaterThan(rows[i].cc));
+    }
   });
 });

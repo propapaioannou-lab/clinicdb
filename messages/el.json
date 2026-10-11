@@ -833,7 +833,7 @@
     "allProcedures": "Όλες",
     "fewerProcedures": "Μόνο οι σχετικές",
     "procedureAreaLabel": "{area} προεγχειρητική εκτίμηση",
-    "sizeChart": "Μέγεθος από τον πίνακα",
+    "sizeChart": "Μεγέθη (πίνακας)",
     "procedureArea": "Περιοχή",
     "chosen": "Επιλεγμένες",
     "noneChosen": "καμία ακόμη",
@@ -888,7 +888,8 @@
     },
     "saveAndClose": "Αποθήκευση & κλείσιμο επίσκεψης",
     "findingsText": "Επιπλέον ευρήματα",
-    "rewrite": "Ξαναγράψε από τις επιλογές"
+    "rewrite": "Ξαναγράψε από τις επιλογές",
+    "chartRow": "Βάση {width} cm · προβολή {projection} cm"
   },
   "exam": {
     "findings": "Ευρήματα",

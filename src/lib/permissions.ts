@@ -75,3 +75,18 @@ export function canArchivePatients(level: Level): boolean {
 export function canSeeSensitiveHistory(user: { level: Level; role: Role }): boolean {
   return user.level !== "GUEST" && (user.role === "SURGEON" || user.role === "PA_NURSE" || user.role === "SECRETARY");
 }
+
+// Visit charges and payments (decided 11 Oct 2026): Secretary or PA/nurse only. The
+// surgeon's screens never show money. (Spa aestheticians will be added with the Spa.)
+export function canHandleMoney(user: { level: Level; role: Role }): boolean {
+  return user.level !== "GUEST" && (user.role === "SECRETARY" || user.role === "PA_NURSE");
+}
+
+// The surgeon (or PA/nurse) closes a visit; only a surgeon reopens a closed one.
+export function canCloseVisit(user: { level: Level; role: Role }): boolean {
+  return canEditPatients(user.level) && (user.role === "SURGEON" || user.role === "PA_NURSE");
+}
+
+export function canReopenVisit(user: { level: Level; role: Role }): boolean {
+  return canEditPatients(user.level) && user.role === "SURGEON";
+}

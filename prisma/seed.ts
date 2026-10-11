@@ -25,6 +25,8 @@ const shared: Partial<Record<ListKind, string[]>> = {
     "Κατάθλιψη / αγχώδης διαταραχή", "Αυτοάνοσο νόσημα", "Καρκίνος (ιστορικό)",
   ],
 };
+const CHARGED_VISIT_TYPES = ["Πρώτη επίσκεψη"];
+
 const perCompany: Record<string, Partial<Record<ListKind, string[]>>> = {
   surgery: {
     VISIT_TYPE: ["Πρώτη επίσκεψη", "Επανεξέταση", "ΠΡΟΕΓΧΕΙΡΗΤΙΚΗ ΕΚΤΙΜΗΣΗ", "Μετεγχειρητική", "Αφαίρεση ραμμάτων", "Μικροεπέμβαση"],
@@ -40,7 +42,11 @@ async function main() {
     const lists = { ...shared, ...perCompany[c.code] };
     for (const [kind, labels] of Object.entries(lists) as [ListKind, string[]][]) {
       await db.listItem.createMany({
-        data: labels.map((label, i) => ({ companyId: company.id, kind, label, sortOrder: i })),
+        // Consultations are charged; other visit types are not (decided 11 Oct 2026).
+        data: labels.map((label, i) => ({
+          companyId: company.id, kind, label, sortOrder: i,
+          chargeable: kind === "VISIT_TYPE" && CHARGED_VISIT_TYPES.includes(label),
+        })),
         skipDuplicates: true,
       });
     }

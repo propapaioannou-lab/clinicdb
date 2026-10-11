@@ -65,6 +65,7 @@ model User {
   trustedDevices  TrustedDevice[]
   invitations     Invitation[]
   doctorOf        Patient[]       @relation("TreatingDoctor")
+  visitsAsDoctor  Visit[]         @relation("VisitDoctor")
 }
 
 // Which companies a user can see and work in.
@@ -225,20 +226,24 @@ enum ListKind {
 }
 
 model ListItem {
-  id        String   @id @default(cuid())
-  companyId String
-  kind      ListKind
-  label     String
-  sortOrder Int      @default(0)
+  id              String   @id @default(cuid())
+  companyId       String
+  kind            ListKind
+  label           String
+  sortOrder       Int      @default(0)
   // Hidden from new choices; records that already use it keep it.
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  isActive        Boolean  @default(true)
+  // Visit types only: charged by default (consultations) and the default fee.
+  chargeable      Boolean  @default(false)
+  defaultFeeCents Int?
+  createdAt       DateTime @default(now())
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
 
   maritalOf     Patient[]           @relation("MaritalStatus")
   referralOf    Patient[]           @relation("ReferralSource")
   taxOfficeOf   Patient[]           @relation("TaxOffice")
   flagReasonsOf PatientFlagReason[]
+  visitsOfType  Visit[]
 
   @@unique([companyId, kind, label])
   @@index([companyId, kind, sortOrder])
@@ -331,6 +336,7 @@ model Patient {
   notDupB         PatientNotDuplicate[]   @relation("NotDupB")
   history         PatientHistory?
   historyVersions PatientHistoryVersion[]
+  visits          Visit[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -473,4 +479,49 @@ model PatientHistoryVersion {
 
   @@unique([patientId, number])
   @@index([companyId])
+}
+
+enum VisitStatus {
+  OPEN
+  CLOSED
+}
+
+// A visit (SPEC §4 Visit, design/Visit.dc.html). Clinical part by doctors/PA; the charge
+// part only by Secretary or PA/nurse (never shown to the surgeon).
+model Visit {
+  id            String      @id @default(cuid())
+  companyId     String
+  patientId     String
+  typeId        String?
+  startedAt     DateTime    @default(now())
+  // Who saw the patient (a Surgeon), if any.
+  doctorId      String?
+  // "Γενικά · αίτημα ασθενούς".
+  general       String?
+  // [{ "area": "breast", "text": "..." }] — one section per area examined.
+  areas         Json?
+  // [{ "key": "facelift", "subs": ["deepPlane"] }] — procedures discussed (catalog keys).
+  procedures    Json?
+  diagnosis     String?
+  weightKg      Decimal?    @db.Decimal(5, 1)
+  heightCm      Decimal?    @db.Decimal(5, 1)
+  bpSystolic    Int?
+  bpDiastolic   Int?
+  pulse         Int?
+  feeCents      Int?
+  paidCents     Int?
+  // "cash" | "card" | "transfer"
+  paymentMethod String?
+  status        VisitStatus @default(OPEN)
+  closedAt      DateTime?
+  closedById    String?
+  createdAt     DateTime    @default(now())
+  createdById   String?
+  updatedAt     DateTime    @updatedAt
+  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Restrict)
+  type          ListItem?   @relation(fields: [typeId], references: [id], onDelete: SetNull)
+  doctor        User?       @relation("VisitDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, startedAt])
+  @@index([companyId, startedAt])
 }

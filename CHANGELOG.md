@@ -2,10 +2,19 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Gender: trans man, trans woman, non-binary; breast findings follow it
+
+- Patient "Φύλο" now offers Γυναίκα, Άνδρας, Τρανς άνδρας, Τρανς γυναίκα, Μη δυαδικό
+  άτομο ("Άλλο" removed; any "Άλλο" became "Μη δυαδικό άτομο").
+- In the breast examination: women see the breast findings, men only Γυναικομαστία,
+  trans and non-binary patients only Top surgery. "+ Όλα τα ευρήματα" shows the rest.
+- Check: set a patient to Άνδρας → Νέα επίσκεψη → + Μαστός / θώρακας.
+
 ## 11 Oct 2026 — Breast measurements: basic set + sketch
 
-- The breast measurements are now only the basics: JMD, θηλή–μέση γραμμή, θηλή–πτυχή
-  (υπό τάση), πλάτος βάσης, άλως, μεσομαστική απόσταση. Smaller boxes.
+- The breast measurements are now only the basics, in English: JMD, N–ML, N–IMF
+  (stretched), BW, Areola Ø, IMD. Smaller boxes. Nose measurements in English too
+  (NFA, NLA, Goode ratio, tip projection, nasal length).
 - Next to them, a front-view **breast sketch** with each measurement drawn as a line and a
   box on it. Type in the table or on the sketch; both show the same number.
 - Check: Νέα επίσκεψη → + Μαστός / θώρακας; type 21 in JMD Δ in the table and watch it

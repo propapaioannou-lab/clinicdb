@@ -40,6 +40,9 @@ export type AreaExam = {
   measurements?: { title: string; note?: string; fields: Field[]; sketch?: "breast" };
   // Groups of finding chips, in display order (findings without a group come first).
   groups?: string[];
+  // Which groups to offer for the patient's recorded gender ("" = findings without a
+  // group); other groups stay one tap away. Unknown gender → everything.
+  groupsBySex?: Record<string, string[]>;
   // Previous operations in this area for a revision case (year typed by hand).
   previous: Opt[];
   previousSay: string;

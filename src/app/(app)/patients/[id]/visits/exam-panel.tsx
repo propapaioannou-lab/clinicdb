@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { fieldClass } from "@/components/ui";
 import { difficultyModifiers, type AreaExam, type ExamValue as Exam, type FieldValue, type MeasureValue } from "@/lib/visits/exams/engine";
@@ -17,17 +18,24 @@ export function ExamPanel({
   value,
   onChange,
   missing = [],
+  sex,
 }: {
   area: AreaExam;
   value: Exam | undefined;
   onChange: (update: (prev: Exam) => Exam) => void;
   // Measurements still needed for the chosen procedures (breast).
   missing?: string[];
+  sex?: string | null;
 }) {
   const t = useTranslations("exam");
   const exam: Exam = value ?? { findings: {} };
   const revision = !!exam.revision;
-  const findings = area.findings.filter((f) => !f.revisionOnly || revision);
+  const [showAll, setShowAll] = useState(false);
+  // Findings for the patient's gender only (breast); ticked ones always stay visible.
+  const relevant = sex ? area.groupsBySex?.[sex] : undefined;
+  const findings = area.findings.filter(
+    (f) => (!f.revisionOnly || revision) && (showAll || !relevant || relevant.includes(f.group ?? "") || f.key in exam.findings),
+  );
   const groups = [undefined, ...(area.groups ?? [])];
   const extra = difficultyModifiers(exam.difficulty).extraMinutes;
 
@@ -148,6 +156,12 @@ export function ExamPanel({
           </div>
         );
       })}
+
+      {relevant && (
+        <button type="button" onClick={() => setShowAll((x) => !x)} className="self-start text-[13px] font-semibold text-primary hover:text-primary-hover">
+          {showAll ? t("showFewer") : `+ ${t("showAll")}`}
+        </button>
+      )}
 
       {findings.filter((f) => f.key in exam.findings).map((f) => (
         <div key={f.key} className="flex flex-col gap-2 rounded-[10px] border border-line-soft bg-surface px-3 py-2.5">

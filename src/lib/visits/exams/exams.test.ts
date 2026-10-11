@@ -26,7 +26,7 @@ describe("breast / chest examination", () => {
         difficulty: 6,
       }, 50),
     ).toBe(
-      "Ασθενής 50 ετών με μέτρια πτώση (Regnault II) αμφοτερόπλευρα. Μετρήσεις (Δ/Α): JMD 23,5/22 cm, BW Δ 12 cm, μεσομαστική απόσταση 2 cm. " +
+      "Ασθενής 50 ετών με μέτρια πτώση (Regnault II) αμφοτερόπλευρα. Μετρήσεις (Δ/Α): JMD 23,5/22 cm, BW Δ 12 cm, IMD 2 cm. " +
         "Αναθεώρηση· προηγούμενες επεμβάσεις μαστού/θώρακα: αυξητική μαστού (2015). Ευρήματα ενθεμάτων: καψική σύσπαση Baker III, ρυτίδωση (rippling) αριστερά.",
     );
   });
@@ -36,11 +36,11 @@ describe("breast / chest examination", () => {
       write("breast", {
         findings: {
           gynaecomastia: { simon: "2b", kind: "glandular", side: "both" },
-          topSurgery: { identity: "nonBinary", dysphoria: true, binder: "gt8", hormones: "on", months: { v: 18 }, letter: "yes" },
+          topSurgery: { dysphoria: true, binder: "gt8", hormones: "on", months: { v: 18 }, letter: "yes" },
         },
       }, 24),
     ).toBe(
-      "Ασθενής 24 ετών με γυναικομαστία Simon IIb, αδενικού τύπου αμφοτερόπλευρα. Εκτίμηση για top surgery: μη δυαδικό άτομο, " +
+      "Ασθενής 24 ετών με γυναικομαστία Simon IIb, αδενικού τύπου αμφοτερόπλευρα. Εκτίμηση για top surgery: " +
         "τεκμηριωμένη επίμονη δυσφορία φύλου σχετική με τον θώρακα, binder ≥ 8 ώρες/ημέρα, σε τεστοστερόνη επί 18 μήνες, επιστολή εκτίμησης ψυχικής υγείας (WPATH SOC-8).",
     );
   });
@@ -79,7 +79,7 @@ describe("other areas", () => {
       write("nose", { findings: { dorsum: { hump: "moderate" }, airway: { septum: "anterior", septumTo: "left", internal: true } }, measurements: { nasolabial: { v: 88 }, goode: { v: "0,62" } } }, 27),
     ).toBe(
       "Ασθενής 27 ετών με μέτριο κύρτωμα ράχης και πρόσθια απόκλιση διαφράγματος προς τα αριστερά, ανεπάρκεια έσω βαλβίδας (Cottle θετικό). " +
-        "Μετρήσεις: ρινοχειλική γωνία 88°, λόγος Goode 0,62.",
+        "Μετρήσεις: NLA 88°, Goode ratio 0,62.",
     );
   });
 
@@ -118,5 +118,14 @@ describe("other areas", () => {
     expect(difficultyModifiers(4)).toEqual({ feePercent: 15, extraMinutes: 30 });
     expect(difficultyModifiers(10)).toEqual({ feePercent: 45, extraMinutes: 90 });
     expect(difficultyModifiers(undefined)).toEqual({ feePercent: 0, extraMinutes: 0 });
+  });
+});
+
+describe("breast findings by gender", () => {
+  it("women see breast findings, men gynaecomastia, trans and non-binary patients top surgery", () => {
+    const g = EXAMS.breast.groupsBySex!;
+    expect(g.FEMALE).toEqual([""]);
+    expect(g.MALE).toEqual(["Γυναικομαστία"]);
+    for (const s of ["TRANS_MAN", "TRANS_WOMAN", "NON_BINARY"]) expect(g[s]).toEqual(["Top surgery · δυσφορία φύλου"]);
   });
 });

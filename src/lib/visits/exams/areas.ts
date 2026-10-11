@@ -23,17 +23,21 @@ const G_TOP = "Top surgery · δυσφορία φύλου";
 const BREAST: AreaExam = {
   key: "breast",
   groups: [G_GYNAE, G_TOP],
+  // Decided 11 Oct 2026: women → breast findings; men → gynaecomastia; trans and
+  // non-binary patients → top surgery.
+  groupsBySex: { FEMALE: [""], MALE: [G_GYNAE], TRANS_MAN: [G_TOP], TRANS_WOMAN: [G_TOP], NON_BINARY: [G_TOP] },
   // The basic set (decided 11 Oct 2026), also shown on the breast sketch.
   measurements: {
     title: "Μετρήσεις (cm)",
     sketch: "breast",
     fields: [
-      cm("jmd", "Σφαγή–θηλή (JMD)", "JMD"),
-      cm("nml", "Θηλή–μέση γραμμή", "θηλή–μέση γραμμή"),
-      cm("nimfStretch", "Θηλή–πτυχή (υπό τάση)", "θηλή–πτυχή"),
-      cm("bw", "Πλάτος βάσης (BW)", "BW"),
-      cm("areola", "Διάμετρος άλω", "άλως", { max: 20 }),
-      { key: "intermammary", el: "Μεσομαστική απόσταση", type: "measure", unit: "cm", say: "μεσομαστική απόσταση", max: 20 },
+      // English abbreviations on purpose (decided 11 Oct 2026: clearer than Greek).
+      cm("jmd", "JMD (SN–N)", "JMD"),
+      cm("nml", "N–ML", "N–ML"),
+      cm("nimfStretch", "N–IMF (stretched)", "N–IMF"),
+      cm("bw", "BW", "BW"),
+      cm("areola", "Areola Ø", "areola Ø", { max: 20 }),
+      { key: "intermammary", el: "IMD", type: "measure", unit: "cm", say: "IMD", max: 20 },
     ],
   },
   findings: [
@@ -134,22 +138,21 @@ const BREAST: AreaExam = {
     },
     {
       // Documented separately from the chest findings (WPATH SOC-8 asks for one assessment).
-      key: "topSurgery", el: "Δυσφορία φύλου", group: G_TOP, sentence: "Εκτίμηση για top surgery",
+      key: "topSurgery", el: "Top surgery", group: G_TOP, sentence: "Εκτίμηση για top surgery",
       fields: [
-        { key: "identity", el: "Ταυτότητα", type: "one", options: [o("transMale", "τρανς άνδρας"), o("nonBinary", "μη δυαδικό άτομο"), o("other", "άλλη", "άλλη ταυτότητα φύλου")] },
         { key: "dysphoria", el: "Επίμονη δυσφορία θώρακα", type: "bool", phrase: "τεκμηριωμένη επίμονη δυσφορία φύλου σχετική με τον θώρακα" },
-        { key: "goal", el: "Στόχος", type: "one", prefix: "στόχος: ", options: [o("flat", "επίπεδος θώρακας"), o("reduction", "μείωση όγκου"), o("contour", "ανδρικό περίγραμμα με θηλές")] },
+        { key: "goal", el: "Στόχος", type: "one", prefix: "στόχος: ", options: [o("flat", "επίπεδος θώρακας"), o("reduction", "μείωση όγκου"), o("contour", "ανδρικό περίγραμμα με θηλές"), o("feminizing", "αυξητική (θηλεοποίηση)")] },
         { key: "nipples", el: "Θηλές", type: "one", options: [o("graft", "ελεύθερο μόσχευμα", "θηλές με ελεύθερο μόσχευμα"), o("pedicle", "διατήρηση σε μίσχο", "διατήρηση θηλών σε μίσχο (αισθητικότητα)"), o("none", "χωρίς θηλές", "χωρίς αναδημιουργία θηλών")] },
         { key: "binder", el: "Binder", type: "one", options: [o("none", "όχι", "χωρίς χρήση binder"), o("lt8", "< 8 ώρες/ημέρα", "binder < 8 ώρες/ημέρα"), o("gt8", "≥ 8 ώρες/ημέρα", "binder ≥ 8 ώρες/ημέρα")] },
         { key: "binderIssues", el: "Επιπλοκές binder", type: "many", prefix: "επιπλοκές binder: ", options: [o("skin", "δερματικές βλάβες"), o("pain", "πόνος"), o("breathing", "δύσπνοια")] },
-        { key: "hormones", el: "Ορμονοθεραπεία", type: "one", options: [o("on", "τεστοστερόνη", "σε τεστοστερόνη"), o("none", "όχι", "χωρίς ορμονοθεραπεία")] },
+        { key: "hormones", el: "Ορμονοθεραπεία", type: "one", options: [o("on", "τεστοστερόνη", "σε τεστοστερόνη"), o("estrogen", "οιστρογόνα", "σε οιστρογόνα"), o("none", "όχι", "χωρίς ορμονοθεραπεία")] },
         { key: "months", el: "Μήνες ορμονοθεραπείας", type: "measure", unit: "μήνες", say: "επί", max: 600 },
         { key: "letter", el: "Επιστολή εκτίμησης", type: "one", options: [o("yes", "υπάρχει", "επιστολή εκτίμησης ψυχικής υγείας (WPATH SOC-8)"), o("pending", "εκκρεμεί", "εκκρεμεί επιστολή εκτίμησης ψυχικής υγείας")] },
         { key: "capacity", el: "Ικανότητα συναίνεσης", type: "bool", phrase: "ικανότητα συναίνεσης" },
         { key: "stable", el: "Σταθερή ψυχική/σωματική υγεία", type: "bool", phrase: "σταθερή ψυχική και σωματική υγεία" },
         { key: "technique", el: "Εκτίμηση τεχνικής", type: "one", prefix: "εκτίμηση: ", options: [o("periareolar", "keyhole / περιθηλαία"), o("double", "double incision"), o("other", "άλλη τεχνική")] },
       ],
-      parts: ["{identity}", "{dysphoria}", "{goal}", "{nipples}", "{binder}", "{binderIssues}", "{hormones} {months}", "{letter}", "{capacity}", "{stable}", "{technique}"],
+      parts: ["{dysphoria}", "{goal}", "{nipples}", "{binder}", "{binderIssues}", "{hormones} {months}", "{letter}", "{capacity}", "{stable}", "{technique}"],
       empty: "υπό διερεύνηση",
     },
   ],
@@ -307,13 +310,14 @@ const NOSE: AreaExam = {
   key: "nose",
   measurements: {
     title: "Μετρήσεις",
-    note: "Φυσιολογικά: ρινομετωπιαία 115–130° · ρινοχειλική 90–95° (♂) / 100–105° (♀) · Goode 0,55–0,60",
+    note: "Normal: NFA 115–130° · NLA 90–95° (♂) / 100–105° (♀) · Goode 0.55–0.60",
+    // English terms on purpose (decided 11 Oct 2026).
     fields: [
-      deg1("nasofrontal", "Ρινομετωπιαία γωνία", "°", "ρινομετωπιαία γωνία", 180),
-      deg1("nasolabial", "Ρινοχειλική γωνία", "°", "ρινοχειλική γωνία", 180),
-      { key: "goode", el: "Λόγος Goode", type: "measure", unit: "", say: "λόγος Goode", max: 2 },
-      deg1("projection", "Προβολή άκρου", "mm", "προβολή άκρου", 60),
-      deg1("length", "Μήκος ρινός (N–Tip)", "mm", "μήκος ρινός", 80),
+      deg1("nasofrontal", "NFA (nasofrontal angle)", "°", "NFA", 180),
+      deg1("nasolabial", "NLA (nasolabial angle)", "°", "NLA", 180),
+      { key: "goode", el: "Goode ratio", type: "measure", unit: "", say: "Goode ratio", max: 2 },
+      deg1("projection", "Tip projection", "mm", "tip projection", 60),
+      deg1("length", "Nasal length (N–T)", "mm", "nasal length", 80),
     ],
   },
   findings: [

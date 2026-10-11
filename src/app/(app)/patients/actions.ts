@@ -27,7 +27,7 @@ export type PatientFormState = {
   saved?: boolean;
 };
 
-const SEX: Sex[] = ["FEMALE", "MALE", "OTHER"];
+const SEX: Sex[] = ["FEMALE", "MALE", "TRANS_MAN", "TRANS_WOMAN", "NON_BINARY"];
 const PHONE_TYPES: PhoneType[] = ["MOBILE", "HOME", "WORK", "OTHER"];
 
 function str(fd: FormData, k: string) {

@@ -219,7 +219,11 @@ services and are NOT rebuilt here.
   Breast/chest — the basic measurements in cm, right/left (JMD, nipple–midline, N–IMF
   under stretch, base width, areola; intermammary distance), in a compact table with a
   **front-view breast evaluation sketch** beside it (consultation-sheet style) where the
-  same values can be typed on the drawn lines (decided 11 Oct 2026); before any breast procedure the app warns if JMD, N–IMF under
+  same values can be typed on the drawn lines (decided 11 Oct 2026); breast and nose
+  measurements use English abbreviations (JMD, N–ML, N–IMF, BW, IMD; NFA, NLA, Goode);
+  **gender** (patient field: female, male, trans man, trans woman, non-binary — "other"
+  removed) picks the findings offered: women → breast findings, men → gynaecomastia,
+  trans / non-binary → top surgery; "all findings" is one tap away; before any breast procedure the app warns if JMD, N–IMF under
   stretch and base width are missing (for gynaecomastia/top surgery: areola instead of
   base width). Gynaecomastia (Simon I–III), and **top surgery / gender dysphoria
   documented separately** (identity, persistent chest dysphoria, goal, nipples, binder,

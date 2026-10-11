@@ -63,6 +63,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
       {editable ? (
         <VisitForm
           age={ageToday(p.ageFrom)?.years ?? null}
+        sex={p.sex}
           types={types}
           initial={{
             typeId: v.typeId ?? "", date: when.date, time: when.time, areas: v.areas, procedures: v.procedures,

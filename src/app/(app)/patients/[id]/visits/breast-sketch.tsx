@@ -18,7 +18,7 @@ const SPOTS: Spot[] = [
   ...pair("nml", 121, 182, "N–ML"),
   ...pair("nimfStretch", 62, 228, "N–IMF"),
   ...pair("bw", 91, 288, "BW"),
-  ...pair("areola", 56, 176, "άλως"),
+  ...pair("areola", 56, 176, "Ø"),
   { key: "intermammary", side: "v", x: 150, y: 256, tag: "IMD" },
 ];
 const NIPPLE = { x: 92, y: 195 };

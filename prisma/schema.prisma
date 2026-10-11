@@ -249,10 +249,14 @@ model ListItem {
   @@index([companyId, kind, sortOrder])
 }
 
+// Gender as recorded at the patient (decided 11 Oct 2026: "Άλλο" replaced by the three
+// below). Drives which breast/chest findings are offered.
 enum Sex {
   FEMALE
   MALE
-  OTHER
+  TRANS_MAN
+  TRANS_WOMAN
+  NON_BINARY
 }
 
 // Language of every form, consent and message for this patient (SPEC §4).

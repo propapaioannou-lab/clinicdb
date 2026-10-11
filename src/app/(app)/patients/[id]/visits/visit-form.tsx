@@ -39,6 +39,7 @@ export function VisitForm({
   action,
   aside,
   age,
+  sex,
 }: {
   types: { id: string; label: string }[];
   initial: VisitFormValues;
@@ -47,6 +48,8 @@ export function VisitForm({
   aside?: React.ReactNode;
   // Patient's age today, for the written-up findings.
   age: number | null;
+  // Patient's recorded gender: picks the breast/chest findings offered.
+  sex: string | null;
 }) {
   const t = useTranslations("visit");
   const [v, setV] = useState<VisitFormValues>(initial);
@@ -180,6 +183,7 @@ export function VisitForm({
                       value={a.exam}
                       onChange={(u) => setAreaExam(a.area, u)}
                       missing={a.area === "breast" ? missingMeasurements(a.exam, required) : []}
+                      sex={sex}
                     />
                   )}
                   <label className="block text-[13px] font-medium text-muted">

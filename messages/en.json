@@ -541,7 +541,9 @@
     "sexes": {
       "FEMALE": "Female",
       "MALE": "Male",
-      "OTHER": "Other"
+      "TRANS_MAN": "Trans man",
+      "TRANS_WOMAN": "Trans woman",
+      "NON_BINARY": "Non-binary"
     },
     "language": "Communication language",
     "languages": {
@@ -872,6 +874,8 @@
     "revision": "Revision (previous surgery in this area)",
     "right": "R",
     "left": "L",
+    "showAll": "All findings",
+    "showFewer": "Relevant only",
     "requiredMissing": "Breast/chest procedure: measurements missing: {list}",
     "previous": "Previous operations",
     "year": "Year",

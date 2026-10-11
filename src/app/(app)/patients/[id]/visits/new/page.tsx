@@ -41,6 +41,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
       <h1 className="text-[26px] font-semibold">{t("newTitle")}</h1>
       <VisitForm
         age={ageToday(p.ageFrom)?.years ?? null}
+        sex={p.sex}
         types={types}
         initial={{
           typeId: firstType, date: now.date, time: now.time, areas: [], procedures: [], diagnosis: "",

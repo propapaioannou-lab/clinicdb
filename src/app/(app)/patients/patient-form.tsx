@@ -172,7 +172,9 @@ export function PatientForm({
                 <option value="">—</option>
                 <option value="FEMALE">{t("sexes.FEMALE")}</option>
                 <option value="MALE">{t("sexes.MALE")}</option>
-                <option value="OTHER">{t("sexes.OTHER")}</option>
+                <option value="TRANS_MAN">{t("sexes.TRANS_MAN")}</option>
+                <option value="TRANS_WOMAN">{t("sexes.TRANS_WOMAN")}</option>
+                <option value="NON_BINARY">{t("sexes.NON_BINARY")}</option>
               </select>
             </label>
             <label className="block text-sm font-medium text-ink-2">

@@ -27,6 +27,7 @@ const base = (over: Partial<Parameters<typeof createUser>[1]> = {}) => ({
   email: `new-${uniq()}@example.com`,
   name: "Νέος Χρήστης",
   level: "USER" as const,
+  role: "OTHER" as const,
   companyIds: [c.surgery],
   accessExpiresAt: null,
   method: "invite" as const,
@@ -121,6 +122,7 @@ describe("editing users", () => {
   const edit = (level: "OWNER" | "ADMIN" | "USER" | "GUEST", companyIds?: string[]) => ({
     name: "Edited",
     level,
+    role: "PA_NURSE" as const,
     companyIds: companyIds ?? [c.surgery],
     accessExpiresAt: level === "GUEST" ? inDays(30) : null,
   });
@@ -206,5 +208,16 @@ describe("passwords and devices", () => {
     expect(await removeTrustedDevice(other, device.id, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await removeTrustedDevice(admin, device.id, ctx)).toEqual({ ok: true });
     expect((await db.trustedDevice.findUniqueOrThrow({ where: { id: device.id } })).revokedAt).not.toBeNull();
+  });
+
+  it("sets and changes the role, and logs the change", async () => {
+    const admin = await makeActor("ADMIN", [c.surgery]);
+    const r = await createUser(admin, base({ role: "SECRETARY", method: "password" }), ctx);
+    expect(r.ok).toBe(true);
+    const u = await db.user.findFirstOrThrow({ where: { role: "SECRETARY" }, orderBy: { createdAt: "desc" } });
+    expect((await updateUser(admin, u.id, { name: u.name, level: "USER", role: "PA_NURSE", companyIds: [c.surgery], accessExpiresAt: null }, ctx)).ok).toBe(true);
+    expect((await db.user.findUniqueOrThrow({ where: { id: u.id } })).role).toBe("PA_NURSE");
+    const log = await db.auditLog.findFirstOrThrow({ where: { action: "user.updated", entityId: u.id } });
+    expect(log.details).toMatchObject({ role: { from: "SECRETARY", to: "PA_NURSE" } });
   });
 });

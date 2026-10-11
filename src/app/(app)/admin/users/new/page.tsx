@@ -21,7 +21,7 @@ export default async function NewUserPage() {
         action={createUserAction}
         levels={ALL_LEVELS.filter((l) => canAssignLevel(actor.level, l))}
         companies={companies.map((c) => ({ id: c.id, name: c.name, canGrant: canGrant(c.id) }))}
-        initial={{ name: "", email: "", level: "USER", companyIds: [], guestEnd: "" }}
+        initial={{ name: "", email: "", level: "USER", role: "OTHER", companyIds: [], guestEnd: "" }}
       />
     </main>
   );

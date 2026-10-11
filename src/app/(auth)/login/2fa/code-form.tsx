@@ -21,7 +21,7 @@ export function CodeForm({ trustDays }: { trustDays: number }) {
       <p className="text-xs text-neutral-500">{t("recoveryHint")}</p>
       <TrustCheckbox days={trustDays} />
       {state.error && <ErrorBox>{t(`errors.${state.error}`, { minutes: state.minutes ?? 0 })}</ErrorBox>}
-      <button type="submit" disabled={pending} className={primaryButton}>
+      <button type="submit" disabled={pending} className={`${primaryButton} w-full`}>
         {pending ? t("submitting") : t("submit")}
       </button>
     </form>

@@ -33,6 +33,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
   const [{ entries, nextBefore }, people, companies] = await Promise.all([queryAudit(filters), auditPeople(), listCompanies()]);
   const t = await getTranslations("audit");
   const tl = await getTranslations("levels");
+  const tr = await getTranslations("roles");
   const format = await getFormatter();
   const when = (d: Date) =>
     format.dateTime(d, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
@@ -45,6 +46,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
     if (Array.isArray(v)) return v.map((x) => value(key, x)).join(", ");
     if (typeof v === "string") {
       if (key === "level" && ["OWNER", "ADMIN", "USER", "GUEST"].includes(v)) return tl(v as "USER");
+      if (key === "role" && tr.has(v)) return tr(v as "OTHER");
       if (key === "companyIds") return companyName.get(v) ?? v;
       if (/^\d{4}-\d{2}-\d{2}T/.test(v)) return when(new Date(v));
       if (t.has(`reasons.${v}`)) return t(`reasons.${v}` as "reasons.logout");
@@ -121,7 +123,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
           <input type="date" name="to" defaultValue={sp.to ?? ""} className={inputClass} />
         </label>
         <div className="flex gap-2 sm:col-span-5">
-          <button type="submit" className={`${primaryButton} w-auto`}>{t("filter")}</button>
+          <button type="submit" className={primaryButton}>{t("filter")}</button>
           <Link href="/admin/audit" className={secondaryButton}>{t("clear")}</Link>
         </div>
       </form>

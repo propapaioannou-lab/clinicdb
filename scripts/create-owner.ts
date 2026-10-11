@@ -50,8 +50,8 @@ async function main() {
   const passwordHash = await hashPassword(password);
   const user = await db.user.upsert({
     where: { email },
-    update: { name, passwordHash, level: "OWNER", isActive: true, accessExpiresAt: null },
-    create: { email, name, passwordHash, level: "OWNER" },
+    update: { name, passwordHash, level: "OWNER", role: "SURGEON", isActive: true, accessExpiresAt: null },
+    create: { email, name, passwordHash, level: "OWNER", role: "SURGEON" },
   });
   for (const c of companies) {
     await db.membership.upsert({

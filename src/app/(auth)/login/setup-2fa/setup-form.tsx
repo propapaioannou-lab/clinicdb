@@ -26,7 +26,7 @@ export function SetupForm({ qrSvg, secret, trustDays }: { qrSvg: string; secret:
       </label>
       <TrustCheckbox days={trustDays} />
       {state.error && <ErrorBox>{tc(`errors.${state.error}`, { minutes: state.minutes ?? 0 })}</ErrorBox>}
-      <button type="submit" disabled={pending} className={primaryButton}>
+      <button type="submit" disabled={pending} className={`${primaryButton} w-full`}>
         {pending ? t("submitting") : t("submit")}
       </button>
     </form>

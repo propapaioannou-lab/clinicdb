@@ -15,6 +15,15 @@ enum Level {
   GUEST
 }
 
+// What someone does at the practice; separate from Level (what they may do).
+enum Role {
+  SURGEON
+  PA_NURSE
+  SECRETARY
+  SPA_STAFF
+  OTHER
+}
+
 // A legal/business unit that owns records: "surgery" or "spa".
 model Company {
   id          String       @id @default(cuid())
@@ -45,8 +54,8 @@ model User {
   totpEnabledAt   DateTime?
   // Last accepted 30 s step, so a code can never be used twice.
   totpLastStep    Int?
-  // Shown in the "treating doctor" list on patients.
-  isDoctor        Boolean         @default(false)
+  // Job (SPEC §11): decides the home screen, who verifies history, who is treating doctor.
+  role            Role            @default(OTHER)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   memberships     Membership[]

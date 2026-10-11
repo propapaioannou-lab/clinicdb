@@ -17,7 +17,7 @@ export default async function RecoveryCodesPage() {
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-neutral-600 dark:text-neutral-400">{t("alreadyShown")}</p>
-          <Link href="/" className={`${primaryButton} block text-center`}>{t("continueHome")}</Link>
+          <Link href="/" className={`${primaryButton} w-full`}>{t("continueHome")}</Link>
         </div>
       )}
     </AuthCard>

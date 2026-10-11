@@ -78,6 +78,7 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
             name: user.name,
             email: user.email,
             level: user.level,
+            role: user.role,
             companyIds: user.companyIds,
             guestEnd: user.accessExpiresAt ? athensIsoDate(user.accessExpiresAt) : "",
           }}

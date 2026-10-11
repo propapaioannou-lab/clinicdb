@@ -48,6 +48,7 @@ export type SessionUser = {
   email: string;
   name: string;
   level: "OWNER" | "ADMIN" | "USER" | "GUEST";
+  role: "SURGEON" | "PA_NURSE" | "SECRETARY" | "SPA_STAFF" | "OTHER";
 };
 
 // Returns the session and user if the token is still valid, otherwise null.
@@ -57,7 +58,7 @@ export async function validateSession(token: string | undefined, now = new Date(
     where: { tokenHash: hashToken(token) },
     include: {
       user: {
-        select: { id: true, email: true, name: true, level: true, isActive: true, accessExpiresAt: true },
+        select: { id: true, email: true, name: true, level: true, role: true, isActive: true, accessExpiresAt: true },
       },
     },
   });
@@ -68,7 +69,7 @@ export async function validateSession(token: string | undefined, now = new Date(
   if (now.getTime() - session.lastSeenAt.getTime() > LAST_SEEN_RESOLUTION_MS) {
     await db.session.update({ where: { id: session.id }, data: { lastSeenAt: now } });
   }
-  const sessionUser: SessionUser = { id: user.id, email: user.email, name: user.name, level: user.level };
+  const sessionUser: SessionUser = { id: user.id, email: user.email, name: user.name, level: user.level, role: user.role };
   return { sessionId: session.id, expiresAt: session.expiresAt, user: sessionUser };
 }
 

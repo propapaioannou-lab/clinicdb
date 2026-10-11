@@ -13,6 +13,7 @@ export default async function UsersPage() {
   const users = await listUsers();
   const t = await getTranslations("admin");
   const tl = await getTranslations("levels");
+  const tr = await getTranslations("roles");
   const format = await getFormatter();
   const date = (d: Date) => format.dateTime(d, { day: "numeric", month: "short", year: "numeric" });
 
@@ -22,7 +23,7 @@ export default async function UsersPage() {
         <h1 className="text-2xl font-semibold">{t("users.title")}</h1>
         <div className="flex items-center gap-4">
           <Link href="/admin/users/deleted" className="text-sm underline-offset-2 hover:underline">{t("deleted.link")}</Link>
-          <Link href="/admin/users/new" className={`${primaryButton} w-auto`}>{t("users.new")}</Link>
+          <Link href="/admin/users/new" className={primaryButton}>{t("users.new")}</Link>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -30,6 +31,7 @@ export default async function UsersPage() {
           <thead className="border-b border-neutral-200 text-neutral-500 dark:border-neutral-800">
             <tr>
               <th className="py-2 pr-4">{t("users.name")}</th>
+              <th className="py-2 pr-4">{t("form.role")}</th>
               <th className="py-2 pr-4">{t("users.level")}</th>
               <th className="py-2 pr-4">{t("users.companies")}</th>
               <th className="py-2 pr-4">{t("users.status")}</th>
@@ -45,6 +47,7 @@ export default async function UsersPage() {
                   <Link href={`/admin/users/${u.id}`} className="font-medium underline-offset-2 hover:underline">{u.name}</Link>
                   <div className="text-xs text-neutral-500">{u.email}</div>
                 </td>
+                <td className="py-2 pr-4">{tr(u.role)}</td>
                 <td className="py-2 pr-4">
                   {tl(u.level)}
                   {u.level === "GUEST" && u.accessExpiresAt && (

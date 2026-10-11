@@ -13,7 +13,7 @@ export default async function RecoveryUsedPage({ searchParams }: PageProps<"/log
         <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-200">
           {t("recoveryUsed", { left })}
         </p>
-        <Link href="/" className={`${primaryButton} block text-center`}>{t("continue")}</Link>
+        <Link href="/" className={`${primaryButton} w-full`}>{t("continue")}</Link>
       </div>
     </AuthCard>
   );

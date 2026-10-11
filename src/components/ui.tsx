@@ -1,18 +1,38 @@
-// Shared look for the login pages.
+// Shared look (DESIGN.md tokens): inputs, buttons, cards, badges.
+
 export const inputClass =
-  "mt-1 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-neutral-900 " +
-  "focus:border-neutral-900 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100";
+  "mt-1 w-full h-11 rounded-control border border-line-strong bg-surface px-3 text-[15px] text-ink " +
+  "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint disabled:bg-surface-2 disabled:text-muted";
+
+export const textareaClass =
+  "mt-1 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink " +
+  "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint";
 
 export const primaryButton =
-  "w-full rounded-md bg-neutral-900 px-3 py-2 font-medium text-white hover:bg-neutral-700 disabled:opacity-60 " +
-  "dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-control bg-primary px-4 text-[14.5px] font-semibold text-white " +
+  "hover:bg-primary-hover disabled:opacity-60";
 
 export const secondaryButton =
-  "rounded-md border border-neutral-300 px-3 py-2 text-sm hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800";
+  "inline-flex h-11 items-center justify-center gap-2 rounded-control border border-line-strong bg-surface px-4 text-[14.5px] font-medium text-ink " +
+  "hover:bg-surface-2 disabled:opacity-60";
+
+export const dangerButton =
+  "inline-flex h-11 items-center justify-center gap-2 rounded-control border border-danger/40 bg-surface px-4 text-[14.5px] font-medium text-danger-ink " +
+  "hover:bg-danger-bg disabled:opacity-60";
+
+export const card = "rounded-card border border-line bg-surface";
 
 export function ErrorBox({ children }: { children: React.ReactNode }) {
   return (
-    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
+    <p role="alert" className="rounded-control bg-danger-bg px-3 py-2 text-sm text-danger-ink">
+      {children}
+    </p>
+  );
+}
+
+export function Notice({ children }: { children: React.ReactNode }) {
+  return (
+    <p role="status" className="rounded-control bg-ok-bg px-3 py-2 text-sm text-ok-ink">
       {children}
     </p>
   );
@@ -21,7 +41,7 @@ export function ErrorBox({ children }: { children: React.ReactNode }) {
 export function AuthCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <main className="flex flex-1 items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <div className={`${card} w-full max-w-sm p-6`}>
         <h1 className="mb-6 text-center text-2xl font-semibold">{title}</h1>
         {children}
       </div>
@@ -29,33 +49,55 @@ export function AuthCard({ title, children }: { title: string; children: React.R
   );
 }
 
-export const dangerButton =
-  "rounded-md border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 " +
-  "dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950";
+export type Tone = "neutral" | "green" | "amber" | "red" | "info" | "primary" | "spa";
 
-export function Notice({ children }: { children: React.ReactNode }) {
+const tones: Record<Tone, string> = {
+  neutral: "bg-line-softer text-ink-3",
+  green: "bg-ok-bg text-ok-ink",
+  amber: "bg-warn-bg text-warn-ink",
+  red: "bg-danger-bg text-danger-ink",
+  info: "bg-info-bg text-info-ink",
+  primary: "bg-primary-tint text-primary",
+  spa: "bg-spa-bg text-spa-ink",
+};
+
+// Small rounded label ("pill").
+export function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: Tone }) {
+  return <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${tones[tone]}`}>{children}</span>;
+}
+
+export function Section({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <p role="status" className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100">
+    <section className={`${card} p-5`}>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-[17px] font-semibold">{title}</h2>
+        {action}
+      </div>
       {children}
-    </p>
+    </section>
   );
 }
 
-export function Badge({ children, tone = "neutral" }: { children: React.ReactNode; tone?: "neutral" | "green" | "amber" | "red" }) {
-  const tones = {
-    neutral: "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200",
-    green: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
-    amber: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-    red: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
-  };
-  return <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>;
+// "AB" from "Άννα Βασιλείου": first letters of the first two words, without accents.
+export function initials(name: string) {
+  return name
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
 }
 
-export function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Avatar({ name, size = 40 }: { name: string; size?: number }) {
   return (
-    <section className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-      <h2 className="mb-3 font-semibold">{title}</h2>
-      {children}
-    </section>
+    <span
+      aria-hidden="true"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.36) }}
+      className="inline-flex shrink-0 items-center justify-center rounded-full bg-avatar font-semibold text-primary"
+    >
+      {initials(name)}
+    </span>
   );
 }

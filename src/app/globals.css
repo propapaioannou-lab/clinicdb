@@ -1,25 +1,74 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Light only: the approved design (DESIGN.md) has no dark version. */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-}
+/* Design tokens from DESIGN.md. Use these names, not raw colours. */
+@theme {
+  --font-sans: var(--font-commissioner), system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: #0e5e63;
+  --color-primary-hover: #0a4549;
+  --color-primary-tint: #e6f0ef;
+  --color-primary-tint-2: #f5f9f9;
+  --color-avatar: #dce7e6;
+
+  --color-ground: #f4f3ef;
+  --color-surface: #ffffff;
+  --color-surface-2: #fbfaf8;
+
+  --color-ink: #1c2024;
+  --color-ink-2: #2c3238;
+  --color-ink-3: #3b4249;
+  --color-muted: #5b636b;
+  --color-placeholder: #6b7178;
+
+  --color-line: #e4e2dc;
+  --color-line-strong: #dad8d1;
+  --color-line-soft: #eceae5;
+  --color-line-softer: #f1f0ec;
+
+  --color-ok: #2e9e63;
+  --color-ok-ink: #1e6b45;
+  --color-ok-bg: #e3f1ea;
+  --color-warn: #d98a1c;
+  --color-warn-ink: #8a4b08;
+  --color-warn-bg: #fcf1e3;
+  --color-warn-line: #e8c9a0;
+  --color-danger: #c8312a;
+  --color-danger-ink: #8c1d18;
+  --color-danger-bg: #fbe9e7;
+  --color-info-ink: #2f4b6e;
+  --color-info-bg: #eef2f7;
+  --color-spa-ink: #6b3e7d;
+  --color-spa-bg: #f3eaf6;
+
+  /* Older screens use Tailwind's greys; mapped onto the design's warm greys. */
+  --color-neutral-50: #fbfaf8;
+  --color-neutral-100: #f1f0ec;
+  --color-neutral-200: #e4e2dc;
+  --color-neutral-300: #dad8d1;
+  --color-neutral-400: #6b7178;
+  --color-neutral-500: #5b636b;
+  --color-neutral-600: #3b4249;
+  --color-neutral-700: #2c3238;
+  --color-neutral-800: #23282d;
+  --color-neutral-900: #1c2024;
+
+  --radius-control: 10px;
+  --radius-card: 16px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), Arial, sans-serif;
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* In the base layer, so utility classes (e.g. text-white on a link button) win. */
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-placeholder);
+  }
 }

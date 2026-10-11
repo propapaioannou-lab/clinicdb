@@ -3,35 +3,30 @@ import { getTranslations } from "next-intl/server";
 import { ageToday, FlagDot } from "@/components/patient-bits";
 import { requireSession } from "@/lib/auth/current";
 import { canSeeContactDetails } from "@/lib/permissions";
-import { listPatients, listUserCompanies } from "@/lib/patients/queries";
+import { activeCompany } from "@/lib/company";
+import { listPatients } from "@/lib/patients/queries";
 import { loadActor } from "@/lib/users/manage";
 
 export default async function PatientsPage({ searchParams }: PageProps<"/patients">) {
   const session = await requireSession();
   const actor = await loadActor(session.user.id);
   const sp = await searchParams;
-  const companyId = typeof sp.company === "string" ? sp.company : undefined;
   const page = Number(sp.page) || 1;
   const q = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
 
-  const [{ rows, total, pages }, companies] = await Promise.all([
-    listPatients(actor, { page, companyId, q }),
-    listUserCompanies(actor),
-  ]);
+  const companyId = (await activeCompany(actor))?.id ?? "none";
+  const { rows, total, pages } = await listPatients(actor, { page, companyId, q });
   const t = await getTranslations("patients");
   const contacts = canSeeContactDetails(actor.level);
-  const showCompany = companies.length > 1 && !companyId;
+  const showCompany = false;
 
-  const href = (p: number, c = companyId, query = q) => {
+  const href = (p: number, query = q) => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
-    if (c) params.set("company", c);
     if (p > 1) params.set("page", String(p));
     const s = params.toString();
     return s ? `/patients?${s}` : "/patients";
   };
-  const tab = (active: boolean) =>
-    `rounded-md px-3 py-1 text-sm ${active ? "bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900" : "hover:bg-neutral-100 dark:hover:bg-neutral-800"}`;
 
   return (
     <main className="mx-auto w-full max-w-6xl p-4">
@@ -39,19 +34,11 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
         <h1 className="text-2xl font-semibold">
           {q ? t("resultsFor", { q }) : t("title")} <span className="text-base font-normal text-neutral-500">{t("count", { count: total })}</span>
         </h1>
-        {companies.length > 1 && (
-          <nav className="flex gap-1">
-            <Link href={href(1, "")} className={tab(!companyId)}>{t("allCompanies")}</Link>
-            {companies.map((c) => (
-              <Link key={c.id} href={href(1, c.id)} className={tab(companyId === c.id)}>{c.name}</Link>
-            ))}
-          </nav>
-        )}
       </div>
 
       {q && (
         <p className="mb-3 text-sm">
-          <Link href={href(1, companyId, "")} className="underline-offset-2 hover:underline">{t("clearSearch")}</Link>
+          <Link href={href(1, "")} className="underline-offset-2 hover:underline">{t("clearSearch")}</Link>
         </p>
       )}
       {rows.length === 0 && <p className="text-sm text-neutral-500">{t("none")}</p>}

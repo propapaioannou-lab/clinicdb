@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
-import type { Level } from "@/generated/prisma/client";
+import type { Level, Role } from "@/generated/prisma/client";
 import { ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
 import type { FormState } from "../actions";
 import { PasswordReveal } from "../password-reveal";
+
+const ROLE_OPTIONS: Role[] = ["SURGEON", "PA_NURSE", "SECRETARY", "SPA_STAFF", "OTHER"];
 
 type Company = { id: string; name: string; canGrant: boolean };
 
@@ -15,13 +17,14 @@ export type UserFormProps = {
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   levels: Level[]; // levels this admin may choose
   companies: Company[];
-  initial: { name: string; email: string; level: Level; companyIds: string[]; guestEnd: string };
+  initial: { name: string; email: string; level: Level; role: Role; companyIds: string[]; guestEnd: string };
   locked?: { level?: boolean; all?: boolean };
 };
 
 export function UserForm({ mode, action, levels, companies, initial, locked = {} }: UserFormProps) {
   const t = useTranslations("admin");
   const tl = useTranslations("levels");
+  const tr = useTranslations("roles");
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
   const [level, setLevel] = useState<Level>(initial.level);
   const all = !!locked.all;
@@ -30,7 +33,7 @@ export function UserForm({ mode, action, levels, companies, initial, locked = {}
     return (
       <div className="space-y-4">
         <PasswordReveal password={state.password} />
-        <Link href="/admin/users" className={`${primaryButton} block text-center`}>{t("form.cancel")}</Link>
+        <Link href="/admin/users" className={`${primaryButton} w-full`}>{t("form.cancel")}</Link>
       </div>
     );
   }
@@ -53,6 +56,13 @@ export function UserForm({ mode, action, levels, companies, initial, locked = {}
           </select>
           <span className="mt-1 block text-xs font-normal text-neutral-500">{t(`form.levelHelp.${level}`)}</span>
           {locked.level && <input type="hidden" name="level" value={level} />}
+        </label>
+        <label className="block text-sm font-medium">
+          {t("form.role")}
+          <select name="role" defaultValue={initial.role} className={inputClass}>
+            {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{tr(r)}</option>)}
+          </select>
+          <span className="mt-1 block text-xs font-normal text-neutral-500">{t("form.roleHelp")}</span>
         </label>
         {level === "GUEST" && (
           <label className="block text-sm font-medium">
@@ -81,7 +91,7 @@ export function UserForm({ mode, action, levels, companies, initial, locked = {}
       {state.saved && <Notice>{t("form.saved")}</Notice>}
       {!all && (
         <div className="flex gap-2">
-          <button type="submit" disabled={pending} className={primaryButton}>
+          <button type="submit" disabled={pending} className={`${primaryButton} w-full`}>
             {pending ? t("form.saving") : mode === "create" ? t("form.create") : t("form.save")}
           </button>
           <Link href="/admin/users" className={secondaryButton}>{t("form.cancel")}</Link>

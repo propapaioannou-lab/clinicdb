@@ -21,7 +21,7 @@ export function CodesView({ codes }: { codes: string[] }) {
         </button>
         <button type="button" className={secondaryButton} onClick={() => window.print()}>{t("print")}</button>
       </div>
-      <Link href="/" className={`${primaryButton} block text-center print:hidden`}>{t("saved")}</Link>
+      <Link href="/" className={`${primaryButton} w-full print:hidden`}>{t("saved")}</Link>
     </div>
   );
 }

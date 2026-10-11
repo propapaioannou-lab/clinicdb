@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { Level } from "@/generated/prisma/client";
+import type { Level, Role } from "@/generated/prisma/client";
 import { requestContext } from "@/lib/auth/current";
 import { endOfAthensDay } from "@/lib/time";
 import {
@@ -25,12 +25,14 @@ import { requireManager } from "./guard";
 export type FormState = { error?: ManageError; saved?: boolean; password?: string; email?: string };
 
 const LEVELS: Level[] = ["OWNER", "ADMIN", "USER", "GUEST"];
+const ROLES: Role[] = ["SURGEON", "PA_NURSE", "SECRETARY", "SPA_STAFF", "OTHER"];
 
 function readUserFields(fd: FormData) {
   const level = String(fd.get("level")) as Level;
   return {
     name: String(fd.get("name") ?? ""),
     level: LEVELS.includes(level) ? level : "USER",
+    role: ROLES.includes(String(fd.get("role")) as Role) ? (String(fd.get("role")) as Role) : "OTHER",
     companyIds: fd.getAll("company").map(String),
     accessExpiresAt: endOfAthensDay(String(fd.get("guestEnd") ?? "")),
   };

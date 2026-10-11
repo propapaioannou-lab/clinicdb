@@ -31,6 +31,8 @@ describe("parseQuery", () => {
     expect(parseQuery("Μαρία").kind).toBe("name");
     expect(parseQuery("+30 694-555").kind).toBe("digits");
     expect(parseQuery("a@b").kind).toBe("email");
+    expect(parseQuery("P-004218")).toEqual({ kind: "digits", digits: "4218" });
+    expect(parseQuery("ρ-4218")).toEqual({ kind: "digits", digits: "4218" });
   });
 });
 

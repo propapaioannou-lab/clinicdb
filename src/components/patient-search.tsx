@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { SearchResult } from "@/app/api/patients/search/route";
+import { SearchIcon } from "./icons";
 import { FlagDot } from "./patient-bits";
 
 // The search bar on every screen (SPEC §5): results appear as you type.
@@ -14,7 +15,6 @@ export function PatientSearch({ limited }: { limited: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
-  const [multiCompany, setMultiCompany] = useState(false);
   // -1 = nothing chosen: Enter opens the full results list.
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
@@ -42,7 +42,6 @@ export function PatientSearch({ limited }: { limited: boolean }) {
         if (!res.ok) return;
         const data = await res.json();
         setResults(data.results);
-        setMultiCompany(data.multiCompany);
         setActive(-1);
       } catch {
         // Typing again cancels the previous request; nothing to do.
@@ -82,28 +81,32 @@ export function PatientSearch({ limited }: { limited: boolean }) {
   };
 
   return (
-    <div className="relative w-full max-w-md">
-      <input
-        ref={input}
-        type="search"
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        onKeyDown={onKeyDown}
-        placeholder={limited ? t("placeholderLimited") : t("placeholder")}
-        aria-label={t("label")}
-        autoComplete="off"
-        spellCheck={false}
-        className="w-full rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
-      />
+    <div className="relative min-w-0 flex-1">
+      <label className="flex h-[46px] items-center gap-2.5 rounded-[11px] border border-line-strong bg-surface px-3.5 focus-within:border-primary">
+        <SearchIcon className="shrink-0 text-muted" />
+        <input
+          ref={input}
+          type="search"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onKeyDown={onKeyDown}
+          placeholder={limited ? t("placeholderLimited") : t("placeholder")}
+          aria-label={t("label")}
+          autoComplete="off"
+          spellCheck={false}
+          className="min-w-0 flex-1 border-0 bg-transparent text-[15px] text-ink outline-none"
+        />
+        <kbd className="hidden rounded-md border border-line-strong px-1.5 py-0.5 font-sans text-xs text-muted sm:inline">Ctrl K</kbd>
+      </label>
       {open && shown && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-md border border-neutral-200 bg-white text-sm shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
+        <div className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-[14px] border border-line bg-surface text-sm shadow-[0_8px_24px_rgba(28,32,36,0.12)]">
           {shown.length === 0 ? (
-            <p className="px-3 py-2 text-neutral-500">{t("none")}</p>
+            <p className="px-4 py-3 text-muted">{t("none")}</p>
           ) : (
             <ul role="listbox">
               {shown.map((r, i) => (
@@ -112,21 +115,20 @@ export function PatientSearch({ limited }: { limited: boolean }) {
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => go(`/patients/${r.id}`)}
-                    className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${i === active ? "bg-neutral-100 dark:bg-neutral-800" : ""}`}
+                    className={`flex w-full items-center gap-3 px-4 py-2.5 text-left hover:bg-surface-2 ${i === active ? "bg-primary-tint" : ""}`}
                   >
-                    <span className="w-14 shrink-0 tabular-nums text-neutral-500">{r.number}</span>
+                    <span className="w-[72px] shrink-0 tabular-nums text-muted">{r.code}</span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
                         <span className="truncate font-medium">{r.name}</span>
                         <FlagDot flag={r.flag} label={tp(`flag.${r.flag}`)} />
-                        {r.infectious && <span title={tp("infectious")} className="text-xs font-semibold text-red-700 dark:text-red-400">⚠</span>}
+                        {r.infectious && <span title={tp("infectious")} className="text-xs font-semibold text-danger">⚠</span>}
                       </span>
-                      <span className="block truncate text-xs text-neutral-500">
+                      <span className="block truncate text-xs text-muted">
                         {[
                           r.fatherName && t("father", { name: r.fatherName }),
                           r.age !== null && tp("years", { years: r.age }),
                           r.phone,
-                          multiCompany && r.company,
                         ]
                           .filter(Boolean)
                           .join(" · ")}
@@ -141,7 +143,7 @@ export function PatientSearch({ limited }: { limited: boolean }) {
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={showAll}
-            className="block w-full border-t border-neutral-200 px-3 py-2 text-left text-xs text-neutral-600 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800"
+            className="block w-full border-t border-line-soft px-4 py-2.5 text-left text-xs font-medium text-primary hover:bg-surface-2"
           >
             {t("showAll")}
           </button>

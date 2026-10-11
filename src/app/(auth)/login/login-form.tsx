@@ -23,7 +23,7 @@ export function LoginForm() {
       {state.error && (
         <ErrorBox>{t(`errors.${state.error}`, { minutes: state.minutes ?? 0 })}</ErrorBox>
       )}
-      <button type="submit" disabled={pending} className={primaryButton}>
+      <button type="submit" disabled={pending} className={`${primaryButton} w-full`}>
         {pending ? t("submitting") : t("submit")}
       </button>
     </form>

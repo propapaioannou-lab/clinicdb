@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { audit, type RequestContext } from "@/lib/audit";
-import type { Level, Prisma } from "@/generated/prisma/client";
+import type { Level, Prisma, Role } from "@/generated/prisma/client";
 import { generatePassword, hashPassword } from "@/lib/password";
 import {
   canAssignLevel,
@@ -44,6 +44,7 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 type UserInput = {
   name: string;
   level: Level;
+  role: Role;
   companyIds: string[];
   accessExpiresAt: Date | null; // Guests only
 };
@@ -98,6 +99,7 @@ export async function createUser(
       email,
       name: input.name.trim(),
       level: input.level,
+      role: input.role,
       accessExpiresAt: input.level === "GUEST" ? input.accessExpiresAt : null,
       passwordHash: password ? await hashPassword(password) : null,
       memberships: { create: companyIds.map((companyId) => ({ companyId })) },
@@ -109,7 +111,7 @@ export async function createUser(
       actor,
       entityType: "User",
       entityId: user.id,
-      details: { email, level: user.level, companyIds, method: input.method, accessExpiresAt: user.accessExpiresAt?.toISOString() ?? null },
+      details: { email, level: user.level, role: user.role, companyIds, method: input.method, accessExpiresAt: user.accessExpiresAt?.toISOString() ?? null },
     },
     ctx,
   );
@@ -160,7 +162,7 @@ export async function updateUser(
   const accessExpiresAt = input.level === "GUEST" ? input.accessExpiresAt : null;
   await db.user.update({
     where: { id: userId },
-    data: { name: input.name.trim(), level: input.level, accessExpiresAt },
+    data: { name: input.name.trim(), level: input.level, role: input.role, accessExpiresAt },
   });
   await setCompanies(userId, companyIds);
 
@@ -171,6 +173,7 @@ export async function updateUser(
   };
   cmp("name", target.name, input.name.trim());
   cmp("level", target.level, input.level);
+  cmp("role", target.role, input.role);
   cmp("accessExpiresAt", target.accessExpiresAt?.toISOString() ?? null, accessExpiresAt?.toISOString() ?? null);
   cmp("companyIds", [...before].sort(), [...companyIds].sort());
   if (Object.keys(changes).length > 0) {

@@ -1,11 +1,15 @@
 {
   "app": {
     "name": "Patient Records",
-    "description": "Medical records for a plastic surgery practice"
+    "description": "Medical records for a plastic surgery practice",
+    "brand": "Papaioannou",
+    "brandSub": "Plastic Surgery"
   },
   "home": {
-    "title": "Welcome, {name}",
-    "subtitle": "You are logged in with password and 2FA."
+    "today": "Today",
+    "placeholder": "Welcome, {name}. Today's appointments and surgeries will appear here once the calendar is connected.",
+    "patients": "Patients",
+    "newPatient": "New patient"
   },
   "login": {
     "title": "Log in",
@@ -28,7 +32,18 @@
     "users": "Users",
     "devices": "Devices",
     "audit": "Audit log",
-    "backups": "Backups"
+    "backups": "Backups",
+    "main": "Main menu",
+    "company": "Business",
+    "office": "Office",
+    "calendar": "Calendar",
+    "surgeries": "Surgeries",
+    "tasks": "Tasks",
+    "settings": "Settings",
+    "soon": "soon",
+    "today": "Today",
+    "search": "Search",
+    "chat": "Chat"
   },
   "levels": {
     "OWNER": "Owner",
@@ -146,7 +161,9 @@
         "ADMIN": "Everything a User can, plus users, devices, settings.",
         "USER": "Day-to-day work with full patient access.",
         "GUEST": "Read-only, no contact details. Needs an end date."
-      }
+      },
+      "role": "Role",
+      "roleHelp": "Their job: decides the home screen, who verifies history and who appears as treating doctor. Grants no permissions — the level does."
     },
     "errors": {
       "forbidden": "You are not allowed to do this.",
@@ -335,7 +352,8 @@
       "users": "users",
       "auditLog": "audit entries",
       "migrations": "schema versions",
-      "error": "error"
+      "error": "error",
+      "role": "role"
     },
     "patient": "Patient {number}"
   },
@@ -394,8 +412,8 @@
   },
   "search": {
     "label": "Search patients",
-    "placeholder": "Search: name, phone, email, AMKA, no.   ( / )",
-    "placeholderLimited": "Search: patient name or number   ( / )",
+    "placeholder": "Search patients — name, phone, email, AMKA",
+    "placeholderLimited": "Search patients — name or code",
     "none": "No patients.",
     "showAll": "All results (Enter) →",
     "father": "son/daughter of {name}"
@@ -407,5 +425,24 @@
     "amka": "AMKA {amka}",
     "infectiousAlert": "Infectious disease: {text}",
     "comingSoon": "The full patient record (details, history, visits, files) comes in the next steps."
+  },
+  "roles": {
+    "SURGEON": "Surgeon",
+    "PA_NURSE": "PA / nurse",
+    "SECRETARY": "Secretary",
+    "SPA_STAFF": "Spa staff",
+    "OTHER": "Other"
+  },
+  "companies": {
+    "surgery": "Office",
+    "spa": "Spa"
+  },
+  "settings": {
+    "usersText": "Invite, levels, roles, suspend and delete users.",
+    "devicesText": "Logged-in and trusted devices per user.",
+    "auditText": "Who saw or changed what, and when.",
+    "backupsText": "Nightly encrypted backups and restore checks.",
+    "lists": "Lists",
+    "listsText": "Visit types, conditions, tax offices, flag reasons and other lists."
   }
 }

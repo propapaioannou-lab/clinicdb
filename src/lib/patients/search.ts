@@ -16,6 +16,9 @@ export function parseQuery(raw: string): ParsedQuery {
   const q = raw.trim();
   if (!q) return { kind: "empty" };
   if (q.includes("@")) return { kind: "email", email: normalizeEmail(q) };
+  // A patient code as shown on screen: "P-004218", "s 123" (also a Greek Ρ typed by mistake).
+  const code = /^[PpSsΡρ]\s*-?\s*(\d+)$/.exec(q);
+  if (code) return { kind: "digits", digits: String(Number(code[1])) };
   if (/^[\d\s+\-().]+$/.test(q)) {
     const digits = q.replace(/\D/g, "");
     return digits ? { kind: "digits", digits } : { kind: "empty" };
@@ -57,19 +60,19 @@ const RESULT_SELECT = {
   birthDate: true,
   flag: true,
   infectiousDiseases: true,
-  company: { select: { name: true } },
+  company: { select: { name: true, code: true } },
 } satisfies Prisma.PatientSelect;
 
 export const QUICK_LIMIT = 8;
 
 // For the search box: best matches first. Exact patient number, then surnames that
 // start with what was typed, then other matches, then (if nothing) near spellings.
-export async function quickSearch(actor: Actor, raw: string) {
+export async function quickSearch(actor: Actor, raw: string, companyId?: string) {
   const q = parseQuery(raw);
   const match = searchWhere(actor, q);
   if (!match) return [];
   const contacts = canSeeContactDetails(actor.level);
-  const base: Prisma.PatientWhereInput = { companyId: { in: companyFilter(actor) }, archivedAt: null };
+  const base: Prisma.PatientWhereInput = { companyId: { in: companyFilter(actor, companyId) }, archivedAt: null };
   const select = {
     ...RESULT_SELECT,
     ...(contacts && { phones: { where: { isMain: true }, select: { number: true }, take: 1 } }),
@@ -95,7 +98,7 @@ export async function quickSearch(actor: Actor, raw: string) {
     add(await run(match));
   }
   if (found.length === 0 && q.kind === "name" && q.key.length >= 4) {
-    const ids = await similarNames(actor, q.key);
+    const ids = await similarNames(companyFilter(actor, companyId), q.key);
     if (ids.length) {
       const rows = await run({ id: { in: ids } });
       add(ids.map((id) => rows.find((r) => r.id === id)).filter((r) => r !== undefined));
@@ -105,8 +108,7 @@ export async function quickSearch(actor: Actor, raw: string) {
 }
 
 // Spelling mistakes ("Papadopolou"): closest names by trigram similarity.
-async function similarNames(actor: Actor, key: string): Promise<string[]> {
-  const companies = companyFilter(actor);
+async function similarNames(companies: string[], key: string): Promise<string[]> {
   if (!companies.length) return [];
   const rows = await db.$queryRaw<{ id: string }[]>`
     SELECT id FROM "Patient"

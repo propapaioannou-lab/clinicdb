@@ -46,7 +46,7 @@ export function InviteForm({ token, minLength }: { token: string; minLength: num
           value={repeat} onChange={(e) => setRepeat(e.target.value)} className={inputClass} />
       </label>
       {state.error && <ErrorBox>{t(`errors.${state.error}`, { min: minLength })}</ErrorBox>}
-      <button type="submit" disabled={pending} className={primaryButton}>
+      <button type="submit" disabled={pending} className={`${primaryButton} w-full`}>
         {pending ? t("submitting") : t("submit")}
       </button>
     </form>

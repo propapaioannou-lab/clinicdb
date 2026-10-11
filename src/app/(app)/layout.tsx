@@ -17,6 +17,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
         <nav className="flex items-center gap-4">
           <Link href="/" className="font-semibold">{t("app.name")}</Link>
+          <Link href="/patients" className="text-sm hover:underline">{t("nav.patients")}</Link>
           {canManageUsers(user.level) && (
             <>
               <Link href="/admin/users" className="text-sm hover:underline">{t("nav.users")}</Link>

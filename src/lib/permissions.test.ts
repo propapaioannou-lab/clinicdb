@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  canArchivePatients,
   canAssignLevel,
   canChangeLevel,
   canManageUser,
   canManageUsers,
+  canEditPatients,
   canRemoveUser,
+  canSeeContactDetails,
   hasExpired,
   isReadOnly,
   resolveCompanyAccess,
@@ -66,5 +69,19 @@ describe("permissions", () => {
     // An existing Surgery access the admin cannot manage is kept, not removed.
     expect(resolveCompanyAccess(admin, ["surgery", "spa"], []).sort()).toEqual(["surgery"]);
     expect(resolveCompanyAccess({ level: "OWNER", companyIds: [] }, ["spa"], ["surgery"])).toEqual(["surgery"]);
+  });
+
+  it("hides contact details from Guests and keeps them read-only", () => {
+    for (const level of ["OWNER", "ADMIN", "USER"] as const) {
+      expect(canSeeContactDetails(level)).toBe(true);
+      expect(canEditPatients(level)).toBe(true);
+    }
+    expect(canSeeContactDetails("GUEST")).toBe(false);
+    expect(canEditPatients("GUEST")).toBe(false);
+  });
+
+  it("lets only Owners archive patients", () => {
+    expect(canArchivePatients("OWNER")).toBe(true);
+    for (const level of ["ADMIN", "USER", "GUEST"] as const) expect(canArchivePatients(level)).toBe(false);
   });
 });

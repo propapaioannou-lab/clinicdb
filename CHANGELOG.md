@@ -2,6 +2,25 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 1: Patient records and fake patients
+
+- The database now holds patients with every "Basic info" field from SPEC §4: several
+  phones (one main/WhatsApp) and emails, communication language, AMKA, tax details,
+  flag (yellow/red with reasons), infectious-disease alert, treating doctor, and more.
+- **Patient numbers** count separately for Surgery and Spa; imported my-medical
+  patients will keep their number.
+- **Editable lists** for each company, with starting values: marital status, referral
+  source, ΔΟΥ, flag reasons, visit types, conditions (screen to edit them comes later).
+- **15,600 fake patients** (15,000 Surgery, 600 Spa) for testing speed, including some
+  deliberate "forgot they came before" duplicates, some typed in Latin letters.
+  All fake: emails end in @example.com; never run on the real server.
+- New **Ασθενείς** link: alphabetical list, 50 per page, with flag marker and ⚠ for
+  infectious disease. Guests see name and age only — no phone, no city.
+- Search groundwork: names are stored in a simplified form so that accents, capitals
+  and Greeklish won't matter (Παπαδοπούλου = papadopoulou = PAPADOPOULOU).
+
+**Check it:** click **Ασθενείς**. Page through; switch Surgery/Spa at the top right.
+
 ## 11 Oct 2026 — Phase 1, Step 7: Backups
 
 - **Every night at 02:30** the database is copied, **test-restored** into a scratch

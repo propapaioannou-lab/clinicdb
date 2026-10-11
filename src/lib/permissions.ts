@@ -55,3 +55,17 @@ export function resolveCompanyAccess(
   const granted = requested.filter((c) => reach.has(c));
   return [...new Set([...kept, ...granted])];
 }
+
+// Guests (research) never see phones, emails, address, AMKA, ΑΦΜ or date of birth (SPEC §11).
+export function canSeeContactDetails(level: Level): boolean {
+  return level !== "GUEST";
+}
+
+export function canEditPatients(level: Level): boolean {
+  return !isReadOnly(level);
+}
+
+// Archiving hides a patient everywhere; only an Owner may do it or undo it.
+export function canArchivePatients(level: Level): boolean {
+  return level === "OWNER";
+}

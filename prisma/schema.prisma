@@ -22,6 +22,8 @@ model Company {
   name        String
   createdAt   DateTime     @default(now())
   memberships Membership[]
+  patients    Patient[]
+  listItems   ListItem[]
 }
 
 model User {
@@ -43,6 +45,8 @@ model User {
   totpEnabledAt   DateTime?
   // Last accepted 30 s step, so a code can never be used twice.
   totpLastStep    Int?
+  // Shown in the "treating doctor" list on patients.
+  isDoctor        Boolean         @default(false)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   memberships     Membership[]
@@ -50,6 +54,7 @@ model User {
   recoveryCodes   RecoveryCode[]
   trustedDevices  TrustedDevice[]
   invitations     Invitation[]
+  doctorOf        Patient[]       @relation("TreatingDoctor")
 }
 
 // Which companies a user can see and work in.
@@ -197,4 +202,169 @@ model BackupRun {
   details    Json?
 
   @@index([startedAt])
+}
+
+// Editable lists (settings), separate for each company.
+enum ListKind {
+  MARITAL_STATUS
+  REFERRAL_SOURCE
+  TAX_OFFICE
+  FLAG_REASON
+  VISIT_TYPE
+  CONDITION
+}
+
+model ListItem {
+  id        String   @id @default(cuid())
+  companyId String
+  kind      ListKind
+  label     String
+  sortOrder Int      @default(0)
+  // Hidden from new choices; records that already use it keep it.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  maritalOf     Patient[]           @relation("MaritalStatus")
+  referralOf    Patient[]           @relation("ReferralSource")
+  taxOfficeOf   Patient[]           @relation("TaxOffice")
+  flagReasonsOf PatientFlagReason[]
+
+  @@unique([companyId, kind, label])
+  @@index([companyId, kind, sortOrder])
+}
+
+enum Sex {
+  FEMALE
+  MALE
+  OTHER
+}
+
+// Language of every form, consent and message for this patient (SPEC §4).
+enum ContactLanguage {
+  EL
+  EN
+}
+
+enum PatientFlag {
+  NONE
+  YELLOW
+  RED
+}
+
+enum PhoneType {
+  MOBILE
+  HOME
+  WORK
+  OTHER
+}
+
+// SPEC §4 "Basic info". Belongs to one company; every query filters by companyId.
+model Patient {
+  id                 String          @id @default(cuid())
+  companyId          String
+  // Unique within the company. Imported patients keep their my-medical number.
+  number             Int
+  surname            String
+  firstName          String          @default("")
+  fatherName         String?
+  // Name in a simplified Latin form (no accents; Greek and Greeklish alike), for search.
+  searchName         String
+  // Capitals without accents, for alphabetical order.
+  sortName           String
+  birthDate          DateTime?       @db.Date
+  sex                Sex?
+  maritalStatusId    String?
+  occupation         String?
+  referralSourceId   String?
+  referralNote       String?
+  registeredAt       DateTime        @default(now())
+  language           ContactLanguage @default(EL)
+  area               String?
+  address            String?
+  city               String?
+  postcode           String?
+  country            String?
+  amka               String?
+  afm                String?
+  taxOfficeId        String?
+  // my-medical keeps these apart for e-prescription.
+  eprescriptionCity  String?
+  eprescriptionPhone String?
+  // Until the consent system (SPEC §7) takes over.
+  marketingConsent   Boolean         @default(false)
+  // Shown as an alert on the patient header.
+  infectiousDiseases String?
+  treatingDoctorId   String?
+  comments           String?
+  // Staff-only marker; never sent to GHL or shown to the patient.
+  flag               PatientFlag     @default(NONE)
+  flagNote           String?
+  flagSetAt          DateTime?
+  flagSetById        String?
+  ghlContactId       String?
+  // Archived = hidden from search and lists, everything kept (never deleted in the app).
+  archivedAt         DateTime?
+  archivedById       String?
+  createdAt          DateTime        @default(now())
+  createdById        String?
+  updatedAt          DateTime        @updatedAt
+
+  company        Company             @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  maritalStatus  ListItem?           @relation("MaritalStatus", fields: [maritalStatusId], references: [id], onDelete: SetNull)
+  referralSource ListItem?           @relation("ReferralSource", fields: [referralSourceId], references: [id], onDelete: SetNull)
+  taxOffice      ListItem?           @relation("TaxOffice", fields: [taxOfficeId], references: [id], onDelete: SetNull)
+  treatingDoctor User?               @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id], onDelete: SetNull)
+  phones         PatientPhone[]
+  emails         PatientEmail[]
+  flagReasons    PatientFlagReason[]
+
+  @@unique([companyId, number])
+  @@index([companyId, sortName])
+  @@index([companyId, amka])
+  @@index([searchName(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model PatientPhone {
+  id        String    @id @default(cuid())
+  companyId String
+  patientId String
+  // As typed, e.g. "+30 694 123 4567".
+  number    String
+  // Digits only, without +30/0030, for search and duplicate checks.
+  digits    String
+  type      PhoneType @default(MOBILE)
+  // Main number, also used for WhatsApp.
+  isMain    Boolean   @default(false)
+  sortOrder Int       @default(0)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([companyId, digits])
+  @@index([digits(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model PatientEmail {
+  id        String  @id @default(cuid())
+  companyId String
+  patientId String
+  // Stored lower-case.
+  email     String
+  sortOrder Int     @default(0)
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([companyId, email])
+  @@index([email(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+model PatientFlagReason {
+  patientId  String
+  listItemId String
+  companyId  String
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  listItem   ListItem @relation(fields: [listItemId], references: [id], onDelete: Restrict)
+
+  @@id([patientId, listItemId])
+  @@index([listItemId])
 }

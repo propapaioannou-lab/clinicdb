@@ -22,6 +22,7 @@
     }
   },
   "nav": {
+    "patients": "Patients",
     "logout": "Log out",
     "sessionEnds": "Session ends: {date}",
     "users": "Users",
@@ -362,5 +363,27 @@
     "where": "In the server's backups folder, encrypted. Opening them needs the private key, which is kept off the server.",
     "offsite": "Off-site copy: set up at installation on the Synology (destination still to choose).",
     "none": "No runs yet."
+  },
+  "patients": {
+    "title": "Patients",
+    "count": "({count, plural, one {# patient} other {# patients}})",
+    "allCompanies": "All",
+    "number": "No.",
+    "name": "Name",
+    "fatherName": "Father's name",
+    "age": "Age",
+    "phone": "Phone",
+    "city": "City",
+    "company": "Company",
+    "years": "{years} y",
+    "infectious": "Infectious disease",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {page} of {pages}",
+    "flag": {
+      "NONE": "No flag",
+      "YELLOW": "Yellow flag",
+      "RED": "Red flag"
+    }
   }
 }

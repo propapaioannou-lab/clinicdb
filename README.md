@@ -24,6 +24,13 @@ See the app's log:
     podman compose exec app npx prisma migrate deploy
     podman compose exec app npx prisma db seed
 
+## Fake patients (laptop only)
+
+15,600 made-up patients for testing. Never run this on the real server.
+
+    podman compose exec app npm run db:fake               # only if there are no patients yet
+    podman compose exec app npm run db:fake -- --replace  # delete ALL patients, make new fake ones
+
 ## First Owner account (only once; others are invited from the app)
 
     podman compose exec app npx tsx scripts/create-owner.ts

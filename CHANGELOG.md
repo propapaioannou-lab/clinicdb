@@ -2,6 +2,21 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Structured examination for every area
+
+- Every area (Μαστός / θώρακας, Πρόσωπο, Μύτη, Σώμα, Γεννητικά, Άλλο) now works like the
+  breast: tap a finding, pick the details, and the sentence is written into
+  "Επιπλέον ευρήματα". Standard scales: MRD1, Hirmand, Dedo, Glogau, Fitzpatrick, Goode,
+  Matarasso, lipoedema stage/type, Pittsburgh, Simon, Franco, Vancouver.
+- Breast: a **measurements** box (cm, Δ/Α): JMD, θηλή–πτυχή, πλάτος βάσης, pinch, άλως…
+  If a breast procedure is ticked and JMD, θηλή–πτυχή υπό τάση or πλάτος βάσης is
+  missing, the box turns amber and lists what is missing.
+- Breast also covers **gynaecomastia** (Simon) and **top surgery** (dysphoria, binder,
+  hormones, assessment letter) as separate groups.
+- Check: open a patient → Επισκέψεις → Νέα επίσκεψη → + Μαστός / θώρακας. Type 22 in
+  JMD Δ, tap Πτώση → μέτρια; watch the text below. Under procedures tick Μαστός →
+  Αυξητική: the measurements box asks for the missing ones.
+
 ## 11 Oct 2026 — Visits: "Επιπλέον ευρήματα" holds the findings
 
 - **"Γενικά · αίτημα ασθενούς" removed.** (Any text already there was moved into the

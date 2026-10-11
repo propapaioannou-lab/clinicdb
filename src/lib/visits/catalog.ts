@@ -122,40 +122,15 @@ export const PROCEDURE_AREAS: ProcedureArea[] = [
   },
 ];
 
-// Clinical evaluation: one section per area of interest, each with reminder chips of
-// what to examine; a tap adds the reminder as a line to the notes.
-export const EXAM_AREAS: (Label & { key: string; prompts: Label[] })[] = [
-  {
-    key: "breast", el: "Μαστός", en: "Breast",
-    prompts: [
-      { el: "Μέγεθος / όγκος", en: "Size / volume" }, { el: "Πτώση (Regnault)", en: "Ptosis (Regnault)" }, { el: "Ασυμμετρία", en: "Asymmetry" },
-      { el: "Ποιότητα δέρματος", en: "Skin quality" }, { el: "Πάχος ιστού", en: "Tissue thickness" }, { el: "Θηλή-άλως", en: "Nipple-areola" },
-      { el: "Υπομαστική πτυχή", en: "Inframammary fold" },
-    ],
-  },
-  {
-    key: "face", el: "Πρόσωπο", en: "Face",
-    prompts: [
-      { el: "Μέτωπο / φρύδια", en: "Forehead / brows" }, { el: "Βλέφαρα", en: "Eyelids" }, { el: "Μέσο τρίτο", en: "Midface" },
-      { el: "Γνάθος / jowls", en: "Jawline / jowls" }, { el: "Λαιμός", en: "Neck" }, { el: "Δέρμα", en: "Skin" },
-    ],
-  },
-  {
-    key: "body", el: "Σώμα", en: "Body",
-    prompts: [
-      { el: "Κοιλιά", en: "Abdomen" }, { el: "Διάσταση ορθών", en: "Rectus diastasis" }, { el: "Λαγόνια", en: "Flanks" },
-      { el: "Μηροί", en: "Thighs" }, { el: "Βραχίονες", en: "Arms" }, { el: "Ποιότητα δέρματος", en: "Skin quality" },
-    ],
-  },
-  {
-    key: "nose", el: "Μύτη", en: "Nose",
-    prompts: [{ el: "Ράχη", en: "Dorsum" }, { el: "Άκρο", en: "Tip" }, { el: "Διάφραγμα", en: "Septum" }, { el: "Αναπνοή", en: "Breathing" }, { el: "Δέρμα", en: "Skin" }],
-  },
-  {
-    key: "genital", el: "Γεννητικά", en: "Genital",
-    prompts: [{ el: "Εξέταση", en: "Examination" }, { el: "Λειτουργικά", en: "Function" }, { el: "Ορμονοθεραπεία", en: "Hormone therapy" }],
-  },
-  { key: "other", el: "Άλλο", en: "Other", prompts: [] },
+// Clinical evaluation: one section per area of interest; each has a structured
+// examination (lib/visits/exams/areas.ts).
+export const EXAM_AREAS: (Label & { key: string })[] = [
+  { key: "breast", el: "Μαστός / θώρακας", en: "Breast / chest" },
+  { key: "face", el: "Πρόσωπο", en: "Face" },
+  { key: "nose", el: "Μύτη", en: "Nose" },
+  { key: "body", el: "Σώμα", en: "Body" },
+  { key: "genital", el: "Γεννητικά", en: "Genital" },
+  { key: "other", el: "Άλλο", en: "Other" },
 ];
 
 const byKey = new Map(PROCEDURE_AREAS.flatMap((a) => a.procedures.map((pr) => [pr.key, pr] as const)));

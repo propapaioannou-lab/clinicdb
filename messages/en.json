@@ -865,9 +865,12 @@
     "findingsText": "Further findings",
     "rewrite": "Rewrite from the choices"
   },
-  "breastExam": {
+  "exam": {
     "findings": "Findings",
-    "revision": "Revision (previous breast surgery)",
+    "revision": "Revision (previous surgery in this area)",
+    "right": "R",
+    "left": "L",
+    "requiredMissing": "Breast/chest procedure: measurements missing: {list}",
     "previous": "Previous operations",
     "year": "Year",
     "difficulty": "Difficulty (1 = standard)",

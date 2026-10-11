@@ -4,7 +4,8 @@ import type { Prisma } from "@/generated/prisma/client";
 import { canCloseVisit, canEditPatients, canHandleMoney, canReopenVisit } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { EXAM_AREA_KEYS, findProcedure } from "./catalog";
-import { cleanBreastExam, type BreastExam } from "./exams/breast";
+import { EXAMS } from "./exams/areas";
+import { cleanExam, type ExamValue } from "./exams/engine";
 
 // Visits (SPEC §4 Visit). Clinical part: anyone who may edit patients. Charge part:
 // Secretary or PA/nurse only, and never returned to anyone else.
@@ -12,7 +13,7 @@ import { cleanBreastExam, type BreastExam } from "./exams/breast";
 // text = "Επιπλέον ευρήματα": the findings as written (the automatic text lands here and
 // stays editable; imported my-medical "αντικειμενικά ευρήματα" go here too);
 // exam = the structured choices behind it (breast so far).
-export type VisitArea = { area: string; text: string; exam?: BreastExam };
+export type VisitArea = { area: string; text: string; exam?: ExamValue };
 
 // The findings texts of a visit, for lists and "previous visit".
 export function findingsText(areas: VisitArea[] | null): string | null {
@@ -61,8 +62,8 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
     const area = (a as Record<string, unknown>)?.area;
     if (typeof area !== "string" || !EXAM_AREA_KEYS.has(area) || areas.some((x) => x.area === area)) continue;
     const entry: VisitArea = { area, text: text((a as Record<string, unknown>).text) ?? "" };
-    if (area === "breast") {
-      const exam = cleanBreastExam((a as Record<string, unknown>).exam);
+    if (EXAMS[area]) {
+      const exam = cleanExam(EXAMS[area], (a as Record<string, unknown>).exam);
       if (exam) entry.exam = exam;
     }
     areas.push(entry);

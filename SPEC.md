@@ -215,6 +215,25 @@ services and are NOT rebuilt here.
   animation). **Difficulty 1–10**: rank 1 = standard; each rank above adds **+5% to the
   surgical fee** (applied in the quote, never shown to the surgeon) and **+10′ to the
   operating time**. Used when there is no AI transcript.
+  **All areas** (decided 11 Oct 2026) use the same engine, with standard scales:
+  Breast/chest — measurements in cm, right/left (JMD/SN–N, nipple–midline, N–IMF relaxed
+  and under stretch, base width, upper-pole and IMF pinch, skin stretch, areola,
+  intermammary distance); before any breast procedure the app warns if JMD, N–IMF under
+  stretch and base width are missing (for gynaecomastia/top surgery: areola instead of
+  base width). Gynaecomastia (Simon I–III), and **top surgery / gender dysphoria
+  documented separately** (identity, persistent chest dysphoria, goal, nipples, binder,
+  hormones and months, WPATH SOC-8 assessment letter, capacity, technique). Face —
+  forehead, brows, upper lids (dermatochalasis, fat, MRD1, levator function, ptosis),
+  lower lids (fat bags, tear trough Hirmand, snap/distraction, scleral show, negative
+  vector, festoons), midface deflation, jowls, neck (Dedo I–VI, laxity, submental fat,
+  platysmal bands, submandibular gland ptosis, cervicomental angle), skin (Glogau,
+  Fitzpatrick), ears, chin. Nose — dorsum, deviation, tip, base, airway (septum, valves,
+  turbinates), skin; angles, Goode ratio, projection, length. Body — abdomen (Matarasso,
+  pannus grade, diastasis cm, hernias, scars), massive weight loss, lipoedema (stage 1–4,
+  type I–V, symptoms, cuff sign, Stemmer), arms/thighs/buttocks/back/mons (Pittsburgh
+  laxity). Genital — labia minora (Franco, length), clitoral hood, labia majora, vaginal,
+  MtF prerequisites. Other — scar (Vancouver), skin lesion (ABCDE). Write-ups never
+  assume the patient's gender.
 - **Clinical evaluation** (main content): (the "General / patient's request" box was
   dropped — decided 11 Oct 2026)
   one section per area of interest (Breast, Face, Body, Nose, Genital, Other), added

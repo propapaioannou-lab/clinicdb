@@ -8,9 +8,10 @@ import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
-import { breastSummary, type BreastExam as BreastExamValue } from "@/lib/visits/exams/breast";
+import { EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
+import { summarize, type ExamValue } from "@/lib/visits/exams/engine";
 import type { VisitActionState } from "./actions";
-import { BreastExam } from "./breast-exam";
+import { ExamPanel } from "./exam-panel";
 
 export type VisitFormValues = {
   typeId: string;
@@ -71,27 +72,23 @@ export function VisitForm({
   const addArea = (area: string) => setV((x) => ({ ...x, areas: [...x.areas, { area, text: "" }] }));
   const removeArea = (area: string) => setV((x) => ({ ...x, areas: x.areas.filter((a) => a.area !== area) }));
   const setAreaText = (area: string, text: string) => setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, text } : a)) }));
-  // A reminder chip adds "Πτώση (Regnault): " as a new line, ready to complete.
   // The written-up findings land in "Επιπλέον ευρήματα" and follow the taps until the
   // doctor edits the text; after that the text is theirs (the ↻ button rewrites it).
-  const setAreaExam = (area: string, update: (prev: BreastExamValue) => BreastExamValue) =>
+  const summary = (area: string, exam: ExamValue) => summarize(EXAMS[area], exam, age);
+  const setAreaExam = (area: string, update: (prev: ExamValue) => ExamValue) =>
     setV((x) => ({
       ...x,
       areas: x.areas.map((a) => {
         if (a.area !== area) return a;
         const before = a.exam ?? { findings: {} };
         const exam = update(before);
-        const following = !a.text.trim() || a.text === breastSummary(before, age);
-        return { ...a, exam, text: following ? breastSummary(exam, age) : a.text };
+        const following = !a.text.trim() || a.text === summary(area, before);
+        return { ...a, exam, text: following ? summary(area, exam) : a.text };
       }),
     }));
   const rewrite = (area: string) =>
-    setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area && a.exam ? { ...a, text: breastSummary(a.exam, age) } : a)) }));
-  const addPrompt = (area: string, prompt: string) =>
-    setV((x) => ({
-      ...x,
-      areas: x.areas.map((a) => (a.area === area ? { ...a, text: `${a.text}${a.text && !a.text.endsWith("\n") ? "\n" : ""}${prompt}: ` } : a)),
-    }));
+    setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area && a.exam ? { ...a, text: summary(area, a.exam) } : a)) }));
+  const required = requiredBreastMeasurements(v.procedures.map((p) => p.key));
 
   const payload = () =>
     JSON.stringify({
@@ -154,20 +151,18 @@ export function VisitForm({
                     <h3 className="text-[15px] font-semibold">{def.el}</h3>
                     <button type="button" onClick={() => removeArea(a.area)} aria-label={t("removeArea", { area: def.el })} className="text-sm text-muted hover:text-danger">✕</button>
                   </div>
-                  {a.area === "breast" && <BreastExam value={a.exam} onChange={(u) => setAreaExam(a.area, u)} />}
-                  {a.area !== "breast" && def.prompts.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {def.prompts.map((pr) => (
-                        <button key={pr.el} type="button" onClick={() => addPrompt(a.area, pr.el)} className={softChip(a.text.includes(`${pr.el}:`))}>
-                          {pr.el}
-                        </button>
-                      ))}
-                    </div>
+                  {EXAMS[a.area] && (
+                    <ExamPanel
+                      area={EXAMS[a.area]}
+                      value={a.exam}
+                      onChange={(u) => setAreaExam(a.area, u)}
+                      missing={a.area === "breast" ? missingMeasurements(a.exam, required) : []}
+                    />
                   )}
                   <label className="block text-[13px] font-medium text-muted">
                     <span className="flex flex-wrap items-center justify-between gap-2">
                       {t("findingsText")}
-                      {a.exam && a.text !== breastSummary(a.exam, age) && breastSummary(a.exam, age) && (
+                      {a.exam && a.text !== summary(a.area, a.exam) && summary(a.area, a.exam) && (
                         <button type="button" onClick={() => rewrite(a.area)} className="text-[13px] font-semibold text-primary hover:text-primary-hover">
                           ↻ {t("rewrite")}
                         </button>

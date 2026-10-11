@@ -3,7 +3,7 @@ import { num1 } from "@/lib/format";
 import { card } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, findProcedure } from "@/lib/visits/catalog";
-import { difficultyModifiers } from "@/lib/visits/exams/breast";
+import { difficultyModifiers } from "@/lib/visits/exams/engine";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 
 // A closed visit (or any visit for read-only users), in the same layout as the form.
@@ -23,7 +23,7 @@ export async function VisitView({
   aside?: React.ReactNode;
 }) {
   const t = await getTranslations("visit");
-  const tb = await getTranslations("breastExam");
+  const tb = await getTranslations("exam");
   const b = bmi(v.weightKg ?? undefined, v.heightCm ?? undefined);
   return (
     <div className="flex flex-wrap items-start gap-5">

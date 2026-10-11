@@ -8,7 +8,7 @@ import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
-import { EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
+import { BREAST_PROCEDURES_BY_SEX, EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
 import { summarize, type ExamValue, type FieldValue } from "@/lib/visits/exams/engine";
 import { chartFor, detailsPhrase, PROCEDURE_DETAILS } from "@/lib/visits/procedure-details";
 import type { VisitActionState } from "./actions";
@@ -78,6 +78,10 @@ export function VisitForm({
       ...x,
       procedures: x.procedures.map((p) => (p.key !== key ? p : { ...p, subs: p.subs.includes(sub) ? p.subs.filter((s) => s !== sub) : [...p.subs, sub] })),
     }));
+  // Breast procedures for the patient's gender; chosen ones always stay visible.
+  const [allBreast, setAllBreast] = useState(false);
+  const breastFor = sex ? BREAST_PROCEDURES_BY_SEX[sex] : undefined;
+  const offered = (area: string, key: string) => area !== "breast" || allBreast || !breastFor || breastFor.includes(key) || chosen.has(key);
   const closeProcArea = (area: string) => {
     const keys = new Set(PROCEDURE_AREAS.find((a) => a.key === area)!.procedures.map((p) => p.key));
     setProcAreas((x) => x.filter((a) => a !== area));
@@ -220,11 +224,16 @@ export function VisitForm({
                   <button type="button" onClick={() => closeProcArea(area.key)} aria-label={t("removeArea", { area: area.el })} className="text-sm text-muted hover:text-danger">✕</button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {area.procedures.map((p) => (
+                  {area.procedures.filter((p) => offered(area.key, p.key)).map((p) => (
                     <button key={p.key} type="button" aria-pressed={chosen.has(p.key)} onClick={() => toggleProcedure(p.key)} className={chip(chosen.has(p.key))}>
                       {chosen.has(p.key) ? "✓ " : "+ "}{p.el}
                     </button>
                   ))}
+                  {area.key === "breast" && breastFor && (
+                    <button type="button" onClick={() => setAllBreast((x) => !x)} className="self-center text-[13px] font-semibold text-primary hover:text-primary-hover">
+                      {allBreast ? t("fewerProcedures") : `+ ${t("allProcedures")}`}
+                    </button>
+                  )}
                 </div>
                 {v.procedures.filter((p) => area.procedures.some((x) => x.key === p.key) && (findProcedure(p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
                   const def = findProcedure(p.key)!;

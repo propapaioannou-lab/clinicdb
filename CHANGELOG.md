@@ -14,7 +14,11 @@ Plain-language record of what changed and how to check it.
 - Patient "Φύλο" now offers Γυναίκα, Άνδρας, Τρανς άνδρας, Τρανς γυναίκα, Μη δυαδικό
   άτομο ("Άλλο" removed; any "Άλλο" became "Μη δυαδικό άτομο").
 - In the breast examination: women see the breast findings, men only Γυναικομαστία,
-  trans and non-binary patients only Top surgery. "+ Όλα τα ευρήματα" shows the rest.
+  trans men and non-binary patients only Top surgery, trans women the breast findings
+  plus "Αυξητική θηλεοποίησης" (dysphoria, οιστρογόνα, breast growth on hormones,
+  letter). "+ Όλα τα ευρήματα" shows the rest.
+- Προεγχειρητική εκτίμηση → Μαστός follows the same rule: a trans woman sees only
+  Αυξητική μαστού, a trans man only Top surgery ("+ Όλες" shows the rest).
 - Check: set a patient to Άνδρας → Νέα επίσκεψη → + Μαστός / θώρακας.
 
 ## 11 Oct 2026 — Breast measurements: basic set + sketch

@@ -223,7 +223,11 @@ services and are NOT rebuilt here.
   measurements use English abbreviations (JMD, N–ML, N–IMF, BW, IMD; NFA, NLA, Goode);
   **gender** (patient field: female, male, trans man, trans woman, non-binary — "other"
   removed) picks the findings offered: women → breast findings, men → gynaecomastia,
-  trans / non-binary → top surgery; "all findings" is one tap away; before any breast procedure the app warns if JMD, N–IMF under
+  trans men / non-binary → top surgery, trans women → breast findings + feminizing
+  augmentation documentation (dysphoria, estrogen and months, breast growth on
+  hormones, WPATH letter, capacity, stable health); the breast procedures offered follow
+  the same rule (trans women → augmentation only; trans men → top surgery); "all" is one
+  tap away; before any breast procedure the app warns if JMD, N–IMF under
   stretch and base width are missing (for gynaecomastia/top surgery: areola instead of
   base width). Gynaecomastia (Simon I–III), and **top surgery / gender dysphoria
   documented separately** (identity, persistent chest dysphoria, goal, nipples, binder,

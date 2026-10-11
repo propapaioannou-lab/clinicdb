@@ -19,13 +19,15 @@ const cm = (key: string, el: string, say: string, extra: Partial<Extract<Field, 
 // ── Μαστός / θώρακας ───────────────────────────────────────────────────────────────────
 const G_GYNAE = "Γυναικομαστία";
 const G_TOP = "Top surgery · δυσφορία φύλου";
+const G_FEM = "Αυξητική θηλεοποίησης · δυσφορία φύλου";
 
 const BREAST: AreaExam = {
   key: "breast",
-  groups: [G_GYNAE, G_TOP],
-  // Decided 11 Oct 2026: women → breast findings; men → gynaecomastia; trans and
-  // non-binary patients → top surgery.
-  groupsBySex: { FEMALE: [""], MALE: [G_GYNAE], TRANS_MAN: [G_TOP], TRANS_WOMAN: [G_TOP], NON_BINARY: [G_TOP] },
+  groups: [G_GYNAE, G_TOP, G_FEM],
+  // Decided 11 Oct 2026: women → breast findings; men → gynaecomastia; trans men and
+  // non-binary patients → top surgery; trans women → breast findings + feminizing
+  // augmentation documentation.
+  groupsBySex: { FEMALE: [""], MALE: [G_GYNAE], TRANS_MAN: [G_TOP], NON_BINARY: [G_TOP], TRANS_WOMAN: ["", G_FEM] },
   // The basic set (decided 11 Oct 2026), also shown on the breast sketch.
   measurements: {
     title: "Μετρήσεις (cm)",
@@ -141,11 +143,11 @@ const BREAST: AreaExam = {
       key: "topSurgery", el: "Top surgery", group: G_TOP, sentence: "Εκτίμηση για top surgery",
       fields: [
         { key: "dysphoria", el: "Επίμονη δυσφορία θώρακα", type: "bool", phrase: "τεκμηριωμένη επίμονη δυσφορία φύλου σχετική με τον θώρακα" },
-        { key: "goal", el: "Στόχος", type: "one", prefix: "στόχος: ", options: [o("flat", "επίπεδος θώρακας"), o("reduction", "μείωση όγκου"), o("contour", "ανδρικό περίγραμμα με θηλές"), o("feminizing", "αυξητική (θηλεοποίηση)")] },
+        { key: "goal", el: "Στόχος", type: "one", prefix: "στόχος: ", options: [o("flat", "επίπεδος θώρακας"), o("reduction", "μείωση όγκου"), o("contour", "ανδρικό περίγραμμα με θηλές")] },
         { key: "nipples", el: "Θηλές", type: "one", options: [o("graft", "ελεύθερο μόσχευμα", "θηλές με ελεύθερο μόσχευμα"), o("pedicle", "διατήρηση σε μίσχο", "διατήρηση θηλών σε μίσχο (αισθητικότητα)"), o("none", "χωρίς θηλές", "χωρίς αναδημιουργία θηλών")] },
         { key: "binder", el: "Binder", type: "one", options: [o("none", "όχι", "χωρίς χρήση binder"), o("lt8", "< 8 ώρες/ημέρα", "binder < 8 ώρες/ημέρα"), o("gt8", "≥ 8 ώρες/ημέρα", "binder ≥ 8 ώρες/ημέρα")] },
         { key: "binderIssues", el: "Επιπλοκές binder", type: "many", prefix: "επιπλοκές binder: ", options: [o("skin", "δερματικές βλάβες"), o("pain", "πόνος"), o("breathing", "δύσπνοια")] },
-        { key: "hormones", el: "Ορμονοθεραπεία", type: "one", options: [o("on", "τεστοστερόνη", "σε τεστοστερόνη"), o("estrogen", "οιστρογόνα", "σε οιστρογόνα"), o("none", "όχι", "χωρίς ορμονοθεραπεία")] },
+        { key: "hormones", el: "Ορμονοθεραπεία", type: "one", options: [o("on", "τεστοστερόνη", "σε τεστοστερόνη"), o("none", "όχι", "χωρίς ορμονοθεραπεία")] },
         { key: "months", el: "Μήνες ορμονοθεραπείας", type: "measure", unit: "μήνες", say: "επί", max: 600 },
         { key: "letter", el: "Επιστολή εκτίμησης", type: "one", options: [o("yes", "υπάρχει", "επιστολή εκτίμησης ψυχικής υγείας (WPATH SOC-8)"), o("pending", "εκκρεμεί", "εκκρεμεί επιστολή εκτίμησης ψυχικής υγείας")] },
         { key: "capacity", el: "Ικανότητα συναίνεσης", type: "bool", phrase: "ικανότητα συναίνεσης" },
@@ -153,6 +155,21 @@ const BREAST: AreaExam = {
         { key: "technique", el: "Εκτίμηση τεχνικής", type: "one", prefix: "εκτίμηση: ", options: [o("periareolar", "keyhole / περιθηλαία"), o("double", "double incision"), o("other", "άλλη τεχνική")] },
       ],
       parts: ["{dysphoria}", "{goal}", "{nipples}", "{binder}", "{binderIssues}", "{hormones} {months}", "{letter}", "{capacity}", "{stable}", "{technique}"],
+      empty: "υπό διερεύνηση",
+    },
+    {
+      // Trans women: gender-affirming breast augmentation (decided 11 Oct 2026).
+      key: "feminizing", el: "Αυξητική θηλεοποίησης", group: G_FEM, sentence: "Εκτίμηση για αυξητική θηλεοποίησης",
+      fields: [
+        { key: "dysphoria", el: "Επίμονη δυσφορία", type: "bool", phrase: "τεκμηριωμένη επίμονη δυσφορία φύλου" },
+        { key: "hormones", el: "Ορμονοθεραπεία", type: "one", options: [o("estrogen", "οιστρογόνα", "σε οιστρογόνα"), o("none", "όχι", "χωρίς ορμονοθεραπεία")] },
+        { key: "months", el: "Μήνες ορμονοθεραπείας", type: "measure", unit: "μήνες", say: "επί", max: 600 },
+        { key: "growth", el: "Ανάπτυξη μαστών με ορμόνες", type: "one", options: [o("minimal", "ελάχιστη", "ελάχιστη ανάπτυξη μαστών με ορμονοθεραπεία"), o("moderate", "μέτρια", "μέτρια ανάπτυξη μαστών με ορμονοθεραπεία"), o("good", "καλή", "καλή ανάπτυξη μαστών με ορμονοθεραπεία")] },
+        { key: "letter", el: "Επιστολή εκτίμησης", type: "one", options: [o("yes", "υπάρχει", "επιστολή εκτίμησης ψυχικής υγείας (WPATH SOC-8)"), o("pending", "εκκρεμεί", "εκκρεμεί επιστολή εκτίμησης ψυχικής υγείας")] },
+        { key: "capacity", el: "Ικανότητα συναίνεσης", type: "bool", phrase: "ικανότητα συναίνεσης" },
+        { key: "stable", el: "Σταθερή ψυχική/σωματική υγεία", type: "bool", phrase: "σταθερή ψυχική και σωματική υγεία" },
+      ],
+      parts: ["{dysphoria}", "{hormones} {months}", "{growth}", "{letter}", "{capacity}", "{stable}"],
       empty: "υπό διερεύνηση",
     },
   ],
@@ -173,6 +190,16 @@ export function requiredBreastMeasurements(procedureKeys: string[]): string[] {
   if (!breast.length) return [];
   return breast.every((k) => CHEST_ONLY.has(k)) ? ["jmd", "nimfStretch", "areola"] : ["jmd", "nimfStretch", "bw"];
 }
+// Breast procedures offered by gender (decided 11 Oct 2026); the rest stay one tap away.
+// Unknown gender → all.
+export const BREAST_PROCEDURES_BY_SEX: Record<string, string[]> = {
+  FEMALE: ["augmentation", "mastopexy", "augMastopexy", "reduction", "reconstruction", "implantExchange", "invertedNipple", "tuberous", "deformity", "breastFat"],
+  MALE: ["gynaecomastia", "implantExchange", "reconstruction"],
+  TRANS_MAN: ["topSurgery"],
+  NON_BINARY: ["topSurgery"],
+  TRANS_WOMAN: ["augmentation"],
+};
+
 export function missingMeasurements(exam: ExamValue | undefined, required: string[]): string[] {
   return required.filter((k) => {
     const m = exam?.measurements?.[k];

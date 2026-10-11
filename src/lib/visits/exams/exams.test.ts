@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EXAMS, missingMeasurements, requiredBreastMeasurements } from "./areas";
+import { BREAST_PROCEDURES_BY_SEX, EXAMS, missingMeasurements, requiredBreastMeasurements } from "./areas";
 import { cleanExam, difficultyModifiers, summarize } from "./engine";
 
 const write = (area: string, raw: unknown, age: number | null = 43) => summarize(EXAMS[area], cleanExam(EXAMS[area], raw)!, age);
@@ -126,6 +126,12 @@ describe("breast findings by gender", () => {
     const g = EXAMS.breast.groupsBySex!;
     expect(g.FEMALE).toEqual([""]);
     expect(g.MALE).toEqual(["Γυναικομαστία"]);
-    for (const s of ["TRANS_MAN", "TRANS_WOMAN", "NON_BINARY"]) expect(g[s]).toEqual(["Top surgery · δυσφορία φύλου"]);
+    for (const s of ["TRANS_MAN", "NON_BINARY"]) expect(g[s]).toEqual(["Top surgery · δυσφορία φύλου"]);
+    expect(g.TRANS_WOMAN).toEqual(["", "Αυξητική θηλεοποίησης · δυσφορία φύλου"]);
+    expect(BREAST_PROCEDURES_BY_SEX.TRANS_WOMAN).toEqual(["augmentation"]);
+    expect(BREAST_PROCEDURES_BY_SEX.TRANS_MAN).toEqual(["topSurgery"]);
+    expect(write("breast", { findings: { feminizing: { dysphoria: true, hormones: "estrogen", months: { v: 24 }, growth: "minimal" } } }, 31)).toBe(
+      "Εκτίμηση για αυξητική θηλεοποίησης: τεκμηριωμένη επίμονη δυσφορία φύλου, σε οιστρογόνα επί 24 μήνες, ελάχιστη ανάπτυξη μαστών με ορμονοθεραπεία.",
+    );
   });
 });

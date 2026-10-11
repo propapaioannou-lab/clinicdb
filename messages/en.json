@@ -811,6 +811,8 @@
     "areaLabel": "{area} clinical evaluation",
     "removeArea": "Remove area {area}",
     "procedures": "Preoperative assessment",
+    "allProcedures": "All",
+    "fewerProcedures": "Relevant only",
     "procedureAreaLabel": "{area} preoperative assessment",
     "sizeChart": "Size from chart",
     "procedureArea": "Area",

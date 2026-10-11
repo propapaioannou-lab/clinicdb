@@ -811,6 +811,8 @@
     "areaLabel": "{area} κλινική εκτίμηση",
     "removeArea": "Αφαίρεση περιοχής {area}",
     "procedures": "Προεγχειρητική εκτίμηση",
+    "allProcedures": "Όλες",
+    "fewerProcedures": "Μόνο οι σχετικές",
     "procedureAreaLabel": "{area} προεγχειρητική εκτίμηση",
     "sizeChart": "Μέγεθος από τον πίνακα",
     "procedureArea": "Περιοχή",

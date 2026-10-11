@@ -74,3 +74,15 @@ describe("parseDayMonthYear", () => {
     expect(parseDayMonthYear("  ")).toBeNull();
   });
 });
+
+describe("splitPhone / joinPhone", () => {
+  it("splits the country code from the number", async () => {
+    const { splitPhone, joinPhone } = await import("./phone");
+    expect(splitPhone("+357 99 123456")).toEqual({ code: "+357", local: "99 123456" });
+    expect(splitPhone("+30 694 111 2233")).toEqual({ code: "+30", local: "694 111 2233" });
+    expect(splitPhone("0044 20 7946 0958")).toEqual({ code: "+44", local: "20 7946 0958" });
+    expect(splitPhone("6941112233")).toEqual({ code: "+30", local: "6941112233" });
+    expect(joinPhone("+30", " 694 111 2233 ")).toBe("+30 694 111 2233");
+    expect(joinPhone("+30", "  ")).toBe("");
+  });
+});

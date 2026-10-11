@@ -7,6 +7,7 @@ import { PlusIcon } from "@/components/icons";
 import { ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
 import type { PatientFormOptions } from "@/lib/patients/options";
 import type { PatientFormState } from "./actions";
+import { EmailInput, PhoneInput } from "./contact-inputs";
 import { DuplicatePanel, type MergeChoices } from "./duplicate-panel";
 
 export type PatientFormValues = {
@@ -188,7 +189,7 @@ export function PatientForm({
               <span className="text-sm font-medium text-ink-2">{t("phones")}</span>
               {phones.map((p, i) => (
                 <div key={p.key} className="grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto_1.5rem]">
-                  <input name="phoneNumber" type="tel" defaultValue={p.number} placeholder="69X XXX XXXX" aria-label={t("phone")} className={`${inputClass} mt-0`} />
+                  <PhoneInput defaultValue={p.number} label={t("phone")} codeLabel={t("countryCode")} />
                   <select name="phoneType" defaultValue={p.type} aria-label={t("phoneType")} className={`${inputClass} mt-0`}>
                     {PHONE_TYPES.map((pt) => <option key={pt} value={pt}>{t(`phoneTypes.${pt}`)}</option>)}
                   </select>
@@ -208,8 +209,8 @@ export function PatientForm({
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium text-ink-2">{t("emails")}</span>
               {emails.map((e, i) => (
-                <div key={e.key} className="flex items-center gap-2">
-                  <input name="email" type="email" defaultValue={e.value} aria-label={t("email")} className={`${inputClass} mt-0`} />
+                <div key={e.key} className="flex items-start gap-2">
+                  <EmailInput defaultValue={e.value} label={t("email")} error={t("errors.invalid_email")} />
                   {emails.length > 1 && (
                     <button type="button" onClick={() => setEmails(emails.filter((_, j) => j !== i))} className="text-sm text-muted hover:text-danger" aria-label={t("remove")}>✕</button>
                   )}

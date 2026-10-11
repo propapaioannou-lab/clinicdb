@@ -581,12 +581,13 @@
       "surname_required": "Το επώνυμο είναι υποχρεωτικό.",
       "invalid_amka": "Ο ΑΜΚΑ έχει 11 ψηφία.",
       "invalid_afm": "Ο ΑΦΜ έχει 9 ψηφία.",
-      "invalid_email": "Ένα email δεν είναι έγκυρο.",
+      "invalid_email": "Το email δεν είναι σωστό (π.χ. onoma@example.com).",
       "invalid_phone": "Ένα τηλέφωνο είναι πολύ μικρό.",
       "invalid_birth_date": "Η ημερομηνία γέννησης δεν είναι έγκυρη.",
       "invalid_choice": "Μια επιλογή δεν είναι πια διαθέσιμη· ανανεώστε τη σελίδα."
     },
-    "datePlaceholder": "ηη/μμ/εεεε"
+    "datePlaceholder": "ηη/μμ/εεεε",
+    "countryCode": "Κωδικός χώρας"
   },
   "duplicates": {
     "title": "{count, plural, one {Βρέθηκε πιθανός διπλότυπος} other {Βρέθηκαν # πιθανοί διπλότυποι}}",

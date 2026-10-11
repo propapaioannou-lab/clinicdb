@@ -581,12 +581,13 @@
       "surname_required": "Surname is required.",
       "invalid_amka": "AMKA has 11 digits.",
       "invalid_afm": "Tax number has 9 digits.",
-      "invalid_email": "An email is not valid.",
+      "invalid_email": "This email is not valid (e.g. name@example.com).",
       "invalid_phone": "A phone number is too short.",
       "invalid_birth_date": "The date of birth is not valid.",
       "invalid_choice": "A choice is no longer available; reload the page."
     },
-    "datePlaceholder": "dd/mm/yyyy"
+    "datePlaceholder": "dd/mm/yyyy",
+    "countryCode": "Country code"
   },
   "duplicates": {
     "title": "{count, plural, one {Possible duplicate found} other {# possible duplicates found}}",

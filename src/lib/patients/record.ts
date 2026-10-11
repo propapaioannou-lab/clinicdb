@@ -43,14 +43,13 @@ export async function openPatient(actor: Actor, id: string, ctx: RequestContext)
   };
   // Staff notes, not clinical data: Guests (research) do not see them.
   const staff = {
-    comments: p.comments,
     flag: p.flag,
     flagNote: p.flagNote,
     flagSetAt: p.flagSetAt,
     flagReasons: p.flagReasons.map((r) => r.listItem),
   };
   if (!canSeeContactDetails(actor.level)) {
-    return { ...shared, comments: null, flag: "NONE" as const, flagNote: null, flagSetAt: null, flagReasons: [], contacts: null };
+    return { ...shared, flag: "NONE" as const, flagNote: null, flagSetAt: null, flagReasons: [], contacts: null };
   }
   return {
     ...shared,
@@ -71,7 +70,6 @@ export async function openPatient(actor: Actor, id: string, ctx: RequestContext)
       referralNote: p.referralNote,
       eprescriptionCity: p.eprescriptionCity,
       eprescriptionPhone: p.eprescriptionPhone,
-      marketingConsent: p.marketingConsent,
       ghlContactId: p.ghlContactId,
       // Raw values for the edit form.
       form: {

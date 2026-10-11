@@ -31,10 +31,7 @@ const input = (over: Partial<PatientInput> = {}): PatientInput => ({
   taxOfficeId: null,
   eprescriptionCity: null,
   eprescriptionPhone: null,
-  marketingConsent: false,
-  infectiousDiseases: null,
   treatingDoctorId: null,
-  comments: null,
   ghlContactId: null,
   phones: [],
   emails: [],
@@ -103,6 +100,18 @@ describe("editing patients", () => {
     const log = await db.auditLog.findFirstOrThrow({ where: { action: "patient.updated", entityId: r.id } });
     expect(log.details).toMatchObject({ city: { from: "Θεσσαλονίκη", to: "Κατερίνη" }, phones: { to: ["6900000011 (MOBILE, main)"] } });
     expect(Object.keys(log.details as object)).not.toContain("surname");
+  });
+
+  it("leaves consent, comments and infectious diseases alone (they are not in this form)", async () => {
+    const user = await makeActor("USER", [c.surgery]);
+    const r = await createPatient(user, c.surgery, input(), ctx);
+    if (!r.ok) throw new Error(r.error);
+    await db.patient.update({ where: { id: r.id }, data: { marketingConsent: true, comments: "Παλιό σχόλιο", infectiousDiseases: "HCV" } });
+    const p0 = await db.patient.findUniqueOrThrow({ where: { id: r.id } });
+    expect(await updatePatient(user, r.id, input({ surname: p0.surname, city: "Βέροια" }), ctx)).toEqual({ ok: true });
+    expect(await db.patient.findUniqueOrThrow({ where: { id: r.id } })).toMatchObject({
+      city: "Βέροια", marketingConsent: true, comments: "Παλιό σχόλιο", infectiousDiseases: "HCV",
+    });
   });
 
   it("does not let Guests or other companies edit", async () => {

@@ -117,11 +117,9 @@ export function PatientCard({
                     <Detail label={tf("afm")} value={[c.afm, c.taxOffice].filter(Boolean).join(" · ")} />
                     <Detail label={t("eprescription")} value={[c.eprescriptionCity, c.eprescriptionPhone].filter(Boolean).join(" · ")} />
                     <Detail label={tf("referralSource")} value={[c.referralSource, c.referralNote].filter(Boolean).join(" · ")} />
-                    <Detail label={tf("marketingConsent")} value={c.marketingConsent ? t("yes") : t("no")} />
                   </>
                 )}
                 <Detail label={t("registered")} value={date(p.registeredAt)} />
-                <Detail label={tf("comments")} value={p.comments} wide />
                 {p.flag !== "NONE" && <Detail label={t("flagLabel")} value={[flagText, p.flagNote, p.flagSetAt && date(p.flagSetAt)].filter(Boolean).join(" · ")} wide />}
               </dl>
               <div className="flex flex-wrap gap-2">

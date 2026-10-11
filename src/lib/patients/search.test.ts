@@ -140,7 +140,6 @@ describe("openPatient", () => {
     const p = await openPatient(guest, ids.maria, ctx);
     expect(p?.contacts).toBeNull();
     expect(p?.flag).toBe("NONE");
-    expect(p?.comments).toBeNull();
     expect(JSON.stringify(p)).not.toContain("15068012345");
     expect(JSON.stringify(p)).not.toContain("6945551212");
     expect(p?.ageFrom).toBeInstanceOf(Date);

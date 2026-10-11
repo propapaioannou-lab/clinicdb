@@ -29,10 +29,7 @@ export type PatientInput = {
   taxOfficeId: string | null;
   eprescriptionCity: string | null;
   eprescriptionPhone: string | null;
-  marketingConsent: boolean;
-  infectiousDiseases: string | null;
   treatingDoctorId: string | null;
-  comments: string | null;
   ghlContactId: string | null;
   phones: { number: string; type: PhoneType; isMain: boolean }[];
   emails: string[];
@@ -85,8 +82,6 @@ export function cleanInput(input: PatientInput): PatientInput {
     afm: t(input.afm)?.replace(/\s/g, "") ?? null,
     eprescriptionCity: t(input.eprescriptionCity),
     eprescriptionPhone: t(input.eprescriptionPhone),
-    infectiousDiseases: t(input.infectiousDiseases),
-    comments: t(input.comments),
     ghlContactId: t(input.ghlContactId),
     phones,
     emails: [...new Set(input.emails.map(normalizeEmail).filter(Boolean))],

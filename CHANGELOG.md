@@ -2,6 +2,14 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Patient details form trimmed
+
+- Removed from the patient details form and the details view, at your request:
+  **newsletter consent** (it belongs in the consent forms, Phase 3), **comments** and
+  **infectious diseases** (these go to the medical history, Step 4).
+- Nothing is deleted: values already stored stay in the database, and saving the details
+  form never changes them. The red infectious-disease alert on the patient header stays.
+
 ## 11 Oct 2026 — Phase 2, Step 3c: Patient record and new patients
 
 - **Patient record** in the approved design: the patient card (name, flag, code, age,

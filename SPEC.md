@@ -61,11 +61,14 @@ services and are NOT rebuilt here.
 - AMKA — optional, searchable
 - Tax data for receipts: ΑΦΜ, ΔΟΥ (list)
 - City + phone for e-prescription (separate fields in my-medical)
-- Newsletter / marketing consent (checkbox → becomes part of §7 consents)
-- Infectious diseases (ΜΟΛΥΣΜΑΤΙΚΑ) — free text, shown as an alert on the patient header
+- Newsletter / marketing consent: **not** in basic details — only in the consent forms (§7).
+  (Decided 11 Oct 2026.)
+- Infectious diseases (ΜΟΛΥΣΜΑΤΙΚΑ) — shown as an alert on the patient header; entered in the
+  medical history (Infections section), **not** in basic details (decided 11 Oct 2026).
 - Profile photo (upload or tablet camera)
 - Treating doctor — chosen from app users whose role is Surgeon (§11)
-- Comments
+- Comments — **not** in basic details (decided 11 Oct 2026). Imported my-medical comments are
+  kept in the database; where they are shown is open (§13).
 - **Patient flag** (replaces my-medical "Κριτική"): none / 🟡 yellow / 🔴 red, with
   reason(s) from an editable list (bargained for discount, no-show, came late, …),
   free-text note, date and who set it. Shown as a small coloured marker on the patient
@@ -583,6 +586,7 @@ Admin work (users, settings, backups) comes from the level, not the role.
 - Exact patient fields (my-medical screenshots)
 - Photo folder structure on the Synology today
 - Legal check: e-signatures for surgical consent; consent wording
+- Where general comments about a patient (incl. imported my-medical comments) are shown
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`

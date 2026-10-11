@@ -4,7 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import type { PhoneType } from "@/generated/prisma/client";
 import { PlusIcon } from "@/components/icons";
-import { ErrorBox, inputClass, Notice, primaryButton, secondaryButton, textareaClass } from "@/components/ui";
+import { ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
 import type { PatientFormOptions } from "@/lib/patients/options";
 import type { PatientFormState } from "./actions";
 import { DuplicatePanel, type MergeChoices } from "./duplicate-panel";
@@ -30,10 +30,7 @@ export type PatientFormValues = {
   taxOfficeId: string;
   eprescriptionCity: string;
   eprescriptionPhone: string;
-  marketingConsent: boolean;
-  infectiousDiseases: string;
   treatingDoctorId: string;
-  comments: string;
   ghlContactId: string;
   phones: { number: string; type: PhoneType; isMain: boolean }[];
   emails: string[];
@@ -43,7 +40,7 @@ export const EMPTY_PATIENT: PatientFormValues = {
   surname: "", firstName: "", fatherName: "", birthDate: "", sex: "", maritalStatusId: "", occupation: "",
   referralSourceId: "", referralNote: "", language: "EL", area: "", address: "", city: "", postcode: "",
   country: "", amka: "", afm: "", taxOfficeId: "", eprescriptionCity: "", eprescriptionPhone: "",
-  marketingConsent: false, infectiousDiseases: "", treatingDoctorId: "", comments: "", ghlContactId: "",
+  treatingDoctorId: "", ghlContactId: "",
   phones: [{ number: "", type: "MOBILE", isMain: true }], emails: [""],
 };
 
@@ -215,10 +212,6 @@ export function PatientForm({
                 <PlusIcon size={15} />{t("addEmail")}
               </button>
             </div>
-            <label className="flex items-center gap-2 text-sm text-ink-2 sm:col-span-3">
-              <input type="checkbox" name="marketingConsent" defaultChecked={initial.marketingConsent} className="h-4 w-4 accent-primary" />
-              {t("marketingConsent")}
-            </label>
           </>)}
 
           {group(t("addressGroup"), <>
@@ -245,17 +238,6 @@ export function PatientForm({
             {field("eprescriptionPhone", t("eprescriptionPhone"), { type: "tel" })}
           </>)}
 
-          {group(t("notesGroup"), <>
-            <label className="block text-sm font-medium text-ink-2">
-              {t("infectiousDiseases")}
-              <input name="infectiousDiseases" defaultValue={initial.infectiousDiseases} className={inputClass} />
-              <span className="mt-1 block text-xs font-normal text-muted">{t("infectiousHelp")}</span>
-            </label>
-            <label className="block text-sm font-medium text-ink-2 sm:col-span-2">
-              {t("comments")}
-              <textarea name="comments" rows={3} defaultValue={initial.comments} className={textareaClass} />
-            </label>
-          </>)}
           <input type="hidden" name="ghlContactId" defaultValue={initial.ghlContactId} />
         </fieldset>
 

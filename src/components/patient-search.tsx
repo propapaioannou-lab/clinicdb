@@ -15,7 +15,8 @@ export function PatientSearch({ limited }: { limited: boolean }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[] | null>(null);
   const [multiCompany, setMultiCompany] = useState(false);
-  const [active, setActive] = useState(0);
+  // -1 = nothing chosen: Enter opens the full results list.
+  const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
 
   // "/" or Ctrl+K jumps to the search box from anywhere (unless typing elsewhere).
@@ -42,7 +43,7 @@ export function PatientSearch({ limited }: { limited: boolean }) {
         const data = await res.json();
         setResults(data.results);
         setMultiCompany(data.multiCompany);
-        setActive(0);
+        setActive(-1);
       } catch {
         // Typing again cancels the previous request; nothing to do.
       }
@@ -69,10 +70,10 @@ export function PatientSearch({ limited }: { limited: boolean }) {
       setActive((a) => Math.min(a + 1, (shown?.length ?? 1) - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setActive((a) => Math.max(a - 1, 0));
+      setActive((a) => Math.max(a - 1, -1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (shown?.[active]) go(`/patients/${shown[active].id}`);
+      if (active >= 0 && shown?.[active]) go(`/patients/${shown[active].id}`);
       else if (q.trim()) showAll();
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -110,9 +111,8 @@ export function PatientSearch({ limited }: { limited: boolean }) {
                   <button
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
-                    onMouseEnter={() => setActive(i)}
                     onClick={() => go(`/patients/${r.id}`)}
-                    className={`flex w-full items-center gap-3 px-3 py-2 text-left ${i === active ? "bg-neutral-100 dark:bg-neutral-800" : ""}`}
+                    className={`flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-neutral-50 dark:hover:bg-neutral-800/60 ${i === active ? "bg-neutral-100 dark:bg-neutral-800" : ""}`}
                   >
                     <span className="w-14 shrink-0 tabular-nums text-neutral-500">{r.number}</span>
                     <span className="min-w-0 flex-1">

@@ -12,8 +12,8 @@ Plain-language record of what changed and how to check it.
   part of the number), **email**, **AMKA** and **patient number**.
 - Small **spelling mistakes** are forgiven when nothing matches exactly
   ("Παπαδοπόλου" still finds Παπαδοπούλου).
-- Keyboard: **/** or **Ctrl+K** jumps to the box; ↑ ↓ to choose; **Enter** opens the
-  patient, or the full results list if none is chosen; **Esc** closes.
+- Keyboard: **/** or **Ctrl+K** jumps to the box; **Enter** opens the full results
+  list; **↓** then **Enter** opens a single patient; **Esc** closes.
 - **Guests** can search only by name or patient number (a phone search would let
   them identify people) and never see phone numbers in the results.
 - Clicking a result opens a first **patient page** (name, number, age in years and

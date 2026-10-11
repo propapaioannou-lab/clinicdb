@@ -185,8 +185,10 @@ services and are NOT rebuilt here.
   the patient record.
 
 ### Visit
-- Date/time, type from an editable list (e.g. ΠΡΟΕΓΧΕΙΡΗΤΙΚΗ ΕΚΤΙΜΗΣΗ, consultation,
-  follow-up, post-op…)
+- Date/time, type from an editable list. **Clean list of our own** (decided 11 Oct 2026):
+  Πρώτη επίσκεψη · Προεγχειρητική εκτίμηση · Επανέλεγχος · Μετεγχειρητικός · Άλλο. The old
+  my-medical visit types are messy and are **not copied**; how they map onto ours is
+  decided at import time, once the export is in hand (§10).
 - Diagnosis / comment (free text)
 - **Procedures discussed**: picker by area (Face · Breast · Body · Genital · Other),
   multi-select across areas; list editable in Settings. Procedures can have
@@ -204,7 +206,8 @@ services and are NOT rebuilt here.
   examine (editable in Settings) + free text. AI transcript fills these sections.
 - Money per visit: fee, amount collected → patient totals: fees, collected, balance
   (as in my-medical). **Decided 11 Oct 2026:** consultation visits carry a charge,
-  follow-ups none (default per visit type); entered and collected by the **secretary or
+  follow-ups none (default per visit type; consultation **€100** unless changed);
+  entered and collected by the **secretary or
   PA/nurse** only; never shown on the surgeon's screens. In the Spa (set up later) the
   aestheticians may also charge.
 - Built (Phase 2): visit open → closed by surgeon or PA/nurse (locks the clinical part;
@@ -652,6 +655,8 @@ surgeon only; every action audited.
     account, run locally (slow but feasible for ~15,300 patients).
   - Keep my-medical access (read-only use) until the import is verified.
   Import scripts run locally; real data never leaves our machines.
+  - Mapping rules (e.g. my-medical visit types → our clean list) are written once the
+    exported data has been seen; nothing messy is copied as-is.
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
 ## 11. Users and permissions

@@ -2,6 +2,15 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Visit types cleaned up, consultation fee €100
+
+- Visit types are now the clean list from the design: **Πρώτη επίσκεψη · Προεγχειρητική
+  εκτίμηση · Επανέλεγχος · Μετεγχειρητικός · Άλλο**. "Αφαίρεση ραμμάτων" and
+  "Μικροεπέμβαση" are hidden (old visits keep them). my-medical's types will be mapped at
+  import, not copied.
+- **Πρώτη επίσκεψη** is pre-filled with **€100** for the secretary/PA (can be changed per
+  visit).
+
 ## 11 Oct 2026 — Phase 2, Step 5: Visits and vitals
 
 - **Νέα επίσκεψη** (from the patient's Επισκέψεις tab), as in your design:

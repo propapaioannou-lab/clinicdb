@@ -25,11 +25,13 @@ const shared: Partial<Record<ListKind, string[]>> = {
     "Κατάθλιψη / αγχώδης διαταραχή", "Αυτοάνοσο νόσημα", "Καρκίνος (ιστορικό)",
   ],
 };
-const CHARGED_VISIT_TYPES = ["Πρώτη επίσκεψη"];
+// Charged visit types and their default fee in cents (decided 11 Oct 2026: €100).
+const CHARGED_VISIT_TYPES: Record<string, number> = { "Πρώτη επίσκεψη": 10000 };
 
 const perCompany: Record<string, Partial<Record<ListKind, string[]>>> = {
   surgery: {
-    VISIT_TYPE: ["Πρώτη επίσκεψη", "Επανεξέταση", "ΠΡΟΕΓΧΕΙΡΗΤΙΚΗ ΕΚΤΙΜΗΣΗ", "Μετεγχειρητική", "Αφαίρεση ραμμάτων", "Μικροεπέμβαση"],
+    // Clean list from the approved design; old my-medical types are mapped at import.
+    VISIT_TYPE: ["Πρώτη επίσκεψη", "Προεγχειρητική εκτίμηση", "Επανέλεγχος", "Μετεγχειρητικός", "Άλλο"],
   },
   spa: {
     VISIT_TYPE: ["Πρώτη επίσκεψη", "Θεραπεία", "Επανεξέταση"],
@@ -45,7 +47,8 @@ async function main() {
         // Consultations are charged; other visit types are not (decided 11 Oct 2026).
         data: labels.map((label, i) => ({
           companyId: company.id, kind, label, sortOrder: i,
-          chargeable: kind === "VISIT_TYPE" && CHARGED_VISIT_TYPES.includes(label),
+          chargeable: kind === "VISIT_TYPE" && label in CHARGED_VISIT_TYPES,
+          defaultFeeCents: kind === "VISIT_TYPE" ? (CHARGED_VISIT_TYPES[label] ?? null) : null,
         })),
         skipDuplicates: true,
       });

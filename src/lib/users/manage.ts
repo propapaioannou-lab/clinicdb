@@ -139,7 +139,7 @@ async function inviteAndSend(actor: Actor, user: { id: string; name: string; ema
 export async function updateUser(
   actor: Actor,
   userId: string,
-  input: UserInput & { isActive: boolean },
+  input: UserInput,
   ctx: RequestContext,
   now = new Date(),
 ): Promise<Fail | { ok: true }> {
@@ -151,10 +151,6 @@ export async function updateUser(
     if (isSelf) return fail("self");
     if (!canChangeLevel(actor.level, target.level, input.level)) return fail("forbidden");
   }
-  if (!input.isActive && target.isActive) {
-    if (isSelf) return fail("self");
-    if (!canRemoveUser(actor.level, target.level)) return fail("forbidden");
-  }
   const invalid = validate(input, now);
   if (invalid) return fail(invalid);
   const before = target.memberships.map((m) => m.companyId);
@@ -164,7 +160,7 @@ export async function updateUser(
   const accessExpiresAt = input.level === "GUEST" ? input.accessExpiresAt : null;
   await db.user.update({
     where: { id: userId },
-    data: { name: input.name.trim(), level: input.level, isActive: input.isActive, accessExpiresAt },
+    data: { name: input.name.trim(), level: input.level, accessExpiresAt },
   });
   await setCompanies(userId, companyIds);
 
@@ -175,7 +171,6 @@ export async function updateUser(
   };
   cmp("name", target.name, input.name.trim());
   cmp("level", target.level, input.level);
-  cmp("isActive", target.isActive, input.isActive);
   cmp("accessExpiresAt", target.accessExpiresAt?.toISOString() ?? null, accessExpiresAt?.toISOString() ?? null);
   cmp("companyIds", [...before].sort(), [...companyIds].sort());
   if (Object.keys(changes).length > 0) {
@@ -228,15 +223,50 @@ export async function unlockUser(actor: Actor, userId: string, ctx: RequestConte
   return { ok: true as const };
 }
 
-export async function deleteUser(actor: Actor, userId: string, ctx: RequestContext) {
+// Suspend: cannot log in, logged out everywhere; everything kept for reactivation.
+export async function suspendUser(actor: Actor, userId: string, ctx: RequestContext) {
   const target = await db.user.findUnique({ where: { id: userId } });
   if (!target) return fail("not_found");
   if (actor.id === userId) return fail("self");
   if (!canRemoveUser(actor.level, target.level)) return fail("forbidden");
-  await db.user.delete({ where: { id: userId } });
-  // The audit entry keeps who it was; the log has no link that could be deleted with the user.
+  await db.user.update({ where: { id: userId }, data: { isActive: false } });
+  await revokeAllSessions(userId, actor, "suspended");
+  await audit({ action: "user.suspended", actor, entityType: "User", entityId: userId }, ctx);
+  return { ok: true as const };
+}
+
+export async function reactivateUser(actor: Actor, userId: string, ctx: RequestContext) {
+  const r = await loadManageable(actor, userId);
+  if (!r.ok) return r;
+  await db.user.update({ where: { id: userId }, data: { isActive: true } });
+  await audit({ action: "user.reactivated", actor, entityType: "User", entityId: userId }, ctx);
+  return { ok: true as const };
+}
+
+// Permanent. A DeletedUser record keeps who it was, so the audit history stays readable.
+export async function deleteUser(actor: Actor, userId: string, ctx: RequestContext) {
+  const target = await db.user.findUnique({ where: { id: userId }, include: { memberships: { include: { company: true } } } });
+  if (!target) return fail("not_found");
+  if (actor.id === userId) return fail("self");
+  if (!canRemoveUser(actor.level, target.level)) return fail("forbidden");
+  const companies = target.memberships.map((m) => m.company.name);
+  await db.$transaction([
+    db.deletedUser.create({
+      data: {
+        userId: target.id,
+        email: target.email,
+        name: target.name,
+        level: target.level,
+        companies,
+        createdAt: target.createdAt,
+        deletedById: actor.id,
+        deletedByEmail: actor.email,
+      },
+    }),
+    db.user.delete({ where: { id: userId } }),
+  ]);
   await audit(
-    { action: "user.deleted", actor, entityType: "User", entityId: userId, details: { email: target.email, name: target.name, level: target.level } },
+    { action: "user.deleted", actor, entityType: "User", entityId: userId, details: { email: target.email, name: target.name, level: target.level, companies } },
     ctx,
   );
   return { ok: true as const };

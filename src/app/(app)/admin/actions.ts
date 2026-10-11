@@ -13,7 +13,9 @@ import {
   generatePasswordFor,
   removeTrustedDevice,
   resendInvitation,
+  reactivateUser,
   resetTwoFactorFor,
+  suspendUser,
   unlockUser,
   updateUser,
   type ManageError,
@@ -47,7 +49,7 @@ export async function createUserAction(_prev: FormState, fd: FormData): Promise<
 
 export async function updateUserAction(userId: string, _prev: FormState, fd: FormData): Promise<FormState> {
   const { actor } = await requireManager();
-  const r = await updateUser(actor, userId, { ...readUserFields(fd), isActive: fd.get("isActive") === "on" }, await requestContext());
+  const r = await updateUser(actor, userId, readUserFields(fd), await requestContext());
   if (!r.ok) return { error: r.error };
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/admin/users");
@@ -83,12 +85,22 @@ export async function unlockAction(userId: string) {
   await back(userId, await unlockUser(actor, userId, await requestContext()), "unlocked");
 }
 
+export async function suspendAction(userId: string) {
+  const { actor } = await requireManager();
+  await back(userId, await suspendUser(actor, userId, await requestContext()), "suspended");
+}
+
+export async function reactivateAction(userId: string) {
+  const { actor } = await requireManager();
+  await back(userId, await reactivateUser(actor, userId, await requestContext()), "reactivated");
+}
+
 export async function deleteUserAction(userId: string) {
   const { actor } = await requireManager();
   const r = await deleteUser(actor, userId, await requestContext());
   if (!r.ok) redirect(`/admin/users/${userId}?error=${r.error}`);
   revalidatePath("/admin/users");
-  redirect("/admin/users");
+  redirect("/admin/users/deleted");
 }
 
 export async function endSessionAction(sessionId: string, returnTo: string) {

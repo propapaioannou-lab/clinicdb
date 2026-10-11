@@ -16,7 +16,7 @@
     "errors": {
       "invalid": "Wrong email or password.",
       "locked": "Too many wrong attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
-      "inactive": "This account is inactive. Contact the administrator.",
+      "inactive": "This account is suspended. Contact the administrator.",
       "expired": "Your access period has ended.",
       "missing": "Enter email and password."
     }
@@ -119,7 +119,7 @@
     },
     "status": {
       "invited": "Invited",
-      "inactive": "Inactive",
+      "inactive": "Suspended",
       "expired": "Expired",
       "locked": "Locked",
       "active": "Active"
@@ -130,7 +130,6 @@
       "level": "Level",
       "companies": "Company access",
       "guestEnd": "Access ends (guest)",
-      "active": "Account active",
       "method": "How will the person get in?",
       "methodInvite": "Send an email invitation (recommended)",
       "methodPassword": "Generate a password now (you hand it over)",
@@ -182,11 +181,16 @@
       "unlock": "Unlock",
       "unlocked": "Account unlocked.",
       "delete": "Delete user",
-      "deleteConfirm": "Permanently delete this user? Their activity history stays. To pause access, deactivate instead.",
+      "deleteConfirm": "Permanently delete this user? This cannot be undone. Their activity history stays under “Deleted users”. To pause access, use “Suspend”.",
       "ownerProtected": "Owners cannot be deleted, deactivated or demoted in the app.",
       "readOnlyOwner": "Only an Owner can change an Owner's details.",
       "endedAll": "All logins were ended.",
-      "trustRemoved": "Trust removed."
+      "trustRemoved": "Trust removed.",
+      "suspend": "Suspend",
+      "suspendConfirm": "Suspend this account? The user is logged out at once and cannot log in. Everything is kept and you can reactivate them.",
+      "suspended": "The account is suspended.",
+      "reactivate": "Reactivate",
+      "reactivated": "The account is active again."
     },
     "devices": {
       "title": "Logged-in devices",
@@ -208,6 +212,18 @@
       "trustedUntil": "Until",
       "lastUsed": "Last used",
       "removeTrust": "Remove trust"
+    },
+    "deleted": {
+      "link": "Deleted users",
+      "title": "Deleted users",
+      "intro": "These accounts were permanently deleted. Their activity history stays in the audit log.",
+      "none": "No deleted users.",
+      "name": "Name",
+      "level": "Level",
+      "companies": "Companies",
+      "created": "Created",
+      "deletedAt": "Deleted",
+      "deletedBy": "By"
     }
   }
 }

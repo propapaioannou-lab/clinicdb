@@ -162,3 +162,21 @@ model Invitation {
 
   @@index([userId])
 }
+
+// Record kept after a user is permanently deleted, so their audit history stays readable.
+model DeletedUser {
+  id             String   @id @default(cuid())
+  // The deleted user's id, as it appears in the audit log.
+  userId         String   @unique
+  email          String
+  name           String
+  level          Level
+  companies      String[]
+  createdAt      DateTime
+  deletedAt      DateTime @default(now())
+  deletedById    String
+  deletedByEmail String
+
+  @@index([deletedAt])
+  @@index([email])
+}

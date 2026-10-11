@@ -2,6 +2,18 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Suspend and delete users
+
+- The hidden "Ενεργός λογαριασμός" tick box is gone. Instead, the user page has:
+  - **Αναστολή** (suspend): logged out at once, cannot log in, everything kept.
+    **Επανενεργοποίηση** gives access back.
+  - **Διαγραφή** (delete): permanent. The person moves to **Διαγραμμένοι χρήστες**
+    (name, email, level, companies, when and by whom). Their activity history stays.
+- The test user you deleted earlier was added to the Deleted users list from its log entry.
+
+**Check it:** open a user → Αναστολή → try logging in as them → Επανενεργοποίηση →
+Διαγραφή → Χρήστες → Διαγραμμένοι χρήστες.
+
 ## 11 Oct 2026 — Phase 1, Step 5: Users, invitations, devices
 
 - **Χρήστες** and **Συσκευές** links in the header (Owner and Admin only). Everyone

@@ -11,7 +11,9 @@ import {
   endSession,
   generatePasswordFor,
   removeTrustedDevice,
+  reactivateUser,
   resendInvitation,
+  suspendUser,
   updateUser,
 } from "./manage";
 
@@ -116,10 +118,9 @@ describe("creating users", () => {
 });
 
 describe("editing users", () => {
-  const edit = (level: "OWNER" | "ADMIN" | "USER" | "GUEST", isActive = true, companyIds?: string[]) => ({
+  const edit = (level: "OWNER" | "ADMIN" | "USER" | "GUEST", companyIds?: string[]) => ({
     name: "Edited",
     level,
-    isActive,
     companyIds: companyIds ?? [c.surgery],
     accessExpiresAt: level === "GUEST" ? inDays(30) : null,
   });
@@ -128,7 +129,7 @@ describe("editing users", () => {
     const owner = await makeActor("OWNER", [c.surgery]);
     const owner2 = await makeActor("OWNER", [c.surgery]);
     const admin = await makeActor("ADMIN", [c.surgery]);
-    expect(await updateUser(owner, owner2.id, edit("OWNER", false), ctx)).toEqual({ ok: false, error: "forbidden" });
+    expect(await suspendUser(owner, owner2.id, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await updateUser(owner, owner2.id, edit("ADMIN"), ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await deleteUser(owner, owner2.id, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await updateUser(admin, owner2.id, edit("OWNER"), ctx)).toEqual({ ok: false, error: "forbidden" });
@@ -137,7 +138,7 @@ describe("editing users", () => {
 
   it("nobody can deactivate, demote or delete themselves", async () => {
     const admin = await makeActor("ADMIN", [c.surgery]);
-    expect(await updateUser(admin, admin.id, edit("ADMIN", false), ctx)).toEqual({ ok: false, error: "self" });
+    expect(await suspendUser(admin, admin.id, ctx)).toEqual({ ok: false, error: "self" });
     expect(await updateUser(admin, admin.id, edit("USER"), ctx)).toEqual({ ok: false, error: "self" });
     expect(await deleteUser(admin, admin.id, ctx)).toEqual({ ok: false, error: "self" });
   });
@@ -146,18 +147,35 @@ describe("editing users", () => {
     const owner = await makeActor("OWNER", [c.surgery, c.spa]);
     const { user } = await makeUser();
     await db.membership.create({ data: { userId: user.id, companyId: c.surgery } });
-    expect(await updateUser(owner, user.id, edit("GUEST", true, [c.spa]), ctx)).toEqual({ ok: true });
+    expect(await updateUser(owner, user.id, edit("GUEST", [c.spa]), ctx)).toEqual({ ok: true });
     const entry = await db.auditLog.findFirstOrThrow({ where: { entityId: user.id, action: "user.updated" } });
     expect(entry.details).toMatchObject({ level: { from: "USER", to: "GUEST" }, companyIds: { from: [c.surgery], to: [c.spa] } });
   });
 
-  it("deleting keeps the audit record of who it was", async () => {
+  it("suspending logs the person out and blocks login; reactivating restores it", async () => {
+    const admin = await makeActor("ADMIN", [c.surgery]);
+    const { user, password, totpSecret } = await makeUser();
+    const token = await fullLogin(user.email, password, totpSecret!);
+    expect(await suspendUser(admin, user.id, ctx)).toEqual({ ok: true });
+    expect(await validateSession(token)).toBeNull();
+    expect(await login(user.email, password, ctx)).toMatchObject({ ok: false, reason: "inactive" });
+    expect(await reactivateUser(admin, user.id, ctx)).toEqual({ ok: true });
+    expect((await login(user.email, password, ctx)).ok).toBe(true);
+  });
+
+  it("deleting is permanent but keeps a record and the audit history", async () => {
     const owner = await makeActor("OWNER", [c.surgery]);
     const { user } = await makeUser();
+    await db.membership.create({ data: { userId: user.id, companyId: c.surgery } });
+    await db.auditLog.create({ data: { action: "test.something", actorUserId: user.id, actorEmail: user.email } });
     expect(await deleteUser(owner, user.id, ctx)).toEqual({ ok: true });
     expect(await db.user.findUnique({ where: { id: user.id } })).toBeNull();
-    const entry = await db.auditLog.findFirstOrThrow({ where: { entityId: user.id, action: "user.deleted" } });
-    expect(entry.details).toMatchObject({ email: user.email });
+    const record = await db.deletedUser.findUniqueOrThrow({ where: { userId: user.id } });
+    expect(record).toMatchObject({ email: user.email, name: user.name, companies: ["Surgery"], deletedByEmail: owner.email });
+    expect(await db.auditLog.count({ where: { actorUserId: user.id } })).toBe(1);
+    expect(await db.auditLog.count({ where: { entityId: user.id, action: "user.deleted" } })).toBe(1);
+    // The same email can be invited again later.
+    expect((await createUser(owner, base({ email: user.email, method: "password" }), ctx)).ok).toBe(true);
   });
 });
 

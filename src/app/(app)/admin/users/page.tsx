@@ -20,7 +20,10 @@ export default async function UsersPage() {
     <main className="mx-auto w-full max-w-6xl p-4">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t("users.title")}</h1>
-        <Link href="/admin/users/new" className={`${primaryButton} w-auto`}>{t("users.new")}</Link>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/users/deleted" className="text-sm underline-offset-2 hover:underline">{t("deleted.link")}</Link>
+          <Link href="/admin/users/new" className={`${primaryButton} w-auto`}>{t("users.new")}</Link>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">

@@ -391,6 +391,13 @@ Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
   in person. Generated passwords are permanent (16 characters, no look-alike letters).
   Passwords are never sent by email.
 
+### Suspending and deleting users
+- **Suspend:** the user is logged out everywhere and cannot log in; everything is kept;
+  **Reactivate** restores access as it was.
+- **Delete:** permanent. A record (name, email, level, companies, when and by whom)
+  stays under **Deleted users**, and their audit-log history is kept.
+- Owners can be neither suspended nor deleted; nobody can suspend or delete themselves.
+
 ### Login and sessions
 - Password + 2FA (authenticator app) with one-time recovery codes.
 - **Trusted devices:** after a successful 2FA login the user may tick "Trust this

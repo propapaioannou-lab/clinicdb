@@ -85,3 +85,7 @@ export async function listActiveSessions(now = new Date()) {
 export async function listCompanies() {
   return db.company.findMany({ orderBy: { createdAt: "asc" } });
 }
+
+export async function listDeletedUsers() {
+  return db.deletedUser.findMany({ orderBy: { deletedAt: "desc" } });
+}

@@ -15,8 +15,8 @@ export type UserFormProps = {
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
   levels: Level[]; // levels this admin may choose
   companies: Company[];
-  initial: { name: string; email: string; level: Level; companyIds: string[]; guestEnd: string; isActive: boolean };
-  locked?: { level?: boolean; isActive?: boolean; all?: boolean };
+  initial: { name: string; email: string; level: Level; companyIds: string[]; guestEnd: string };
+  locked?: { level?: boolean; all?: boolean };
 };
 
 export function UserForm({ mode, action, levels, companies, initial, locked = {} }: UserFormProps) {
@@ -75,13 +75,6 @@ export function UserForm({ mode, action, levels, companies, initial, locked = {}
             <label className="mt-1 flex items-center gap-2"><input type="radio" name="method" value="invite" defaultChecked />{t("form.methodInvite")}</label>
             <label className="mt-1 flex items-center gap-2"><input type="radio" name="method" value="password" />{t("form.methodPassword")}</label>
           </fieldset>
-        )}
-        {mode === "edit" && (
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="isActive" defaultChecked={initial.isActive} disabled={locked.isActive} />
-            {t("form.active")}
-            {locked.isActive && initial.isActive && <input type="hidden" name="isActive" value="on" />}
-          </label>
         )}
       </fieldset>
       {state.error && <ErrorBox>{t(`errors.${state.error}`)}</ErrorBox>}

@@ -13,7 +13,9 @@ import {
   generatePasswordAction,
   removeTrustAction,
   resendInviteAction,
+  reactivateAction,
   resetTwoFactorAction,
+  suspendAction,
   unlockAction,
   updateUserAction,
 } from "../../actions";
@@ -24,7 +26,7 @@ import { UserForm } from "../user-form";
 import { GeneratePassword } from "./generate-password";
 
 const ALL_LEVELS: Level[] = ["OWNER", "ADMIN", "USER", "GUEST"];
-const NOTICES = ["invited", "resent", "reset2faDone", "unlocked", "endedAll", "trustRemoved"] as const;
+const NOTICES = ["invited", "resent", "reset2faDone", "unlocked", "endedAll", "trustRemoved", "suspended", "reactivated"] as const;
 
 export default async function UserPage({ params, searchParams }: PageProps<"/admin/users/[id]">) {
   const { actor, session } = await requireManager();
@@ -74,9 +76,8 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
             level: user.level,
             companyIds: user.companyIds,
             guestEnd: user.accessExpiresAt ? athensIsoDate(user.accessExpiresAt) : "",
-            isActive: user.isActive,
           }}
-          locked={{ all: !manageable, level: levels.length <= 1, isActive: !removable }}
+          locked={{ all: !manageable, level: levels.length <= 1 }}
         />
         <dl className="mt-4 grid grid-cols-2 gap-1 text-sm text-neutral-600 dark:text-neutral-400">
           <dt>{t("detail.created")}</dt><dd>{when(user.createdAt)}</dd>
@@ -111,6 +112,16 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
             {user.status === "locked" && (
               <form action={unlockAction.bind(null, user.id)}>
                 <button type="submit" className={secondaryButton}>{t("detail.unlock")}</button>
+              </form>
+            )}
+            {removable && user.isActive && (
+              <form action={suspendAction.bind(null, user.id)}>
+                <ConfirmButton message={t("detail.suspendConfirm")} className={secondaryButton}>{t("detail.suspend")}</ConfirmButton>
+              </form>
+            )}
+            {!user.isActive && (
+              <form action={reactivateAction.bind(null, user.id)}>
+                <button type="submit" className={secondaryButton}>{t("detail.reactivate")}</button>
               </form>
             )}
             {removable && (

@@ -5,6 +5,7 @@ import { allUnansweredNo, answeredCount, bmi, changedParts, cleanHistory } from 
 import { riskFactors } from "./risk";
 import { openPatient } from "@/lib/patients/record";
 import { canVerifyHistory, infectionAlert, loadHistory, loadHistoryVersion, saveHistory, unverifyHistory, verifyHistory } from "./history";
+import { QUESTION_CHOICES } from "./question-choices-seed";
 import { HISTORY_QUESTIONS } from "./questions-seed";
 
 let c: { surgery: string; spa: string };
@@ -16,6 +17,7 @@ beforeAll(async () => {
     data: HISTORY_QUESTIONS.map(([key, section, labelEl, detailEl, , labelEn, , flags], i) => ({
       companyId: c.surgery, key, section, labelEl, detailEl, labelEn, sortOrder: i,
       sensitive: flags?.sensitive ?? false, infection: flags?.infection ?? false,
+      choices: (QUESTION_CHOICES[key] ?? []).map(([k, el, en]) => ({ key: k, labelEl: el, labelEn: en })),
     })),
     skipDuplicates: true,
   });
@@ -169,6 +171,16 @@ describe("sensitive answers (HIV, hepatitis, substance use, mental health)", () 
     expect(view?.infectiousDiseases).toBeNull();
     expect(view?.infectiousHidden).toBe(true);
     expect(JSON.stringify(view)).not.toContain("Ηπατίτιδα");
+  });
+});
+
+describe("quick picks on every question", () => {
+  it("every starting question has picks, and only a question's own picks are stored", async () => {
+    for (const [key] of HISTORY_QUESTIONS) expect(QUESTION_CHOICES[key]?.length, key).toBeGreaterThan(0);
+    const p = await makePatient(c.surgery, { surname: "Επιλογών" });
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    await saveHistory(surgeon, p.id, { answers: { thrombophilia: { a: "yes", items: ["leiden", "pcos", "mthfr"], d: "ομόζυγος" } } }, ctx);
+    expect((await loadHistory(surgeon, p.id))?.data?.answers.thrombophilia).toEqual({ a: "yes", d: "ομόζυγος", items: ["leiden", "mthfr"] });
   });
 });
 

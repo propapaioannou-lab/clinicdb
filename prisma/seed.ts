@@ -1,6 +1,7 @@
 // Reference data only. Never real patient data.
 import { db } from "../src/lib/db";
-import type { ListKind } from "../src/generated/prisma/client";
+import { Prisma, type ListKind } from "../src/generated/prisma/client";
+import { QUESTION_CHOICES } from "../src/lib/history/question-choices-seed";
 import { HISTORY_QUESTIONS } from "../src/lib/history/questions-seed";
 
 const companies = [
@@ -50,6 +51,13 @@ async function main() {
       })),
       skipDuplicates: true,
     });
+    // Quick picks: filled in only where a question has none yet (edits are kept).
+    for (const [key, list] of Object.entries(QUESTION_CHOICES)) {
+      await db.historyQuestion.updateMany({
+        where: { companyId: company.id, key, choices: { equals: Prisma.DbNull } },
+        data: { choices: list.map(([k, labelEl, labelEn]) => ({ key: k, labelEl, labelEn })) },
+      });
+    }
   }
   console.log(`Companies, lists and history questions ready: ${companies.map((c) => c.code).join(", ")}`);
 }

@@ -8,6 +8,16 @@ import { riskFactors } from "./risk";
 
 // Medical history (SPEC §4): every save is a new version; a Surgeon or PA/nurse verifies.
 
+export type QuestionChoice = { key: string; labelEl: string; labelEn: string };
+
+// The quick picks stored with a question (JSON), checked for shape.
+export function questionChoices(raw: unknown): QuestionChoice[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (c): c is QuestionChoice => !!c && typeof c === "object" && typeof c.key === "string" && typeof c.labelEl === "string" && typeof c.labelEn === "string",
+  );
+}
+
 export const HISTORY_SECTIONS = ["heart", "lungs", "blood", "gi", "neuro", "endocrine", "infections", "habits", "healing", "gyn", "family"];
 
 export type HistoryError = "forbidden" | "not_found" | "not_verifier" | "nothing_to_verify";
@@ -102,7 +112,7 @@ export async function saveHistory(
   const patient = await findPatient(actor, patientId);
   if (!patient) return fail("not_found");
   const questions = await historyQuestions(patient.companyId, { includeSensitive: true });
-  const data = cleanHistory(raw, new Set(questions.map((q) => q.key)));
+  const data = cleanHistory(raw, new Map(questions.map((q) => [q.key, questionChoices(q.choices).map((c) => c.key)])));
   const verified = source === "STAFF" && canVerifyHistory(actor);
   const now = new Date();
 

@@ -418,6 +418,8 @@ model HistoryQuestion {
   sensitive Boolean  @default(false)
   // A verified Yes fills the infectious-disease alert on the patient header.
   infection Boolean  @default(false)
+  // Quick picks shown on Yes: [{ "key", "labelEl", "labelEn" }].
+  choices   Json?
   createdAt DateTime @default(now())
   company   Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
 

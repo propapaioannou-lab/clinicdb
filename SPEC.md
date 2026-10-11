@@ -161,6 +161,11 @@ services and are NOT rebuilt here.
   foods); surgeries (caesarean, appendectomy, cholecystectomy, hernia, hysterectomy,
   tonsillectomy, thyroidectomy, bariatric, breast, orthopaedic, varicose veins,
   rhinoplasty/septum, liposuction/abdominoplasty, cataract). Lists editable in Settings.
+  **Every questionnaire question** has its own quick picks too (e.g. Υπέρταση: ACE/ARB,
+  β-blockers, Ca-blockers, diuretics, controlled/uncontrolled; Θρομβοφιλία: Leiden,
+  prothrombin, protein C/S, antithrombin, APS, MTHFR; Ψυχική υγεία incl. body dysmorphic
+  disorder), shown on Yes, plus the notes box. Stored with each question, editable in
+  Settings (decided 11 Oct 2026).
 - **"Όλα Όχι"** button (whole form and per section) sets every *unanswered* item to No;
   answers are never pre-filled, so every No was given by someone.
 - **High-risk profile** (decided 11 Oct 2026), worked out from the latest answers

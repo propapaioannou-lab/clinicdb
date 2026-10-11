@@ -2,6 +2,20 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Medical history: quick picks on every question
+
+- Every question now works like Φάρμακα / Αλλεργίες / Χειρουργεία: on **Ναι** the most
+  common answers appear as chips to tap, with the notes box still underneath. Examples:
+  Υπέρταση (αναστολείς ΜΕΑ/σαρτάνες, β-αναστολείς, …, ρυθμισμένη/αρρύθμιστη), Θρόμβωση
+  (DVT, πνευμονική εμβολή, ο ίδιος/συγγενής, μετά από χειρουργείο, με αντισύλληψη),
+  Θρομβοφιλία (Leiden, προθρομβίνη, πρωτεΐνη C/S, …), Ψυχική υγεία (… δυσμορφοφοβία),
+  Διαβήτης (τύπος 1/2, δισκία, ινσουλίνη), Ισοτρετινοΐνη (τώρα / σταμάτησε <6 / 6–12
+  μήνες), Οικογενειακό ιστορικό (μητέρα, αδελφή, … BRCA θετικό) — 38 questions in all.
+- The chosen chips show in the history summary and in the header card.
+- The lists are stored with each question, so they can be edited in Settings later.
+
+**Check it:** Ιατρικό ιστορικό → Επεξεργασία → Ναι on any question → tap chips → save.
+
 ## 11 Oct 2026 — Decisions applied: comments and newsletter removed, sensitive answers
 
 - The **Σχόλια (comments)** field and the **newsletter** tick box are removed from the

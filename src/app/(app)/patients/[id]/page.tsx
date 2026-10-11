@@ -11,7 +11,7 @@ import { loadActor } from "@/lib/users/manage";
 import { setArchivedAction, setFlagAction, updatePatientAction } from "../actions";
 import type { PatientFormValues } from "../patient-form";
 import { bmi, type HistoryData } from "@/lib/history/data";
-import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion } from "@/lib/history/history";
+import { canVerifyHistory, HISTORY_SECTIONS, loadHistory, loadHistoryVersion, questionChoices } from "@/lib/history/history";
 import { saveHistoryAction, unverifyHistoryAction, verifyHistoryAction } from "./history-actions";
 import { HistoryForm, type QuestionView } from "./history-form";
 import { HistoryStatusLine, HistoryView } from "./history-view";
@@ -81,7 +81,15 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
   const history = await loadHistory(actor, p.id);
   const th = await getTranslations("history");
   const questions: QuestionView[] = (history?.questions ?? [])
-    .map((q) => ({ key: q.key, section: q.section, label: q.labelEl, detail: q.detailEl, hint: q.hintEl, order: q.sortOrder }))
+    .map((q) => ({
+      key: q.key,
+      section: q.section,
+      label: q.labelEl,
+      detail: q.detailEl,
+      hint: q.hintEl,
+      choices: questionChoices(q.choices).map((c) => ({ key: c.key, label: c.labelEl })),
+      order: q.sortOrder,
+    }))
     .sort((a, b) => HISTORY_SECTIONS.indexOf(a.section) - HISTORY_SECTIONS.indexOf(b.section) || a.order - b.order)
     .map(({ order: _order, ...q }) => q);
   const hd: HistoryData | null = history?.data ?? null;
@@ -115,7 +123,8 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
             ? familyYes
                 .map((q) => {
                   const name = th.has(`short.${q.key}`) ? th(`short.${q.key}` as "short.family") : q.label;
-                  return hd.answers[q.key].d ? `${name} (${hd.answers[q.key].d})` : name;
+                  const who = [...(hd.answers[q.key].items ?? []).map((k) => q.choices.find((c) => c.key === k)?.label ?? k), hd.answers[q.key].d].filter(Boolean).join(", ");
+                  return who ? `${name} (${who})` : name;
                 })
                 .join(", ") : questions.some((q) => q.section === "family" && hd.answers[q.key]) ? th("no") : "—",
         },

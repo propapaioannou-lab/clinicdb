@@ -69,15 +69,17 @@ function number(v: unknown, min: number, max: number): number | undefined {
   return Math.round(n * 10) / 10;
 }
 
-// Whatever arrives from the browser is rebuilt from scratch: unknown questions, wrong
-// types and out-of-range numbers are dropped, texts trimmed and capped.
-export function cleanHistory(raw: unknown, questionKeys: Set<string>): HistoryData {
+// Whatever arrives from the browser is rebuilt from scratch: unknown questions and
+// picks, wrong types and out-of-range numbers are dropped, texts trimmed and capped.
+// `questions`: the known question keys, or key → that question's allowed picks.
+export function cleanHistory(raw: unknown, questions: Set<string> | Map<string, readonly string[]>): HistoryData {
+  const choicesOf = questions instanceof Map ? questions : new Map([...questions].map((k) => [k, [] as readonly string[]]));
   const o = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const answers: Record<string, Answer> = {};
   const rawAnswers = (o.answers && typeof o.answers === "object" ? o.answers : {}) as Record<string, unknown>;
   for (const [k, v] of Object.entries(rawAnswers)) {
-    if (!questionKeys.has(k)) continue;
-    const a = answer(v);
+    if (!choicesOf.has(k)) continue;
+    const a = answer(v, choicesOf.get(k));
     if (a) answers[k] = a;
   }
   const data: HistoryData = { answers };

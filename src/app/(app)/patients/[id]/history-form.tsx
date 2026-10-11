@@ -8,7 +8,15 @@ import { card, ErrorBox, inputClass, primaryButton, secondaryButton, textareaCla
 import { ALLERGY_CHOICES, MEDICATION_CHOICES, SURGERY_CHOICES } from "@/lib/history/choices";
 import { allUnansweredNo, answeredCount, bmi, PER_DAY, PRODUCTS, SMOKING, type Answer, type HistoryData, type YesNo } from "@/lib/history/data";
 
-export type QuestionView = { key: string; section: string; label: string; detail: string | null; hint: string | null };
+export type QuestionView = {
+  key: string;
+  section: string;
+  label: string;
+  detail: string | null;
+  hint: string | null;
+  // Quick picks shown on Ναι.
+  choices: { key: string; label: string }[];
+};
 
 // Ναι / Όχι as two big buttons (DESIGN.md 4b), selected state clearly marked.
 function YesNoButtons({ value, onChange, label }: { value?: YesNo; onChange: (v: YesNo) => void; label: string }) {
@@ -259,9 +267,22 @@ export function HistoryForm({
               {t("allNoSection")}
             </button>
           </div>
-          {questions.filter((q) => q.section === s).map((q) => (
-            <QuestionRow key={q.key} label={q.label} detail={q.detail} hint={q.hint} value={data.answers[q.key]} onChange={(a) => setAnswer(q.key, a)} />
-          ))}
+          {questions.filter((q) => q.section === s).map((q) =>
+            q.choices.length ? (
+              <PickRow
+                key={q.key}
+                label={q.label}
+                choices={q.choices.map((c) => c.key)}
+                choiceLabel={(k) => q.choices.find((c) => c.key === k)?.label ?? k}
+                notesLabel={q.detail ?? t("notesShort")}
+                notesHint={q.hint ?? ""}
+                value={data.answers[q.key]}
+                onChange={(update) => setData((d) => ({ ...d, answers: { ...d.answers, [q.key]: update(d.answers[q.key]) } }))}
+              />
+            ) : (
+              <QuestionRow key={q.key} label={q.label} detail={q.detail} hint={q.hint} value={data.answers[q.key]} onChange={(a) => setAnswer(q.key, a)} />
+            ),
+          )}
         </section>
       ))}
 

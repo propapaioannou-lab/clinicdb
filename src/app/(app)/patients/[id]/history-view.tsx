@@ -136,7 +136,11 @@ export async function HistoryView({
                 <p key={q.key} className="text-sm">
                   <span className="mr-2 inline-block rounded-full bg-warn-bg px-2 py-0.5 text-xs font-semibold text-warn-ink">{t("yes")}</span>
                   <span className="font-semibold">{q.label}</span>
-                  {data.answers[q.key].d && <span className="text-ink-3"> — {data.answers[q.key].d}</span>}
+                  {(() => {
+                    const a = data.answers[q.key];
+                    const more = [...(a.items ?? []).map((k) => q.choices.find((c) => c.key === k)?.label ?? k), a.d].filter(Boolean).join(", ");
+                    return more ? <span className="text-ink-3"> — {more}</span> : null;
+                  })()}
                 </p>
               ))}
               {no.length > 0 && <p className="text-[13px] text-muted">{t("noList", { list: no.map((q) => q.label).join(" · ") })}</p>}

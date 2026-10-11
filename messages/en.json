@@ -4,7 +4,31 @@
     "description": "Medical records for a plastic surgery practice"
   },
   "home": {
-    "title": "Welcome",
-    "subtitle": "The app is running. User login comes in the next step."
+    "title": "Welcome, {name}",
+    "subtitle": "Login works. The 2FA code is added in the next step."
+  },
+  "login": {
+    "title": "Log in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "errors": {
+      "invalid": "Wrong email or password.",
+      "locked": "Too many wrong attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+      "inactive": "This account is inactive. Contact the administrator.",
+      "expired": "Your access period has ended.",
+      "missing": "Enter email and password."
+    }
+  },
+  "nav": {
+    "logout": "Log out",
+    "sessionEnds": "Session ends: {date}"
+  },
+  "levels": {
+    "OWNER": "Owner",
+    "ADMIN": "Admin",
+    "USER": "User",
+    "GUEST": "Guest"
   }
 }

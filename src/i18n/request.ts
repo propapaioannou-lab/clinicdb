@@ -9,6 +9,7 @@ export default getRequestConfig(async () => {
   const locale = defaultLocale;
   return {
     locale,
+    timeZone: "Europe/Athens",
     messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });

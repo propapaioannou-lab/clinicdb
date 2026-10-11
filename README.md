@@ -39,6 +39,23 @@ List users and their roles:
 
     podman compose exec app npm test
 
+Tests use a separate database (`clinicdb_test`), created fresh on every run.
+
+## Test the login
+
+1. Open http://localhost:3000 — you land on the login page.
+2. Wrong password → "Λάθος email ή κωδικός."
+3. Right password → home page with your name, level and "Η σύνδεση λήγει: Δευτέρα 05:00".
+4. Αποσύνδεση → back to the login page.
+
+See the audit log so far:
+
+    podman compose exec db psql -U clinicdb -d clinicdb -c 'select at, "actorEmail", action, ip, details from "AuditLog" order by id desc limit 20;'
+
+Unlock an account that hit 5 wrong passwords (otherwise it unlocks after 15 minutes):
+
+    podman compose exec db psql -U clinicdb -d clinicdb -c "update \"User\" set \"lockedUntil\" = null, \"failedLogins\" = 0 where email = 'name@example.com';"
+
 ## After changing the database schema (developer)
 
     podman compose exec app npm run db:migrate -- --name what_changed

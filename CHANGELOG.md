@@ -2,6 +2,26 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 1, Step 3: Login, sessions, audit log
+
+- **Login page** in Greek. Without logging in, every page sends you to it.
+- **Sessions end every Monday at 05:00** Athens time (summer/winter time handled).
+  The header shows when your session ends.
+- **5 wrong passwords lock the account for 15 minutes**, even for the right password.
+  Unknown emails get the same answer as wrong passwords, so nobody can find out
+  which emails have accounts.
+- Inactive users and Guests past their end date cannot log in, and are logged out
+  immediately if that happens while they are logged in.
+- **Logout** button in the header.
+- **Audit log started:** every login, failed login, lockout and logout is recorded with
+  time, IP and browser. (The screen to read it comes in Step 6.)
+- Each logged-in browser is stored as a session in the database. This is what the
+  Devices screen will show in Step 5. The browser keeps only a random key; the
+  database keeps only its fingerprint, so a copy of the database cannot be used to log in.
+- 27 automated tests, run against a separate test database.
+
+**Check it:** see README, "Test the login".
+
 ## 11 Oct 2026 — Owners are permanent
 
 - An Owner can never be deleted, deactivated or demoted from the app, not even by

@@ -1,0 +1,33 @@
+import { getFormatter, getTranslations } from "next-intl/server";
+import { requireSession } from "@/lib/auth/current";
+import { logoutAction } from "./actions";
+
+export default async function AppLayout({ children }: LayoutProps<"/">) {
+  const { user, expiresAt } = await requireSession();
+  const t = await getTranslations();
+  const format = await getFormatter();
+
+  return (
+    <>
+      <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
+        <span className="font-semibold">{t("app.name")}</span>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="hidden text-neutral-500 sm:inline">
+            {t("nav.sessionEnds", {
+              date: format.dateTime(expiresAt, { weekday: "long", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }),
+            })}
+          </span>
+          <span>
+            {user.name} · <span className="text-neutral-500">{t(`levels.${user.level}`)}</span>
+          </span>
+          <form action={logoutAction}>
+            <button type="submit" className="rounded-md border border-neutral-300 px-3 py-1 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800">
+              {t("nav.logout")}
+            </button>
+          </form>
+        </div>
+      </header>
+      {children}
+    </>
+  );
+}

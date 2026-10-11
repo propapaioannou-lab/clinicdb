@@ -35,40 +35,127 @@ services and are NOT rebuilt here.
 
 ## 4. Core data
 
-### Patient
+### Patient — basic info (from my-medical "Βασικά", ~15,300 patients today)
 - Internal unique ID (e.g. `P-000123`), generated automatically. **Primary identifier.**
-- Name, surname, father's name, date of birth, sex
-- Phones (several, one marked main/WhatsApp), emails (several)
-- Address
+- Surname (required), name, father's name
+- Marital status (list), referral / "Σύσταση" (who referred)
+  (my-medical's "Κατηγορία" dropped — never used)
+- Date of birth → age shown automatically (years + months)
+- Registration date (auto)
+- Area, address, city, postcode, country
+- Phones: several, each with a type (mobile, home, work); one marked main/WhatsApp
+- Emails (several)
+- Sex, occupation
 - AMKA — optional, searchable
-- ΑΦΜ — optional (receipts)
-- Referral source; GHL contact ID (link)
-- Medical background: allergies, medication, conditions, smoking, previous surgeries
-- Company (`Surgery` / `Spa`)
-- Exact field list to be finalized from my-medical screenshots (pending).
+- Tax data for receipts: ΑΦΜ, ΔΟΥ (list)
+- City + phone for e-prescription (separate fields in my-medical)
+- Newsletter / marketing consent (checkbox → becomes part of §7 consents)
+- Infectious diseases (ΜΟΛΥΣΜΑΤΙΚΑ) — free text, shown as an alert on the patient header
+- Profile photo (upload or tablet camera)
+- Treating doctor
+- Comments
+- **Patient flag** (replaces my-medical "Κριτική"): none / 🟡 yellow / 🔴 red, with
+  reason(s) from an editable list (bargained for discount, no-show, came late, …),
+  free-text note, date and who set it. Shown as a small coloured marker on the patient
+  header, in search results and in the calendar. Staff-only; never sent to GHL or shown
+  to the patient. Write reasons factually — under GDPR a patient's access request can
+  include them.
+- GHL contact ID (link); company (`Surgery` / `Spa`)
+- Patient overview shows the list of past visits (date, type, diagnosis).
+
+### Medical history (from my-medical "Αναμνηστικό")
+- Conditions (Νοσήματα): list, add several
+- Family/social: occupation, marital status, children, breastfeeding (yes/no + text),
+  first-degree family history: breast cancer, diabetes, clotting disorder (checkboxes)
+- Personal: regular medication (yes/no + which), allergies, genetic conditions (G6PD
+  etc.), smoking (list), previous surgeries (yes/no), healing problems (yes/no),
+  bleeding disorder (yes/no)
+- Weight: current body weight and maximum weight ever (important for massive weight
+  loss / body contouring)
+- Free-text by system: circulatory, respiratory, digestive, urogenital, nervous,
+  musculoskeletal, endocrine, hereditary, operations & births, smoking & alcohol,
+  children/breastfeeding, chronic medication, comments
+- Note: my-medical asks some things twice (smoking, children, breastfeeding,
+  medication, previous surgeries) — merge into one question each.
+- Same questions appear in the patient intake form (§6) so patients fill them in
+  themselves; the surgeon reviews.
 
 ### Visit
-- Date/time, type (consultation, follow-up, post-op, other)
+- Date/time, type from an editable list (e.g. ΠΡΟΕΓΧΕΙΡΗΤΙΚΗ ΕΚΤΙΜΗΣΗ, consultation,
+  follow-up, post-op…)
+- Diagnosis
 - **Free-text notes** (main content)
+- Money per visit: fee, amount collected → patient totals: fees, collected, balance
+  (as in my-medical)
 - **Vitals / measurements on every visit:** weight (required prompt), height,
   BMI (auto), blood pressure, pulse — list extensible. Weight shown as a trend chart.
 - Optional: audio recording + AI transcript + AI review (§9)
 
 ### Surgery
-- Date, hospital/clinic, procedure(s), anaesthesia, team
-- Implants/materials with lot numbers
-- Operative note, complications
+Fields used today in my-medical (keep all):
+- Title (required)
+- Admission date/time, discharge date/time
+- Surgery type — from an editable list (add new types inline)
+- Hospital/clinic — editable list (e.g. Διαβαλκανικό)
+- Surgeon (defaults to the logged-in surgeon)
+- Anaesthesiologist — editable list
+- Anaesthesia type — editable list (GA, sedation, local…)
+- Files (several at once), e.g. the scanned handwritten operative record
+- Operative record (Πρακτικό Χειρουργείου) as its own sub-section
+New in our app:
+- Procedure(s) as structured items, several per surgery (e.g. augmentation + mastopexy)
+- Implants/materials as structured items: brand, model, size/volume, side, lot number
+  (today this lives as free text in calendar titles — e.g. brand, profile, cc)
+- Operative note typed directly, complications
 - Status: proposed → booked → done
 - Linked: specific consent (§7), surgical brief (§8), photos
 
+### Receipts (view only in our app, issued through myDATA provider later)
+my-medical shows: series, number, created date, description, total amount,
+document type (e.g. ΑΠΥ). Imported history kept read-only.
+
+### Drawings (Σχέδιο)
+my-medical has a dated drawings tab. To keep: sketch on a body diagram (tablet/pen),
+saved by date, attachable to a visit or surgery.
+
+### Prescriptions & referrals (history only)
+my-medical is connected to ΗΔΙΚΑ (prescriptions, referrals/παραπεμπτικά). Our app
+does not prescribe (see §1); it imports past prescriptions read-only and links out
+to the ΗΔΙΚΑ portal.
+
 ### Document
-- Type (general consent, procedure consent, lab result, other), file (PDF), date
+- Today: name, file type, file name, date; comment, download, edit, delete;
+  "show images" gallery view. Keep all of these.
+- Type (general consent, procedure consent, lab result, history, other), file (PDF), date
 - Optionally linked to a visit or surgery
 - Signed documents store: signature image, timestamp, signer device/IP, file hash
 
 ### Photo link
 - Patient folder on Synology, mapped by patient ID
 - Tags: timepoint (pre-op, 1w, 1m, 3m, 6m, 1y…), body area, linked visit/surgery
+
+## 4b. Patient screen layout (inherited from my-medical, to modernize)
+Header: patient name, age (auto from birth date), AMKA, flag, infectious-disease alert.
+Quick actions: print, email, reminder/to-do, edit.
+Sections: Basic info · Medical history (Αναμνηστικό) · Visits · Files · Prescriptions
+(link out to ΗΔΙΚΑ) · Surgeries · Receipts · Drawings.
+(my-medical's "Σημειώσεις" tab dropped — never used.)
+Also from my-medical: a global To-Do list with reminders (bell with counter).
+
+## 4c. Calendar
+my-medical's calendar is NOT the model — to be designed from scratch with the surgeon
+(built-in vs GHL still open). Known needs so far: appointments linked to a patient
+record; surgery details (procedures, implants) live in the surgery record, not in
+appointment titles; more than one location.
+
+## 4d. Reports and other my-medical features (decide which to keep)
+my-medical offers: income by visits and by packages, total visits, total surgeries,
+referral-source stats, communication stats, birthdays, export to Excel, data backup,
+receipt totals, prescription/referral statistics (diagnoses, substances, products),
+bulk SMS and email, suppliers list, doctors list, e-consultation.
+None of my-medical's statistics work in practice, so nothing is inherited. Our own
+reports will be designed later from what the surgeon actually wants to know.
+Bulk SMS/email move to GHL. Prescription statistics dropped.
 
 ## 5. Finding a patient
 
@@ -88,17 +175,128 @@ The intake collects personal details, medical history and the **first-contact
 consents** (§7). Submissions land in a review queue; staff confirm, match to an
 existing patient if one exists, then accept.
 
+### 6a. Phase 3 details (decided)
+- Public form address: `forms.drpapaioannou.gr` (subdomain of the surgeon's domain),
+  through a secure tunnel (recommended: Cloudflare Tunnel + Turnstile anti-bot).
+- Office tablet: **Android**. Form runs as an installable web app; tablet locked to it
+  with Android screen pinning or a kiosk browser (e.g. Fully Kiosk). Leaving guest
+  mode requires a staff PIN.
+- QR: generated on the staff screen, single-use, short expiry (e.g. 30 min).
+- Remote link: single-use, 72 h expiry, save-and-continue; written to the patient's
+  GHL contact; a GHL workflow sends it (WhatsApp/email).
+- Form: personal details, reason for visit, how they heard about us, medical history
+  (patient-friendly, conditional detail boxes, current/max weight, height),
+  first-contact consents with finger signature. Greek/English.
+- Under-18 → parent/guardian details and signature required.
+- Returning patients: "update your history" link (same mechanism), e.g. before surgery.
+- Every submission goes to the review queue (§6) — nothing enters a record without
+  a staff click.
+- GHL WhatsApp is connected → remote links go out by WhatsApp by default, email as
+  alternative.
+- **Spa is served from the start.** Each QR/link/guest session belongs to a company
+  (Surgery or Spa) and lands in that company's review queue. Spa form = same personal
+  details + spa-specific questions (to be defined) + spa consents.
+- Consent texts: lawyers are updating them. Build the consent system with clearly
+  marked placeholder templates; real texts are pasted in later through the template
+  editor (versioned, no code change needed).
+
+### 6c. Moving patients between Surgery and Spa
+- Users with the right permission (admin, or a role granted "cross-company import")
+  can import a patient from one company into the other.
+- The import creates a **linked** record in the target company; user chooses what to
+  copy (contact details always; medical history / documents only if chosen).
+- Requires the patient's data-sharing consent between the two businesses (added to
+  the first-contact consents). If missing, contact details can be copied but the app
+  asks for consent before copying anything medical.
+- Every import is audited (who, when, what was copied).
+
+## 6b. Duplicate patients
+Older patients often forget they visited before, so duplicates must be caught.
+
+**Live check** — whenever a patient is created (intake review or manual entry) or
+contact details change:
+- Strong match (any one is enough): same AMKA; same phone (normalised: spaces,
+  dashes, +30/0030 removed); same email (case-insensitive).
+- Medium match: same surname + name + date of birth.
+- Weak match: similar name only — accent- and case-insensitive, Greek/Greeklish
+  equivalence (e.g. Παπαδοπούλου = Papadopoulou), married-name changes considered.
+- Staff see the existing record(s) side by side with the new data and choose:
+  **update existing** (choose field by field what to keep) or **create new anyway**.
+  "Not the same person" is remembered for that pair, so the warning doesn't repeat.
+- Shared phones/emails are normal (family members, parent's phone for a minor):
+  warn, never block.
+
+**Batch tool** (later, essential after the my-medical import):
+- Scans the whole database and lists likely duplicate pairs/groups, scored by
+  match strength, strongest first.
+- Merge screen: field-by-field choice; all visits, surgeries, documents, photos,
+  consents and receipts move to the surviving record.
+- Old patient ID keeps pointing to the merged record; every merge is audited and
+  can be undone.
+- Bulk-merge allowed only for strong matches, after review.
+
 ## 7. Consents
 
 - **First contact (everyone):** GDPR / data processing, photography consent,
   communication & marketing consent (separate tick boxes), consent to record the
-  consultation (if used, §9). Signed digitally at intake.
+  consultation (if used, §9), consent to share data between the Surgery practice
+  and the Spa (§6c). Signed digitally at intake.
 - **Procedure-specific:** when a procedure is decided, the app generates the consent
   from a template for that procedure (patient details, procedure, risks pre-filled).
   The patient must sign it once the surgery is **booked** — the app tracks this and
   warns if unsigned as surgery approaches.
 - Templates: one per procedure, editable by the surgeon, versioned (we always know
   which version a patient signed).
+
+### 7a. Template structure (based on current documents)
+Current first-contact documents (today in my-medical, issued by
+«ΠΑΠΑΪΩΑΝΝΟΥ ΠΛΑΣΤΙΚΗ ΧΕΙΡΟΥΡΓΙΚΗ Ι.Κ.Ε.»):
+1. **Data processing notice** — information text (legal basis GDPR art. 6(1)(b),
+   9(2)(h), 9(3); retention 10 years from last visit, art. 14(4) Ν.3418/2005; rights;
+   contact info@drpapaioannou.gr). Patient acknowledges + signs.
+2. **Photography consent** — information text + two separate tick boxes:
+   (a) taking and storing photos in the patient's record;
+   (b) publication on the website and social media.
+
+Each template in the app = company (Surgery/Spa) + language + version +
+information text + list of **consent items** (each: wording, required or optional) +
+signature. Each ticked/unticked item is stored on its own, so it can be checked and
+withdrawn individually.
+- Withdrawal: staff record a withdrawal (date, item); it applies from that date,
+  never retroactively.
+- Consent status feeds the rest of the app: e.g. photo browser shows whether a
+  patient's photos may be published; marketing consent syncs to GHL as a tag.
+- Retention: the app computes "keep until" = last visit + 10 years and lists records
+  past that date for review (never auto-deletes).
+- Seed templates: from `CONSENTS.md` (drafts, marked "PLACEHOLDER — awaiting
+  lawyers' version"). Spa gets its own set under the spa's legal entity once it exists.
+
+### 7b. Settings → Consent forms (manager)
+Lets the surgeon/admin manage all forms without code changes. Access: admin and
+surgeon only; every action audited.
+- **List** of templates, filterable by company (Surgery/Spa), type, language and
+  status. Shows current published version, number of signatures, and a badge
+  "Awaiting legal approval" where set.
+- **Editor**:
+  - Title, type, company, language, the flow(s) it appears in (first contact,
+    surgery booked, before recorded consultation, manual), and the procedure it
+    belongs to (for procedure consents).
+  - Information text with simple formatting (headings, bold, lists) and a button
+    to insert placeholders (`{{patient_full_name}}`, `{{surgery_date}}`, …).
+  - Consent items: add/remove/reorder; each has wording, required/optional, and a
+    **key** that links it to app behaviour (e.g. `photo_publish_face`,
+    `marketing_whatsapp`). Keys are picked from a list, so behaviour can't break
+    by mistyping.
+  - Guardian block on/off for minors.
+  - **Preview** as the patient sees it on tablet and on phone, with sample data.
+- **Versioning**: draft → published. A published version is never edited; editing
+  creates a new draft. Signed consents always point to the exact version signed.
+  Greek and English of the same form are linked as one version.
+- **Re-consent**: when publishing a new version, choose "existing signatures stay
+  valid" or "ask patients to re-sign at their next contact" (app then flags them).
+- **Archive** instead of delete once a template has signatures.
+- **Signed-consent viewer** on each patient: all consents, items ticked, version,
+  date, PDF; record a withdrawal per item.
 - Signatures: on tablet in the office or remotely via secure link.
 - ⚠️ To confirm with a lawyer: required signature type for surgical consent in Greece.
 
@@ -129,65 +327,45 @@ existing patient if one exists, then accept.
 - **GHL**: two-way sync of contact + appointment data only (name, phones, emails,
   lead source, appointment time, category). Never clinical data. Calendar choice pending.
 - **Email (SMTP)** via a provider with a DPA: surgical briefs, consent links.
-- **my-medical import**: one-time migration of patients and history (fields from
-  screenshots, pending).
+- **my-medical import**: one-time migration of ~15,300 patients with history, visits,
+  surgeries, files, receipts and prescription history.
+  - my-medical's built-in backup = spreadsheet with contact data only (names, phones,
+    emails, addresses). **No medical data.** Usable for Phase 2 contact import.
+  - Clinical data (history, visits, surgeries, files): formal written request to
+    my-medical for a complete export (database dump + all uploaded files). The surgeon
+    is the data controller and my-medical the processor; GDPR Art. 28(3)(g) obliges a
+    processor to return all personal data at the end of the service.
+  - Fallback if they refuse or stall: automated export from the surgeon's own logged-in
+    account, run locally (slow but feasible for ~15,300 patients).
+  - Keep my-medical access (read-only use) until the import is verified.
+  Import scripts run locally; real data never leaves our machines.
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
-## 11. Users and permissions
+## 11. Users and roles (draft)
 
-Each user has one **level** and **company access** (Surgery, Spa, or both); a user
-only sees records of the companies they have access to.
-
-| Level | Can do |
-|---|---|
-| **Owner** | Everything. Only an Owner can make someone Owner or edit an Owner. **An Owner can never be deleted, deactivated or demoted in the app — not even by another Owner** (only by a deliberate command on the server). |
-| **Admin** | Everything a User can, plus: invite users, set levels (up to Admin) and company access, manage devices, settings, backups. |
-| **User** | Day-to-day work: full patient records (including clinical notes) in their companies. Secretary and spa staff are Users. |
-| **Guest** | Research (e.g. a medical student). **Read-only.** Sees clinical data, patient name, age (not date of birth) and photos. **Never** sees contact details (phones, emails, address) or AMKA/ΑΦΜ. Account has a mandatory **end date**. Every view logged. |
-
-Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
-
-### New users (invitation)
-- Only Owner and Admin create users: enter name, email, level, company access
-  (and end date for Guests). The app emails an **invitation link**.
-- The link is single-use, expires after **72 hours**, contains no personal data, and
-  can be re-sent (the old link stops working). It opens only over Tailscale, so the
-  person must be added to Tailscale first.
-- On the setup page the person chooses a password (or clicks "generate a strong
-  password") and sets up 2FA.
-- Alternatively an Owner/Admin can **generate a password** for a user and hand it over
-  in person. Generated passwords are permanent (16 characters, no look-alike letters).
-  Passwords are never sent by email.
-
-### Login and sessions
-- Password + 2FA (authenticator app) with one-time recovery codes.
-- **Trusted devices:** after a successful 2FA login the user may tick "Trust this
-  device". That device skips the 2FA code (password still required) for 90 days.
-- **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
-- No automatic logout on inactivity.
-- **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
-  activity) and trusted devices; end any session or remove trust. All logged.
+- Surgeon: everything
+- Secretary: patients' contact details, appointments, intake review, documents;
+  clinical notes read-only or hidden (to decide)
+- Spa staff: Spa company only
+- Admin: users, settings, backups
 
 ## 12. Build phases
 
-1. Foundation — login (with 2FA), user levels & invitations, companies, devices, audit log, backups
+1. Foundation — login (with 2FA), roles, companies, audit log, backups
 2. Patients, visits & vitals, documents, global search
-3. my-medical import (once screenshots/export are available)
-4. Intake: guest/tablet mode, QR, remote link, first-contact consents
-5. Surgeries, procedure consent templates & signing, surgical brief, auto-email
-6. Photo browser (Synology folders)
-7. Calendar + GHL sync
-8. AI consultation assistant
-9. Receipts (myDATA provider), Spa workspace
+3. Intake: guest/tablet mode, QR, remote link, first-contact consents
+4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
+5. Photo browser (Synology folders)
+6. Calendar + GHL sync
+7. AI consultation assistant
+8. Receipts (myDATA provider), Spa workspace
+9. my-medical import — just before the test phase (export request sent then)
 
 ## 13. Open decisions
 
 - Calendar: built-in vs GHL
 - AI: local vs API provider
-- Off-site backup destination (needed by deployment)
+- Secretary's access to clinical notes
 - Exact patient fields (my-medical screenshots)
 - Photo folder structure on the Synology today
 - Legal check: e-signatures for surgical consent; consent wording
-- Legal check: Guest (research) access to identifiable data — legal basis (consent or
-  ethics approval) and confidentiality agreement for the guest
-- Email provider with DPA (for invitations now; briefs and consent links later)

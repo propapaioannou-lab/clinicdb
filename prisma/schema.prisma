@@ -33,9 +33,14 @@ model User {
   isActive        Boolean      @default(true)
   // Required for Guests: access stops after this moment.
   accessExpiresAt DateTime?
+  // Lockout after repeated wrong passwords.
+  failedLogins    Int          @default(0)
+  lockedUntil     DateTime?
+  lastLoginAt     DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   memberships     Membership[]
+  sessions        Session[]
 }
 
 // Which companies a user can see and work in.
@@ -48,4 +53,46 @@ model Membership {
 
   @@id([userId, companyId])
   @@index([companyId])
+}
+
+// One logged-in browser/device. The cookie holds a random token; only its hash is stored.
+model Session {
+  id           String    @id @default(cuid())
+  tokenHash    String    @unique
+  userId       String
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime  @default(now())
+  // Next Monday 05:00 Athens time (SPEC §11).
+  expiresAt    DateTime
+  ip           String?
+  userAgent    String?
+  revokedAt    DateTime?
+  revokedById  String?
+  // "logout", "admin", ...
+  revokeReason String?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+// Append-only record of who did what (CLAUDE.md). No foreign keys, so entries
+// survive even if the user or record they mention is later deleted.
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+  at          DateTime @default(now())
+  actorUserId String?
+  actorEmail  String?
+  companyId   String?
+  // e.g. "auth.login.success", "patient.view"
+  action      String
+  entityType  String?
+  entityId    String?
+  ip          String?
+  userAgent   String?
+  details     Json?
+
+  @@index([at])
+  @@index([actorUserId, at])
+  @@index([entityType, entityId, at])
+  @@index([action, at])
 }

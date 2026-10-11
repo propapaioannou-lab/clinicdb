@@ -174,6 +174,27 @@ describe("sensitive answers (HIV, hepatitis, substance use, mental health)", () 
   });
 });
 
+describe("answers someone cannot see are never lost", () => {
+  it("Spa staff saving a history keeps the sensitive answers and answers to hidden questions", async () => {
+    const p = await makePatient(c.surgery, { surname: "Διατήρησης" });
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    await saveHistory(surgeon, p.id, { answers: { hepc: { a: "yes", d: "2020" }, varic: { a: "yes", d: "αριστερά" }, hyper: { a: "no" } } }, ctx);
+    await db.historyQuestion.updateMany({ where: { companyId: c.surgery, key: "varic" }, data: { isActive: false } });
+    try {
+      const spa = await makeActor("USER", [c.surgery], "SPA_STAFF");
+      // Their form has neither answer; they also try to change the sensitive one.
+      await saveHistory(spa, p.id, { answers: { hyper: { a: "yes" }, hepc: { a: "no" } } }, ctx);
+      const answers = (await loadHistory(surgeon, p.id))?.data?.answers;
+      expect(answers).toMatchObject({ hyper: { a: "yes" }, hepc: { a: "yes", d: "2020" } });
+      expect((await db.patientHistory.findUniqueOrThrow({ where: { patientId: p.id }, include: { currentVersion: true } })).currentVersion.data).toMatchObject({
+        answers: { varic: { a: "yes", d: "αριστερά" } },
+      });
+    } finally {
+      await db.historyQuestion.updateMany({ where: { companyId: c.surgery, key: "varic" }, data: { isActive: true } });
+    }
+  });
+});
+
 describe("quick picks on every question", () => {
   it("every starting question has picks, and only a question's own picks are stored", async () => {
     for (const [key] of HISTORY_QUESTIONS) expect(QUESTION_CHOICES[key]?.length, key).toBeGreaterThan(0);

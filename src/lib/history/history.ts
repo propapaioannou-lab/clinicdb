@@ -111,8 +111,22 @@ export async function saveHistory(
   if (!canEditPatients(actor.level)) return fail("forbidden");
   const patient = await findPatient(actor, patientId);
   if (!patient) return fail("not_found");
-  const questions = await historyQuestions(patient.companyId, { includeSensitive: true });
+  // Every question, hidden ones too, so their stored picks stay valid.
+  const questions = await db.historyQuestion.findMany({ where: { companyId: patient.companyId } });
   const data = cleanHistory(raw, new Map(questions.map((q) => [q.key, questionChoices(q.choices).map((c) => c.key)])));
+  // Answers this person could not see (sensitive) or that the form no longer shows (hidden
+  // question) are carried over unchanged from the current version: never lost, never
+  // changed by someone who did not see them.
+  const seeSensitive = canSeeSensitiveHistory(actor);
+  const carried = questions.filter((q) => !q.isActive || (q.sensitive && !seeSensitive)).map((q) => q.key);
+  if (carried.length) {
+    const current = await db.patientHistory.findUnique({ where: { patientId }, include: { currentVersion: true } });
+    const before = (current?.currentVersion.data as HistoryData | undefined)?.answers ?? {};
+    for (const k of carried) {
+      if (before[k]) data.answers[k] = before[k];
+      else delete data.answers[k];
+    }
+  }
   const verified = source === "STAFF" && canVerifyHistory(actor);
   const now = new Date();
 

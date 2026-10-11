@@ -2,6 +2,14 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Fix: medical-history answers could be lost
+
+- Staff who may not see sensitive answers (e.g. Spa staff) did not have them in their
+  form, so when they edited a history the new version lost the HIV / hepatitis / mental
+  health answers. Now answers a person cannot see are always carried over unchanged
+  (they also cannot change them). The same applies to answers to a question that has
+  been hidden in Settings. Older versions always kept everything.
+
 ## 11 Oct 2026 — Phase 2, Step 7a: Settings → Λίστες and visit fees
 
 - Ρυθμίσεις → **Λίστες** (you and Admins): Τύποι επισκέψεων, Αιτίες σήμανσης, Πηγές

@@ -2,6 +2,25 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Visits: structured breast examination
+
+- In a visit, **+ Μαστός** now opens a structured exam instead of reminder chips:
+  tap a finding (Πτώση, Όγκος, Ασυμμετρία, Χαλαρότητα δέρματος, Πάχος ιστού,
+  Θηλή-άλως, Υπομαστική πτυχή, Σωληνοειδής μαστός, Θωρακικό τοίχωμα) and choose its
+  details (βαθμός, πλευρά, ποιος μεγαλύτερος, Regnault, cup …).
+- **The description writes itself** as you tap, e.g. «Ασθενής 43 ετών με μέτρια πτώση
+  (Regnault II) αμφοτερόπλευρα, μέτρια απώλεια όγκου (cup B), ήπια ασυμμετρία σε όγκο,
+  με μεγαλύτερο τον δεξιό μαστό…». It is stored with the visit exactly as written, ready
+  for a memo or an insurance certificate. "Επιπλέον σημειώσεις" for anything else.
+- **Αναθεώρηση**: tick it to list previous breast operations (with year) and to add
+  implant findings (Baker, μετατόπιση, rippling, υποψία ρήξης, double bubble, animation).
+- **Βαθμός δυσκολίας 1–10**: shows the extra operating time (+10′ per rank above 1); the
+  +5% fee per rank is kept for the quote (Phase 4) and never shown to the surgeon.
+- Closed visits show the description and the difficulty.
+
+**Check it:** Νέα επίσκεψη → + Μαστός → tap Πτώση, Όγκος, Ασυμμετρία and choose
+details; watch the description; tick Αναθεώρηση; pick a difficulty; save and reopen.
+
 ## 11 Oct 2026 — Visits: simpler flow
 
 - **Blood pressure and pulse removed** from visits (form, view and stored data).

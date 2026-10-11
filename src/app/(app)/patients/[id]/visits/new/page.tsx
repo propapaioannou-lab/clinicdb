@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ageToday } from "@/components/patient-bits";
 import { getTranslations } from "next-intl/server";
 import { card } from "@/components/ui";
 import { requestContext, requireSession } from "@/lib/auth/current";
@@ -39,6 +40,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
       <PatientStrip p={p} allergies={allergies.text} />
       <h1 className="text-[26px] font-semibold">{t("newTitle")}</h1>
       <VisitForm
+        age={ageToday(p.ageFrom)?.years ?? null}
         types={types}
         initial={{
           typeId: firstType, date: now.date, time: now.time, general: "", areas: [], procedures: [], diagnosis: "",

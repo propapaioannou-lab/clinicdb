@@ -200,6 +200,18 @@ services and are NOT rebuilt here.
   the rhino sketch; upper/lower blepharoplasty variants; FFS and facial implant
   components. Face list includes Bichat reduction and lip lift. Drives consent templates,
   planning-sketch template and the AI consultation checklist.
+- **Structured examination per area** (decided 11 Oct 2026; built for Breast first,
+  the other areas follow the same pattern): tapping a finding (e.g. Πτώση, Όγκος,
+  Ασυμμετρία, Χαλαρότητα δέρματος, Πάχος ιστού, Θηλή-άλως, Υπομαστική πτυχή,
+  Σωληνοειδής, Θωρακικό τοίχωμα) opens its multiple-choice details (degree, side,
+  which side is bigger, Regnault grade, cup, …). The findings are **written up as
+  Greek sentences automatically** («Ασθενής 43 ετών με μέτρια πτώση (Regnault II)…»),
+  stored with the visit as recorded, for memos and private-insurance certificates.
+  **Revision**: a switch adds previous operations in the same area (with year, typed)
+  and implant findings (Baker, malposition, rippling, rupture, double bubble,
+  animation). **Difficulty 1–10**: rank 1 = standard; each rank above adds **+5% to the
+  surgical fee** (applied in the quote, never shown to the surgeon) and **+10′ to the
+  operating time**. Used when there is no AI transcript.
 - **Clinical evaluation** (main content): "General / patient's request" free text +
   one section per area of interest (Breast, Face, Body, Nose, Genital, Other), added
   and removed as needed, several per visit. Each section: reminder chips of what to

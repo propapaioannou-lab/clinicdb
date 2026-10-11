@@ -862,6 +862,19 @@
       "invalid_date": "The date or time is not right (dd/mm/yyyy and HH:MM).",
       "invalid": "Something went wrong; please try again."
     },
-    "saveAndClose": "Save & close visit"
+    "saveAndClose": "Save & close visit",
+    "extraNotes": "Additional notes"
+  },
+  "breastExam": {
+    "findings": "Findings",
+    "revision": "Revision (previous breast surgery)",
+    "previous": "Previous operations",
+    "year": "Year",
+    "difficulty": "Difficulty (1 = standard)",
+    "extraTime": "+{minutes}′ operating time",
+    "standard": "standard time",
+    "summary": "Description (written automatically)",
+    "summaryEmpty": "Choose findings to write the description.",
+    "difficultyShort": "Difficulty {rank}/10"
   }
 }

@@ -100,4 +100,22 @@ describe("visits", () => {
     expect((await weightSeries(p.id)).map((w) => w.kg)).toEqual([68, 64]);
     expect((await getVisit(surgeon, last.id))?.previous).toMatchObject({ general: "πρώτη", weightKg: 68 });
   });
+
+  it("stores the breast findings written as sentences, with the age on the visit date", async () => {
+    const p = await makePatient(c.surgery, { surname: "Μαστού", birthDate: new Date(Date.UTC(1983, 0, 15)) });
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    const r = await createVisit(surgeon, p.id, {
+      startedAt: "2026-10-11T09:00:00Z",
+      areas: [{ area: "breast", text: "σημείωση", exam: { findings: { ptosis: { grade: "2", side: "both" } }, difficulty: 3 } }],
+    }, ctx);
+    if (!r.ok) throw new Error(r.error);
+    const v = await getVisit(surgeon, r.id);
+    expect(v?.areas[0]).toMatchObject({
+      area: "breast",
+      text: "σημείωση",
+      exam: { difficulty: 3 },
+      summary: "Ασθενής 43 ετών με μέτρια πτώση (Regnault II) αμφοτερόπλευρα.",
+    });
+  });
 });
+

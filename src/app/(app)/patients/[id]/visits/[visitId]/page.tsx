@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ageToday } from "@/components/patient-bits";
 import { getTranslations } from "next-intl/server";
 import { Badge, card, secondaryButton } from "@/components/ui";
 import { requestContext, requireSession } from "@/lib/auth/current";
@@ -61,6 +62,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
       </div>
       {editable ? (
         <VisitForm
+          age={ageToday(p.ageFrom)?.years ?? null}
           types={types}
           initial={{
             typeId: v.typeId ?? "", date: when.date, time: when.time, general: v.general ?? "", areas: v.areas, procedures: v.procedures,

@@ -4,11 +4,16 @@ import type { Prisma } from "@/generated/prisma/client";
 import { canCloseVisit, canEditPatients, canHandleMoney, canReopenVisit } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { EXAM_AREA_KEYS, findProcedure } from "./catalog";
+import { breastSummary, cleanBreastExam, type BreastExam } from "./exams/breast";
+import { ageOn } from "@/lib/patients/normalize";
+import { athensParts } from "@/lib/time";
 
 // Visits (SPEC §4 Visit). Clinical part: anyone who may edit patients. Charge part:
 // Secretary or PA/nurse only, and never returned to anyone else.
 
-export type VisitArea = { area: string; text: string };
+// text = free notes; exam = structured findings (breast so far); summary = the findings
+// written as sentences when the visit was saved (kept as recorded, for memos/certificates).
+export type VisitArea = { area: string; text: string; exam?: BreastExam; summary?: string };
 export type VisitProcedure = { key: string; subs: string[] };
 
 export type VisitInput = {
@@ -51,7 +56,12 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
   for (const a of Array.isArray(raw.areas) ? raw.areas : []) {
     const area = (a as Record<string, unknown>)?.area;
     if (typeof area !== "string" || !EXAM_AREA_KEYS.has(area) || areas.some((x) => x.area === area)) continue;
-    areas.push({ area, text: text((a as Record<string, unknown>).text) ?? "" });
+    const entry: VisitArea = { area, text: text((a as Record<string, unknown>).text) ?? "" };
+    if (area === "breast") {
+      const exam = cleanBreastExam((a as Record<string, unknown>).exam);
+      if (exam) entry.exam = exam;
+    }
+    areas.push(entry);
   }
   const procedures: VisitProcedure[] = [];
   for (const pr of Array.isArray(raw.procedures) ? raw.procedures : []) {
@@ -80,7 +90,16 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
 }
 
 async function findPatient(actor: Actor, patientId: string) {
-  return db.patient.findFirst({ where: { id: patientId, companyId: { in: actor.companyIds } }, select: { id: true, companyId: true } });
+  return db.patient.findFirst({
+    where: { id: patientId, companyId: { in: actor.companyIds } },
+    select: { id: true, companyId: true, birthDate: true },
+  });
+}
+
+// Write each structured exam up as sentences, with the patient's age on the visit date.
+function withSummaries(areas: VisitArea[], birthDate: Date | null, at: Date): VisitArea[] {
+  const age = birthDate ? (ageOn(birthDate, athensParts(at))?.years ?? null) : null;
+  return areas.map((a) => (a.area === "breast" && a.exam ? { ...a, summary: breastSummary(a.exam, age) } : a));
 }
 
 async function findVisit(actor: Actor, visitId: string) {
@@ -119,6 +138,7 @@ export async function createVisit(
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(patient.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");
+  input.areas = withSummaries(input.areas, patient.birthDate, input.startedAt ?? new Date());
   const visit = await db.visit.create({
     data: {
       ...clinicalData(input),
@@ -146,6 +166,8 @@ export async function updateVisit(actor: Actor, visitId: string, raw: Record<str
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(before.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");
+  const p = await db.patient.findUniqueOrThrow({ where: { id: before.patientId }, select: { birthDate: true } });
+  input.areas = withSummaries(input.areas, p.birthDate, input.startedAt ?? before.startedAt);
   const data = clinicalData(input);
   await db.visit.update({ where: { id: visitId }, data });
   // Clinical content stays in the visit; the log names what changed.

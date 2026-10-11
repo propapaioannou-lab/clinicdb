@@ -8,7 +8,9 @@ import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
+import type { BreastExam as BreastExamValue } from "@/lib/visits/exams/breast";
 import type { VisitActionState } from "./actions";
+import { BreastExam } from "./breast-exam";
 
 export type VisitFormValues = {
   typeId: string;
@@ -34,12 +36,15 @@ export function VisitForm({
   previousWeight,
   action,
   aside,
+  age,
 }: {
   types: { id: string; label: string }[];
   initial: VisitFormValues;
   previousWeight: { kg: number; date: string } | null;
   action: (json: string) => Promise<VisitActionState>;
   aside?: React.ReactNode;
+  // Patient's age today, for the written-up findings.
+  age: number | null;
 }) {
   const t = useTranslations("visit");
   const [v, setV] = useState<VisitFormValues>(initial);
@@ -68,6 +73,8 @@ export function VisitForm({
   const removeArea = (area: string) => setV((x) => ({ ...x, areas: x.areas.filter((a) => a.area !== area) }));
   const setAreaText = (area: string, text: string) => setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, text } : a)) }));
   // A reminder chip adds "Πτώση (Regnault): " as a new line, ready to complete.
+  const setAreaExam = (area: string, update: (prev: BreastExamValue) => BreastExamValue) =>
+    setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, exam: update(a.exam ?? { findings: {} }) } : a)) }));
   const addPrompt = (area: string, prompt: string) =>
     setV((x) => ({
       ...x,
@@ -139,7 +146,8 @@ export function VisitForm({
                     <h3 className="text-[15px] font-semibold">{def.el}</h3>
                     <button type="button" onClick={() => removeArea(a.area)} aria-label={t("removeArea", { area: def.el })} className="text-sm text-muted hover:text-danger">✕</button>
                   </div>
-                  {def.prompts.length > 0 && (
+                  {a.area === "breast" && <BreastExam value={a.exam} onChange={(u) => setAreaExam(a.area, u)} age={age} />}
+                  {a.area !== "breast" && def.prompts.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {def.prompts.map((pr) => (
                         <button key={pr.el} type="button" onClick={() => addPrompt(a.area, pr.el)} className={softChip(a.text.includes(`${pr.el}:`))}>
@@ -148,7 +156,10 @@ export function VisitForm({
                       ))}
                     </div>
                   )}
-                  <textarea rows={4} value={a.text} onChange={(e) => setAreaText(a.area, e.target.value)} aria-label={def.el} className={`${textareaClass} mt-0`} />
+                  <label className="block text-[13px] font-medium text-muted">
+                    {a.area === "breast" ? t("extraNotes") : ""}
+                    <textarea rows={a.area === "breast" ? 2 : 4} value={a.text} onChange={(e) => setAreaText(a.area, e.target.value)} aria-label={def.el} className={`${textareaClass} ${a.area === "breast" ? "" : "mt-0"}`} />
+                  </label>
                 </div>
               );
             })}

@@ -27,7 +27,9 @@ describes **what it does**. If they disagree, ask the surgeon.
 | `Intake.dc.html` | 4 · Intake form on tablet, step 2a (medication, allergies, smoking, weight) |
 | `IntakeHistory.dc.html` | 4b · Intake form, step 2b (full history questionnaire) |
 | `Secretary.dc.html` | 1e · Home — secretary / reception ("Υποδοχή") |
-| `Calendar.dc.html` | 6 · Calendar (day / week / month, booking, surgery booking, schedule e-mails) |
+| `Calendar.dc.html` | 6 · Calendar functions: booking panel, surgery booking + availability grid, schedule e-mails (layout superseded by 6a–6f) |
+| `CalDocDay/Week/Month.dc.html` | 6a–6c · Physician calendar — day / week / month |
+| `CalSecDay/Week/Month.dc.html` | 6d–6f · Secretary calendar — day / week / month |
 
 ## Design tokens (put them in `tailwind.config` as named colours)
 - Font: **Commissioner** (Google Fonts, has Greek), weights 400/500/600/700; fallback
@@ -157,6 +159,30 @@ describes **what it does**. If they disagree, ask the surgeon.
     duration), recipients with ticks, auto-send switch, privacy note, "Αποστολή τώρα"
     → "✓ Στάλθηκε … · καταγράφηκε".
 
+### 6a–6f · Calendar views per role (11 Oct 2026, supersedes the layout of 6)
+Principle: each person sees only what they act on.
+- **Physician** (no money, no other people's columns, no booking buttons):
+  - Day: one wide timeline (72 px/h), blocks with time, name, type + reason, status
+    pill; free gaps as faint text; red now-line. Side: "Τώρα", **next patient** card
+    (flag, key history, history-verified state, intake photos, "Άνοιγμα καρτέλας"),
+    day at a glance (counts), tomorrow's surgeries with readiness dots.
+  - Week: 6 day cards — day-type chips, surgeries (dark blue, time, procedure,
+    duration, readiness dot), load bar, office hours + count, new patients by name +
+    area, blocks; totals on top. A card opens the day.
+  - Month: per day surgeries (count · hours · procedures, dark blue) and office count;
+    holidays; totals on top.
+- **Secretary** (operational; "+ Χειρουργείο", "+ Ραντεβού" in the header; GHL status):
+  - Day: columns Δρ / Νοσηλεύτρια, status chips (✓ WhatsApp, Ήρθε 11:38, Φόρμα 2/4,
+    100 € μετά), **free gaps as dashed green "+ ελεύθερο 30′"** (click = book there);
+    side: **Αιτήματα κράτησης** cards (reason chip: Υψηλή αξία / Πλήρες > 10 ημέρες /
+    Σύγκρουση; actions Βρες χρόνο, Πρόταση, Κλήση) and tomorrow's confirmations.
+  - Week: compact grid 52 px/h, one line per appointment with ✓/?, out-of-hours
+    shaded grey, header per day "ελεύθερα Xω" (red 0′, amber 15′) + surgical load bar;
+    nurse column toggled on demand; requests banner on top; legend below.
+  - Month: availability map (green ≥ 2 h free, amber < 2 h, red full) + surgery-day
+    chip (πλήρες / μόνο ≤2ω / υπόλ. Xω), holidays; orange banner when new-patient
+    slots are full > 10 days, with the first free slot.
+
 ### 2a · Patients
 - A large search box with accent-, case- and space-insensitive search as you type.
   Each result shows **which field matched**.
@@ -220,6 +246,7 @@ describes **what it does**. If they disagree, ask the surgeon.
 | 4 Surgeries | Surgeries and Treatments tabs; planning panel with sketches and pen; 1c and 1d surgery day with readiness lights and checklists |
 | 5 Photos | Photos tab; photo thumbnails on surgery cards |
 | 6 Calendar + GHL | Calendar (6) incl. surgery booking/capacity and schedule e-mails, 1e secretary home, 1a and 1b home screens with live appointments, room board, ready-in-room banner, staff chat with presets, online-call button |
+| 6f Tasks | "Εργασίες" page (tabs Σήμερα / Καθυστερούν / Επόμενες / Ολοκληρωμένες, filter by person), "+ Εργασία" buttons, "→ Εργασία" in chat, tasks on home screens and patient record — screen to be drawn; follow the cards/rows style of 1b "Προς διεκπεραίωση" |
 | 7 AI | Recording control in New visit |
 | 8 Receipts / Spa | Financial tab (Epsilon Net, ΜΑΡΚ) |
 

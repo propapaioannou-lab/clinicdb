@@ -1,4 +1,6 @@
-# Clinic Database — Specification v1.1
+# Clinic Database — Specification v1.7
+
+(v1.6 from the surgeon + decisions made in Claude Code, merged 11 Oct 2026.)
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -7,8 +9,9 @@ Screens and look: `DESIGN.md` + reference mockups in `design/` (approved 11 Oct 
 ## 1. Goal
 
 Replace my-medical with a fast, self-hosted patient database for a plastic surgery
-practice and (later) a medical spa. Runs on the practice's own server (Synology DS224+
-now, possibly a mini PC later), accessed privately from anywhere. Government-facing
+practice and (later) a medical spa. Runs on the practice's own server in an EU data
+centre (rented, encrypted), with a local copy in the office; accessed privately from
+anywhere. Government-facing
 functions (e-prescription, myDATA receipts, ERGANI) stay with certified external
 services and are NOT rebuilt here.
 
@@ -30,31 +33,93 @@ services and are NOT rebuilt here.
 - Patient-facing intake (§6): a separate, minimal public service exposed through a
   secure tunnel (e.g. Cloudflare Tunnel). It can only *submit* forms into a holding
   area — it can never read patient data. Staff review and accept submissions.
-- Photos: stay in their existing Synology folders; the app reads them (read-only mount).
-- Backups: encrypted, off-site, versioned, nightly. Restore tested monthly.
-  Built (Phase 1): nightly 02:30 Athens; each copy test-restored before it is kept;
-  bundle includes settings (.env with APP_SECRET); encrypted with a public key, the
-  private key kept off the server by the owner; keeps 14 daily, 8 weekly, 12 monthly;
-  status page and warning bar in the app; every run in the audit log.
-- Development on the Linux laptop; deployment to the Synology with the same containers.
+- **Production server (decided 11 Oct 2026, option C): rented server in an EU data
+  centre.** EU-owned provider with ISO 27001 (e.g. Hetzner DE/FI, OVHcloud FR, Scaleway
+  FR, IONOS DE), data processing agreement signed, region inside the EU. Debian 13,
+  encrypted disks, Docker: app, PostgreSQL, intake service, GHL webhook service, Cloudflare
+  Tunnel. Size to start: ~4 vCPU, 16 GB RAM, NVMe SSD (resize later as needed).
+  - Why: office power/internet cuts, theft, fire or hardware failure no longer stop the
+    practice; staff work from any connection (incl. 4G); surgeon reaches records from the
+    hospital.
+- **Office mini PC (Lenovo ThinkCentre neo 50q Gen 5 or similar, 2 × SSD in RAID 1,
+  Debian 13)** has three roles:
+  1. **Live local replica** of the database (PostgreSQL streaming replication, seconds
+     behind). If the office internet is down, office staff keep reading records locally
+     ("offline mode" banner); writes made locally during the outage are queued and
+     synced when the link returns (conflicts shown for manual review). If the cloud
+     server is lost, the replica can be promoted to primary.
+  2. **AI transcription box** (phase 7, audio never leaves the office).
+  3. **Photo bridge**: originals stay on the Synology; the mini PC sends compressed
+     copies + thumbnails to encrypted storage at the cloud server so the photo browser
+     works from anywhere.
+- **Synology DS224+**: photo originals (read-only to the app) and local backup target.
+- **Emergency runbook** (printed + in the repo): what to do if the cloud server, the
+  office internet, the mini PC or the Synology fails; who to call; how to promote the
+  replica; how to restore onto a new server. **Disaster drill every 3 months**: restore
+  onto a spare server and time it (target ≤ 1 h).
+- Backups: database backup from the cloud server to the Synology (via the mini PC) every hour (+ continuous WAL archiving if
+  practical); nightly encrypted, versioned off-site copy with **write-once retention
+  (object lock / immutable, e.g. 30–90 days)** that nobody — not even the admin — can
+  delete or alter. Restore tested monthly; full restore onto another PC timed before
+  go-live (target ≤ 1 h).
+  Built so far (dev laptop, Phase 1–2): nightly 02:30 Athens; each copy test-restored
+  before it is kept; bundle includes settings (.env with APP_SECRET); encrypted with a
+  public key, the private key kept off the server by the owner; keeps 14 daily, 8
+  weekly, 12 monthly; patients' documents encrypted once each (incremental) and checked
+  nightly; status page and warning bar in the app; every run in the audit log.
+- Development on the Linux laptop; deployment to the cloud server (and replica to the mini PC) with the same containers.
+- **Server setup checklist** (Claude Code walks the surgeon through it, copy-paste):
+  1. Debian 13 server install on both machines; full-disk encryption (cloud: provider
+     disk encryption + LUKS on the data volume; mini PC: LUKS unlocked by the TPM);
+     RAID 1 over the two SSDs of the mini PC.
+  2. Automatic security updates (unattended-upgrades); monthly planned reboot outside
+     office hours.
+  3. Firewall: deny all incoming; no open ports to the internet.
+  4. Staff access only via Tailscale; SSH with keys only, over Tailscale only.
+  5. Public parts (intake form, GHL webhooks) only through Cloudflare Tunnel.
+  6. Clock synced to official time servers (NTP/chrony); drift monitored.
+  7. Docker + compose; health checks; alerts (e-mail) for disk, RAID, backup and
+     certificate problems.
+  8. UPS for mini PC + Synology + router, with automatic safe shutdown.
+  9. Provider account: 2FA, no shared logins, billing alerts; server snapshots daily.
 - **Resilience & security hardening** (from the 11 Oct review):
-  - Encrypted Synology volume; a written, timed restore procedure; one backup copy the
-    server itself cannot delete (immutable/offline) against ransomware.
+  - Encrypted disks (mini PC and Synology volume); a written, timed restore procedure;
+    write-once off-site backups (above) against ransomware.
   - UPS with automatic safe shutdown; 4G backup router; staff in the office can reach
     the app over the local network if the internet is down.
   - Printable "today" sheet (PDF): time, initials, procedure — no full names or
     clinical details on paper that leaves the building.
-  - **No** auto-logout after inactivity (decided again 11 Oct 2026, see §11); new devices approved in
+  - Auto-logout after inactivity (e.g. 10 min, PIN to resume); new devices approved in
     Tailscale; per-person logins only; same-day disable for departing staff.
   - Audit log append-only and hash-chained; monthly "who opened what" report flags
     unusual access.
   - Extra field encryption + clinical-roles-only visibility for the most sensitive
     answers (HIV, hepatitis, substance use, mental health); never in schedules, exports
-    or briefs unless needed. **Decided 11 Oct 2026:** visible to Surgeon, PA/nurse and
-    Secretary only (not spa staff, "Other" roles or Guests); for them the
-    infectious-disease alert reads just "Μολυσματικό ⚠", without the disease.
-    Field encryption of these answers: before deployment.
+    or briefs unless needed.
   - Patients get a secure photo-upload link (instead of sending photos by WhatsApp).
+
+## 3b. Record integrity and evidence (decided 11 Oct 2026)
+Goal: in a malpractice case or a data-protection inquiry, the record must show — and a
+court must be able to verify — what was written, by whom and when, and that nothing was
+changed afterwards. Better than "trust our server".
+- **No silent changes.** Clinical entries (visits, history, operative notes, consents,
+  drawings, photos metadata) are never overwritten or deleted. A correction creates a
+  new version: the original stays visible with "corrected by / when / reason". Deleting
+  is replaced by "void" with reason. Entries written later than the event are marked as
+  late entries (event time vs entry time both shown).
+- **Tamper-evident audit log.** Append-only; every entry contains the hash of the
+  previous one (hash chain). A daily check verifies the chain; a break raises an alert.
+- **Qualified electronic timestamps (eIDAS).** Once a day the app sends the fingerprint
+  (hash) of that day's audit log and of all records created/changed that day to a
+  **qualified trust service provider** on the EU Trusted List and stores the returned
+  qualified timestamp (RFC 3161). Signed consents, quotes and operative notes get their
+  own qualified timestamp at signing. Only hashes leave the server — never patient data.
+- **Evidence export.** For a patient (or a date range), one click produces a PDF + data
+  package: the record with all versions, the audit trail, the hashes and the timestamp
+  tokens, plus a short verification guide for an expert.
+- **Trusted clock**: server time synced to official time sources (§3 checklist).
+- **Write-once off-site backups** (§3) as independent corroboration.
+- The DPIA (GDPR art. 35) documents all these measures as proof of diligence.
 
 ## 4. Core data
 
@@ -437,7 +502,37 @@ payment method, receipt issued via **Epsilon Net** with myDATA ΜΑΡΚ shown; a
 "New charge" and "Collect & issue receipt". (myDATA provider = Epsilon Net.)
 Prescriptions link out to ΗΔΙΚΑ; drawings live under Visits/Surgeries.
 (my-medical's "Σημειώσεις" tab dropped — never used.)
-Also from my-medical: a global To-Do list with reminders (bell with counter).
+Also from my-medical: a global To-Do list with reminders (bell with counter) — now
+specified as **Tasks** below.
+
+## 4f. Tasks («Εργασίες») — decided 11 Oct 2026
+One place for everything someone must do; nothing lives only in chat or memory.
+- **Task:** title, short note, optional patient link (opens the record), assigned to a
+  person or a role (secretary / PA / surgeon), created by, due date + time, priority
+  (normal / urgent), reminder time, repeat (none / daily / weekly / monthly), status
+  open → done (or cancelled with reason), done by + when. `companyId`, audited. Notes
+  hold no clinical detail unless the assignee has a clinical role.
+- **Created three ways:** manually ("+ Εργασία" everywhere: home, patient record,
+  calendar item); from a chat message ("→ Εργασία" turns it into a task for that
+  person); **automatically** by rules (editable in Settings, each can be switched off):
+  - surgery checklist item still missing X days before (consent unsigned 14 d, bloods
+    7 d, pre-op clearance 7 d, deposit before the refund deadline, photos 3 d) → PA or
+    secretary;
+  - quote sent but not signed after 7 d → secretary;
+  - tomorrow's appointment not confirmed by 17:00 → secretary;
+  - new intake form / possible duplicate / booking request → secretary;
+  - unanswered patient message > 4 working hours → secretary;
+  - post-op call day 1 and day 7 → PA; follow-up photos due → PA;
+  - follow-up photos uploaded, new evaluation request with photos, results to sign →
+    **surgeon** (this is his "Για έλεγχο σήμερα" list on the home screen);
+  - botox / treatment recall due → secretary.
+  Automatic tasks close themselves when the underlying item is done (e.g. consent
+  signed → task done "automatically").
+- **Views:** menu "Εργασίες" with counter (my open tasks); tabs Σήμερα · Καθυστερούν
+  (red) · Επόμενες · Ολοκληρωμένες; filter by person/role (secretary/PA see the team);
+  patient record shows that patient's tasks; home screens show "my tasks today".
+- **Reminders:** in-app at the reminder time; optional phone push; overdue tasks turn
+  red and appear at the top. No reminders sent to patients from here (that is GHL).
 
 ## 4c. Calendar (designed — see DESIGN.md §6)
 my-medical's calendar is NOT the model. Known needs: appointments linked to a patient
@@ -510,6 +605,42 @@ first "yes" gets the slot, the rest are told automatically.
 language); replies update the appointment status. Tomorrow's unconfirmed list on the
 secretary home.
 
+**Views per role** (decided 11 Oct 2026 — DESIGN.md 6a–6f; less on screen, the right
+information for each person):
+- **Physician** — read-mostly, no money, no other people's columns.
+  Day: one wide timeline of his own appointments (time, name, type + reason, status
+  such as "Δωμάτιο 1 · τώρα" / "Στην αναμονή 6′"); side panel: now, **next patient**
+  card (flag, key history, history-verified state, photos from intake, open record),
+  the day at a glance, tomorrow's surgeries with readiness dots.
+  Week: one card per day — type of day (Ιατρείο / Χειρουργείο), surgeries with time,
+  procedure, duration and readiness dot, surgical load bar, office hours + count,
+  **new patients by name and area of interest**, blocks (congress); weekly totals.
+  Month: per day the surgeries (count, hours, procedures) and the office count;
+  holidays; monthly totals.
+- **Secretary** — operational.
+  Day: resource columns (doctor, nurse) with status chips per appointment (confirmed,
+  arrived, form, payment), **free gaps drawn as "+ ελεύθερο 30′" to click and book**;
+  side panel: **booking requests** queue + tomorrow's confirmations.
+  Week: compact grid (one line per appointment, ✓ / ?), out-of-hours shaded, per day
+  "free time" and surgical load; nurse column optional; banner with booking requests.
+  Month: **availability map** — free time per day coloured (enough / little / full),
+  surgery-day status (full / only ≤2 h / hours left), holidays; banner when new-patient
+  slots are full for > 10 days with the first free slot.
+
+**Online booking rules** (decided 11 Oct 2026):
+- The online booking (website / GHL) shows **only free slots** of our calendar.
+- A booking goes to the secretary's **"Αιτήματα κράτησης" (booking requests)** queue
+  instead of being booked automatically when:
+  1. **high-value opportunity** — GHL opportunity value ≥ a limit in Settings, or the
+     chosen procedure is on a "high-value" list (e.g. facelift, FFS, body lift), or VIP
+     tag;
+  2. **calendar full for more than 10 days** for that appointment type (online booking
+     then shows "send a request" instead of slots);
+  3. **collision** — the slot was taken in the meantime (e.g. a phone booking).
+- The secretary makes time manually (can override blocks/limits, logged) and the
+  patient is answered through GHL (WhatsApp). Every request shows source, time
+  received, reason, requested period and first free slot.
+
 ## 4d. Reports and other my-medical features (decide which to keep)
 my-medical offers: income by visits and by packages, total visits, total surgeries,
 referral-source stats, communication stats, birthdays, export to Excel, data backup,
@@ -535,6 +666,17 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   Surgery mode: today's operations only, full width (no chat, tasks or upcoming list);
   "ready in OR" still arrives as a banner. The "Surgeries" menu opens this same view:
   starts on today, ‹ › for previous/next day, "Today" button to jump back.
+- **Daily greeting** on the physician home (1a/1c): "Καλημέρα / Καλό μεσημέρι /
+  Καλησπέρα, γιατρέ" by time of day + one encouraging line that changes every day
+  (same all day). 200 lines in `content/greetings.el.json` (20% light humour, every 5th
+  line); shown = item (days since 1 Jan 2026) mod count. Editable in Settings (add,
+  edit, disable); English list later.
+- **Live now-line** on every day timeline (home 1a, calendar day views): a red
+  horizontal line at the current time that moves down continuously. The timeline is
+  time-proportional (appointment height = duration). While the line is in the upper
+  half of the visible area nothing moves; once it reaches the middle, the timeline
+  scrolls smoothly so the line stays at mid-height (past above, upcoming below). Manual
+  scrolling is allowed; auto-follow resumes after 30 s without touching, or on "Σήμερα".
 - Live clock (with seconds) at the top left + next-appointment countdown; amber ≤5 min, red "late X min".
 - Patient status flow: see §4c "Appointment status — the only list".
   The assistant marks "ready in room X" from her screen/phone → surgeon gets a banner,
@@ -624,6 +766,12 @@ existing patient if one exists, then accept.
   the first-contact consents). If missing, contact details can be copied but the app
   asks for consent before copying anything medical.
 - Every import is audited (who, when, what was copied).
+- **"Also a Spa client" marker** (and vice versa "Also a Surgery patient" in the Spa):
+  a purple pill in the patient header, search results and calendar details — "Πελάτης
+  Spa · τελευταία DD/MM · πακέτο x/y →" opening the linked record (always the neutral
+  word "Πελάτης", never a gendered form). Shown only when the
+  records are linked AND the patient's data-sharing consent (§7) is valid; without
+  consent, staff see nothing (the link exists only for admins). Clicking it is audited.
 
 ## 6b. Duplicate patients
 Older patients often forget they visited before, so duplicates must be caught.
@@ -756,17 +904,38 @@ surgeon only; every action audited.
   The checklists are the "Consultation checklist" sections of the procedure consent
   files (`consents/procedures/`), editable in the consent manager, so consent content
   and consultation review stay in step.
-- Privacy: transcription/AI either runs locally (needs stronger hardware than the
-  DS224+) or through an API provider with a signed DPA and zero data retention.
-  **Decision pending.** Audio retention policy to be decided.
+- Privacy: recommended **hybrid** — transcription (Whisper) runs locally on the mini
+  PC as a background job after the visit (audio never leaves the office); the
+  de-identified transcript goes to an EU AI provider with a DPA and zero retention for
+  the structured note and checklist review. Alternatives: all local on a dedicated AI
+  box with a GPU, or all via provider. **Decide in phase 7 after a test with consented
+  recordings.** Audio deleted once the transcript is approved, unless decided otherwise.
 
 ## 10. Integrations
 
-- **GHL**: two-way sync of contact + appointment data only (name, phones, emails,
-  lead source, appointment time, category). Never clinical data. Calendar choice pending.
-  Also sends the WhatsApp check message for the main number (§4) — the number only, no
-  clinical data.
+- **GHL**: **direct two-way connection** (decided 11 Oct 2026). Our calendar is the
+  master.
+  - App → GHL: through the GHL API, immediately on every change — contact (name,
+    phones, emails, language, our patient ID, marketing consent tag) and appointment
+    (time, length, **generic type only**: "Ραντεβού", "Online", "Θεραπεία"; never the
+    procedure or anything clinical), status (booked / confirmed / cancelled / no-show).
+    Busy times are blocked in the GHL booking calendar so online booking only shows
+    our free slots.
+  - GHL → App: **webhooks** (new/changed/cancelled booking, contact updates, WhatsApp
+    confirmation replies, opportunity value) to a **separate, public, protected
+    endpoint** on `hooks.drpapaioannou.gr` through the Cloudflare Tunnel — same pattern
+    as the intake form: it only accepts signed GHL webhooks (signature check, replay
+    protection, rate limit, Cloudflare WAF), writes them into an inbox table and can
+    never read patient data. The main app processes the inbox (idempotent: each event
+    once), applies the online booking rules (§4c) and logs everything.
+  - A nightly reconciliation compares both sides and lists differences for the
+    secretary; if GHL is unreachable, changes queue and retry.
+  - GHL setup needed: private integration token, custom fields (our patient ID,
+    language), approved WhatsApp templates (confirmation, reminder, waiting-list
+    offer, intake link, booking-request reply), one workflow per message.
 - **Email (SMTP)** via a provider with a DPA: surgical briefs, consent links.
+- **WhatsApp check of the main number** (§4, Phase 6) is sent through GHL — the number
+  only, no clinical data.
 - **my-medical import**: one-time migration of ~15,300 patients with history, visits,
   surgeries, files, receipts and prescription history.
   - my-medical's built-in backup = spreadsheet with contact data only (names, phones,
@@ -817,8 +986,9 @@ The role decides the home screen (§4e, DESIGN.md), who may verify medical histo
 and who appears as treating doctor. It does not add permissions beyond the level.
 - **Surgeon**: physician home (Ιατρείο / Χειρουργεία); treating doctor; verifies history;
   signs off operative notes.
-- **PA / nurse**: PA/nurse home (room board, checklists, intake review, chat); clinical
-  read and write; verifies medical history; not sign-off of operative notes.
+- **PA / nurse**: PA/nurse home (room board "ready in room" → notify, surgery
+  checklists, intake review, staff chat; §4e); clinical read and write; verifies medical
+  history; not sign-off of operative notes.
 - **Secretary**: home = "Υποδοχή" (DESIGN.md 1e): contact details, appointments,
   calendar, check-in, payments and receipts, waiting list, intake review, documents,
   surgery administration (hospital booking, deposit, quotes). Her own screens show no
@@ -853,14 +1023,15 @@ Admin work (users, settings, backups) comes from the level, not the role.
 - **Trusted devices:** after a successful 2FA login the user may tick "Trust this
   device". That device skips the 2FA code (password still required) for 90 days.
 - **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
-- No automatic logout on inactivity (Phase 1 decision, confirmed 11 Oct 2026).
+- **Auto-logout after 10 minutes of inactivity, PIN to resume** (decided 11 Oct 2026,
+  replaces the earlier "no auto-logout"); full login still weekly. Built with 8c.
 - **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
   activity) and trusted devices; end any session or remove trust. All logged.
 
 ## 12. Build phases
 
-1. Foundation — login (with 2FA), user levels & invitations, companies, devices, audit log, backups
-2. Patients, visits & vitals, documents, global search
+1. Foundation — login (with 2FA), user levels & roles, invitations, companies, devices, audit log, backups (built)
+2. Patients, visits & vitals, documents, global search, Settings lists (built)
 2b. **UI refit** — apply `DESIGN.md` to everything already built (app shell + left
    menu, patients page, patient record, new visit) before starting Phase 3. Screens
    whose features belong to later phases are built when their phase comes, already
@@ -868,12 +1039,52 @@ Admin work (users, settings, backups) comes from the level, not the role.
 3. Intake: guest/tablet mode, QR, remote link, first-contact consents
 4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
 5. Photo browser (Synology folders)
-6. Calendar + GHL sync — calendar, surgery capacity & booking, schedule e-mails,
-   waiting list, secretary home (1e), physician/PA home screens, WhatsApp check of the
-   patient's main number (§10)
-7. AI consultation assistant
-8. Receipts (myDATA provider), Spa workspace
-9. my-medical import — just before the test phase (export request sent then)
+6. Calendar + GHL — built in five small steps, each tested before the next:
+   - **6a Calendar core:** data model (appointments, types, resources, blocks,
+     holidays), the single status list, role views day/week/month (DESIGN 6a–6f),
+     booking panel with clash warning and free slots, live home screens, ready-in-room
+     banner, staff chat. *Test: book, move, cancel; check in; banner within 2 s.*
+   - **6b Surgery scheduling:** procedure times, daily limits + override, availability
+     grid, post-op plan, quote with automatic cost breakdown, €500 deposit rules,
+     safety flags. *Test: book a facelift → day turns orange; post-op visits appear.*
+   - **6c Schedule e-mails:** weekly (anaesthesiologists/nurses) and monthly (hospital)
+     PDFs, recipients, automatic sending, change notices, audit. *Test: send to own
+     address first.*
+   - **6d GHL two-way:** API push, webhook endpoint (public, protected), inbox
+     processing, booking-request queue rules, pending patients, reconciliation.
+     *Test: book online → arrives with duplicate check; high-value → request queue;
+     fill 10 days → online shows "request"; double booking → collision request.*
+   - **6e Front desk:** secretary home, tomorrow's confirmations, waiting list with
+     WhatsApp offers, payments recorded by hand (Epsilon Net in phase 8). *Test: one
+     fake office day with all roles.*
+   - **6f Tasks:** §4f — manual, from chat, automatic rules, views, reminders, the
+     surgeon's "today's review" list. *Test: book a surgery with unsigned consent 14
+     days ahead → task appears for the PA; sign consent → task closes by itself.*
+7. AI consultation assistant (built; use with real patients only after the lawyer's
+   answer on AI Act scope and a test with consented recordings)
+8c. **Integrity** — SPEC §3b: versions instead of overwriting, hash-chained audit log,
+   daily qualified timestamps, evidence export. Built before any real data goes in.
+8. Receipts (myDATA through Epsilon Net) — after 8c.
+9. **Mini PC + test import** (decided 11 Oct 2026):
+   - **9a Mini PC setup:** Debian 13, disk encryption, RAID 1, firewall, Tailscale,
+     automatic updates, Docker, the app (§3 checklist). Security must be complete
+     **before** any real data is copied in.
+   - **9b Test import:** full my-medical export (patients, history, visits, surgeries,
+     files, receipts **and the my-medical calendar**) imported onto the mini PC; test
+     the app with real data together with the imported calendar (duplicates, search
+     speed, Greek names, files, photos links). my-medical stays the master during the
+     test. Import scripts run on the mini PC only; real data never goes to the dev
+     laptop.
+   - **9c Backups:** hourly to the Synology, nightly write-once off-site copy, first
+     timed restore test.
+   - **9d Cloud + go-live:** EU cloud server set up as main, mini PC switched to live
+     replica + AI box, final import (delta since the test), parallel run with my-medical
+     2–4 weeks, then switch off my-medical.
+10. **Spa workspace** — after the medical part is live: own treatments, packages,
+   intake questions and consents, Spa calendar, separate company details.
+
+**Current order (11 Oct 2026):** 6a → 6f → 8c → 8 → 9a → 9b → 9c → 9d (go-live) → 10.
+Send the my-medical export request early: it may take weeks.
 
 ## 13. Open decisions
 
@@ -882,6 +1093,12 @@ confirmations and reminders); quote auto-generated, money handled by PA/secretar
 deposit €500 default, refundable ≥ 4 weeks before; capacity override by surgeon,
 secretary or PA; outcomes/complications record — yes.
 
+- Phase 7 is marked "built" in v1.6: the AI assistant is **not built in the app yet**.
+- Phases 3 (intake), 4 (surgeries, consents, brief) and 5 (photo browser) are not in the
+  "current order" — when do they come?
+- Legal check: Guest (research) access to identifiable data — legal basis (consent or
+  ethics approval) and confidentiality agreement for the guest
+- Email provider with DPA (for invitations now; briefs and consent links later)
 - Real locations (offices, hospitals) — "Ιατρείο Αθήνας" in mockups is a placeholder
 - Appointment default lengths (30′ / 15′ guessed)
 - Who may collect payments and issue receipts (secretary? PA? surgeon only?)
@@ -895,11 +1112,15 @@ secretary or PA; outcomes/complications record — yes.
 - AI: local vs API provider
 - Exact patient fields (my-medical screenshots)
 - Photo folder structure on the Synology today
+- Lawyer: evidential value of electronic records in malpractice cases; choice of
+  qualified timestamp provider (EU Trusted List); wording for corrections/late entries
+- Cyber insurance (breach, ransomware, self-hosted system) — quote needed
+- Mini PC: confirm exact model has 2 × M.2; buy second identical SSD for RAID 1
+- Choose EU hosting provider + sign its DPA (lawyer to review); second provider for the
+  write-once off-site backups
+- Lawyer letter sent to Rhetor (11 Oct 2026): hosting option, evidence, AI Act scope for
+  clinical AI (phase 7), review of consent forms after medical review
 - Legal check: e-signatures for surgical consent; consent wording
-- Off-site backup destination (needed by deployment)
-- Legal check: Guest (research) access to identifiable data — legal basis (consent or
-  ethics approval) and confidentiality agreement for the guest
-- Email provider with DPA (for invitations now; briefs and consent links later)
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`

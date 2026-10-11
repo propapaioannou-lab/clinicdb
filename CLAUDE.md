@@ -16,7 +16,7 @@ no other UI kit look.
 
 ## Stack
 - Next.js (App Router, TypeScript), PostgreSQL, Prisma, Tailwind
-- Docker + docker compose for everything (dev on Linux laptop, prod on Synology DS224+)
+- Docker + docker compose for everything (dev on Linux laptop, prod on an EU cloud server (Debian); office mini PC = live replica + AI box; Synology = photos + backups)
 - Keep dependencies few and well known.
 - UI: Tailwind with the tokens in DESIGN.md; small own components (no heavy UI kit).
 
@@ -30,6 +30,8 @@ no other UI kit look.
 - Index every searchable column; patient search must feel instant.
 - UI in Greek first; all strings in translation files so English can be added.
 - Signed documents are immutable: store hash, timestamp, template version.
+- Clinical records are never overwritten or deleted: corrections are new versions,
+  deletions are "void with reason"; audit log is append-only and hash-chained (SPEC §3b).
 
 ## Workflow
 - Small steps. After each feature: run it, run tests, tell him what to click to check it.

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Ημερολόγιο ιατρού – εβδομάδα</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3EF}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+</style>
+</helmet>
+<div style="font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+  <nav aria-label="Κύριο μενού" style="flex: 1 1 232px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #E4E2DC; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #0E5E63; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">Π</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-weight: 600; font-size: 15px">Παπαϊωάννου</span>
+        <span style="font-size: 12px; color: #5B636B">Πλαστική Χειρουργική</span>
+      </div>
+    </div>
+
+    <div role="group" aria-label="Επιχείρηση" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px">
+      <button style="flex: 1; border: 0; border-radius: 8px; padding: 8px 6px; font: inherit; font-size: 13px; font-weight: 600; background: #FFFFFF; color: #0E5E63; box-shadow: 0 1px 2px rgba(0,0,0,0.08); cursor: pointer">Ιατρείο</button>
+      <button style="flex: 1; border: 0; border-radius: 8px; padding: 8px 6px; font: inherit; font-size: 13px; font-weight: 500; background: transparent; color: #5B636B; cursor: pointer">Spa</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
+        Ιατρείο
+      </a>
+      <a href="Patients.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.5a3.5 3.5 0 010 7"></path><path d="M18 14.2c2.1.7 3.5 2.8 3.5 5.8"></path></svg>
+        Ασθενείς
+      </a>
+      <a href="CalDocWeek.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; background: #E6F0EF; color: #0E5E63; font-weight: 600; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Ημερολόγιο
+      </a>
+      <a href="Surgery.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4l5.5 5.5-9 9H5.5V13z"></path><path d="M12.5 6l5.5 5.5"></path></svg>
+        Χειρουργεία
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L16 9"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg>
+        <span style="flex: 1">Εργασίες</span>
+        <span style="background: #F1F0EC; color: #2C3238; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">5</span>
+      </a>
+    </div>
+
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #ECEAE5; padding-top: 14px">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"></path></svg>
+        Ρυθμίσεις
+      </a>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px">
+        <div style="width: 30px; height: 30px; border-radius: 999px; background: #DCE7E6; color: #0E5E63; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">ΠΠ</div>
+        <div style="display: flex; flex-direction: column">
+          <span style="font-size: 13.5px; font-weight: 600">Π. Παπαϊωάννου</span>
+          <span style="font-size: 12px; color: #5B636B">Χειρουργός</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 28px; border-bottom: 1px solid #E4E2DC; background: #FBFAF8">
+      <div style="display: flex; gap: 4px">
+        <button aria-label="Προηγούμενο" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 18px; cursor: pointer">‹</button>
+        <button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Σήμερα</button>
+        <button aria-label="Επόμενο" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 18px; cursor: pointer">›</button>
+      </div>
+      <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 1px; margin-left: 6px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">12 – 17 Οκτωβρίου</h1>
+        <span style="font-size: 13px; color: #5B636B">Το πρόγραμμά μου · σύνοψη εβδομάδας</span>
+      </div>
+      <nav aria-label="Προβολή" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px"><a href="CalDocDay.dc.html" aria-current="false" style="height: 34px; padding: 0 16px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; color:#3B4249;font-weight:500">Ημέρα</a><a href="CalDocWeek.dc.html" aria-current="page" style="height: 34px; padding: 0 16px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; background:#FFFFFF;color:#0E5E63;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.1)">Εβδομάδα</a><a href="CalDocMonth.dc.html" aria-current="false" style="height: 34px; padding: 0 16px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; color:#3B4249;font-weight:500">Μήνας</a></nav>
+      
+    </header><main style="padding: 20px 28px 32px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; color: #3B4249">
+        <span style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 12px; padding: 8px 14px"><b style="font-weight: 600; color:#1C2024">3</b> χειρουργεία</span>
+        <span style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 12px; padding: 8px 14px"><b style="font-weight: 600; color:#1C2024">26</b> ραντεβού</span>
+        <span style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 12px; padding: 8px 14px"><b style="font-weight: 600; color:#1C2024">10</b> νέοι ασθενείς</span>
+        <span style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 12px; padding: 8px 14px"><b style="font-weight: 600; color:#1C2024">2</b> online</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px"><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 2px solid #0E5E63; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Δευ 12</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63">σήμερα</span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#0E5E63;color:#FFFFFF">Ιατρείο</span></span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 0; padding-top: 0"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 09:30–18:15</span><span style="font-size: 22px; font-weight: 600; line-height: 1">9 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span><span style="font-size: 12px; color: #5B636B; margin-top: 2px">Νέοι ασθενείς</span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Ελένη Μ. <span style="color:#5B636B">· μαστός</span></span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Νίκος Χ. <span style="color:#5B636B">· ρινοπλαστική</span></span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Ιωάννα Ρ. <span style="color:#5B636B">· βλέφαρα</span></span><span style="font-size: 12.5px; color: #5B636B">Online: Μαρία Λ. (Κύπρος)</span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Τρι 13</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63"></span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#2F4B6E;color:#FFFFFF">Χειρουργείο</span><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#F1F0EC;color:#3B4249">Ιατρείο</span></span><div style="background: #2F4B6E; color: #FFFFFF; border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; gap: 6px; align-items: center; font-size: 13px"><span style="width: 9px; height: 9px; border-radius: 99px; background: #2E9E63"></span><b style="font-weight: 600">09:00</b> Θεσσαλία Ν.</span><span style="font-size: 12.5px; color: #D7E0EA">Ρινοπλαστική · 4ω 30′</span></div><div style="background: #2F4B6E; color: #FFFFFF; border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; gap: 6px; align-items: center; font-size: 13px"><span style="width: 9px; height: 9px; border-radius: 99px; background: #D98A1C"></span><b style="font-weight: 600">14:00</b> Χρύσα Δ.</span><span style="font-size: 12.5px; color: #D7E0EA">Βλεφαροπλαστική · 2ω 30′</span></div><span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: #2F4B6E"><span style="flex: 1; height: 5px; border-radius: 9px; background: #E4E2DC; overflow: hidden"><span style="display: block; height: 100%; width: 100%; background: #2F4B6E"></span></span>7ω 30′ / 7ω</span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #F1F0EC; padding-top: 10px"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 18:00–18:45</span><span style="font-size: 22px; font-weight: 600; line-height: 1">2 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span><span style="font-size: 12px; color: #5B636B; margin-top: 2px">Νέοι ασθενείς</span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Πέτρος Α. <span style="color:#5B636B">· γυναικομαστία</span></span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Τετ 14</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63"></span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#0E5E63;color:#FFFFFF">Ιατρείο</span></span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 0; padding-top: 0"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 10:00–18:00</span><span style="font-size: 22px; font-weight: 600; line-height: 1">6 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span><span style="font-size: 12px; color: #5B636B; margin-top: 2px">Νέοι ασθενείς</span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Ευτυχία Γ. <span style="color:#5B636B">· lifting</span></span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Ελπίδα Β. <span style="color:#5B636B">· μείωση μαστών</span></span><span style="font-size: 12.5px; color: #5B636B">Online: Sarah W. (UK)</span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Πεμ 15</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63"></span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#0E5E63;color:#FFFFFF">Ιατρείο</span></span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 0; padding-top: 0"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 10:00–18:15</span><span style="font-size: 22px; font-weight: 600; line-height: 1">6 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span><span style="font-size: 12px; color: #5B636B; margin-top: 2px">Νέοι ασθενείς</span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Νεφέλη Π. <span style="color:#5B636B">· αυξητική</span></span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Αλέξης Μ. <span style="color:#5B636B">· FFS</span></span><span style="font-size: 12.5px; color: #5B636B">Συνέδριο 11:00–12:00</span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Παρ 16</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63"></span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#2F4B6E;color:#FFFFFF">Χειρουργείο</span><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#F1F0EC;color:#3B4249">Ιατρείο</span></span><div style="background: #2F4B6E; color: #FFFFFF; border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; gap: 6px; align-items: center; font-size: 13px"><span style="width: 9px; height: 9px; border-radius: 99px; background: #2E9E63"></span><b style="font-weight: 600">09:00</b> Μάγδα Κ.</span><span style="font-size: 12.5px; color: #D7E0EA">Κοιλιοπλαστική + λιπο · 5ω 30′</span></div><span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: #2F4B6E"><span style="flex: 1; height: 5px; border-radius: 9px; background: #E4E2DC; overflow: hidden"><span style="display: block; height: 100%; width: 100%; background: #2F4B6E"></span></span>5ω 30′ / 7ω</span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid #F1F0EC; padding-top: 10px"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 17:00</span><span style="font-size: 22px; font-weight: 600; line-height: 1">1 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a><a href="CalDocDay.dc.html" style="color: #1C2024; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 420px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 17px; font-weight: 600">Σαβ 17</span><span style="font-size: 12px; font-weight: 600; color: #0E5E63"></span></span>
+          <span style="display: flex; gap: 4px; flex-wrap: wrap"><span style="font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 2px 7px; white-space: nowrap; background:#0E5E63;color:#FFFFFF">Ιατρείο</span></span><div style="display: flex; flex-direction: column; gap: 6px; border-top: 0; padding-top: 0"><span style="font-size: 13px; color: #3B4249"><b style="font-weight: 600; color: #1C2024">Ιατρείο</b> 10:00–11:00</span><span style="font-size: 22px; font-weight: 600; line-height: 1">2 <span style="font-size: 13px; font-weight: 400; color: #5B636B">ραντεβού</span></span><span style="font-size: 12px; color: #5B636B; margin-top: 2px">Νέοι ασθενείς</span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Στέλλα Ι. <span style="color:#5B636B">· λιποαναρρόφηση</span></span><span style="font-size: 13px"><span style="color:#0E5E63">●</span> Δημήτρης Κ. <span style="color:#5B636B">· lifting</span></span></div>
+          <span style="margin-top: auto; font-size: 12.5px; font-weight: 600; color: #0E5E63">Ημέρα →</span></a></div>
+      <span style="font-size: 12.5px; color: #5B636B">Κουκκίδα χειρουργείου: πράσινο = όλα έτοιμα · πορτοκαλί = λείπει δευτερεύον · κόκκινο = λείπει κρίσιμο. Πατήστε μια μέρα για λεπτομέρειες.</span>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

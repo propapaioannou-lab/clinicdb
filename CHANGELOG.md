@@ -2,6 +2,21 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — User levels: Owner, Admin, User, Guest
+
+- Each person now has one **level** (Owner, Admin, User, Guest) and **company access**
+  (Surgery, Spa or both). This replaces the earlier Surgeon/Secretary/Spa-staff roles.
+- Your account is now **Owner**.
+- Rules built in and tested: only Owner and Admin manage users; Admins can grant up to
+  Admin; only an Owner can make an Owner, and nobody else can touch an Owner.
+- Guests are read-only and **must** have an end date (the database refuses otherwise).
+- Generated passwords are now **permanent** (no forced change).
+- The account script is now `scripts/create-owner.ts` and is only for the first
+  account. Everyone else will be invited by email from the app (Step 5).
+- SPEC §11 rewritten with all of the above, including the invitation flow.
+
+**Check it:** see README, "List users" — your account shows level OWNER.
+
 ## 11 Oct 2026 — Generated passwords
 
 - The account script can now generate a strong password: press Enter instead of typing

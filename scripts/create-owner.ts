@@ -1,5 +1,6 @@
-// Creates (or resets) an Admin user who is Surgeon in every company.
-// Run: podman compose exec app npx tsx scripts/create-admin.ts
+// Bootstrap only: creates (or resets) an Owner with access to every company.
+// Everyone else is invited from the app (SPEC §11).
+// Run: podman compose exec app npx tsx scripts/create-owner.ts
 import { createInterface } from "node:readline";
 import { db } from "../src/lib/db";
 import { generatePassword, hashPassword, MIN_PASSWORD_LENGTH } from "../src/lib/password";
@@ -47,23 +48,21 @@ async function main() {
   }
 
   const passwordHash = await hashPassword(password);
-  const fields = { name, passwordHash, isAdmin: true, mustChangePassword: generated };
   const user = await db.user.upsert({
     where: { email },
-    update: { ...fields, isActive: true },
-    create: { email, ...fields },
+    update: { name, passwordHash, level: "OWNER", isActive: true, accessExpiresAt: null },
+    create: { email, name, passwordHash, level: "OWNER" },
   });
   for (const c of companies) {
     await db.membership.upsert({
       where: { userId_companyId: { userId: user.id, companyId: c.id } },
-      update: { role: "SURGEON" },
-      create: { userId: user.id, companyId: c.id, role: "SURGEON" },
+      update: {},
+      create: { userId: user.id, companyId: c.id },
     });
   }
-  console.log(`Admin ready: ${email} (Surgeon in: ${companies.map((c) => c.code).join(", ")})`);
+  console.log(`Owner ready: ${email} (companies: ${companies.map((c) => c.code).join(", ")})`);
   if (generated) {
-    console.log(`\nTemporary password (shown once, not stored anywhere):\n\n    ${password}\n`);
-    console.log("It must be changed at first login.");
+    console.log(`\nGenerated password (shown once, write it down or save it in a password manager):\n\n    ${password}\n`);
   }
 }
 

@@ -24,16 +24,16 @@ See the app's log:
     podman compose exec app npx prisma migrate deploy
     podman compose exec app npx prisma db seed
 
-## First Admin account
+## First Owner account (only once; others are invited from the app)
 
-    podman compose exec app npx tsx scripts/create-admin.ts
+    podman compose exec app npx tsx scripts/create-owner.ts
 
-Press Enter at the password question to generate a temporary password (shown once).
+Press Enter at the password question to generate a strong password (shown once).
 Running it again with the same email resets that account's password.
 
 List users and their roles:
 
-    podman compose exec db psql -U clinicdb -d clinicdb -c 'select u.email, u.name, u."isAdmin", c.code as company, m.role from "User" u join "Membership" m on m."userId" = u.id join "Company" c on c.id = m."companyId";'
+    podman compose exec db psql -U clinicdb -d clinicdb -c 'select u.email, u.name, u.level, c.code as company from "User" u join "Membership" m on m."userId" = u.id join "Company" c on c.id = m."companyId";'
 
 ## Tests
 

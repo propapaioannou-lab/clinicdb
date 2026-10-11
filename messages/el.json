@@ -500,7 +500,8 @@
       "RED": "Κόκκινη σήμανση"
     },
     "maxWeight": "Μέγιστο βάρος {kg} kg",
-    "backToDetails": "Όλα τα στοιχεία"
+    "backToDetails": "Όλα τα στοιχεία",
+    "infectiousHidden": "Μολυσματικό ⚠"
   },
   "roles": {
     "SURGEON": "Χειρουργός",

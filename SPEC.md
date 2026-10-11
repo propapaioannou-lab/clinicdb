@@ -44,15 +44,16 @@ services and are NOT rebuilt here.
     the app over the local network if the internet is down.
   - Printable "today" sheet (PDF): time, initials, procedure — no full names or
     clinical details on paper that leaves the building.
-  - Auto-logout after inactivity (e.g. 10 min, PIN to resume) — **conflicts with §11
-    "No automatic logout on inactivity" (Phase 1 decision); pending, see §13**; new devices approved in
+  - **No** auto-logout after inactivity (decided again 11 Oct 2026, see §11); new devices approved in
     Tailscale; per-person logins only; same-day disable for departing staff.
   - Audit log append-only and hash-chained; monthly "who opened what" report flags
     unusual access.
   - Extra field encryption + clinical-roles-only visibility for the most sensitive
     answers (HIV, hepatitis, substance use, mental health); never in schedules, exports
-    or briefs unless needed. **Which roles, and what the infectious-disease alert shows
-    to non-clinical staff: pending, see §13.**
+    or briefs unless needed. **Decided 11 Oct 2026:** visible to Surgeon, PA/nurse and
+    Secretary only (not spa staff, "Other" roles or Guests); for them the
+    infectious-disease alert reads just "Μολυσματικό ⚠", without the disease.
+    Field encryption of these answers: before deployment.
   - Patients get a secure photo-upload link (instead of sending photos by WhatsApp).
 
 ## 4. Core data
@@ -90,8 +91,8 @@ services and are NOT rebuilt here.
   medical history (Infections section), **not** in basic details (decided 11 Oct 2026).
 - Profile photo (upload or tablet camera)
 - Treating doctor — chosen from app users whose role is Surgeon (§11)
-- Comments — **not** in basic details (decided 11 Oct 2026). Imported my-medical comments are
-  kept in the database; where they are shown is open (§13).
+- Comments: **removed from patient data** (decided 11 Oct 2026) — the field came from the
+  previous agency's system and caused confusion; my-medical comments are not imported.
 - **Patient flag** (replaces my-medical "Κριτική"): none / 🟡 yellow / 🔴 red, with
   reason(s) from an editable list (bargained for discount, no-show, came late, …),
   free-text note, date and who set it. Shown as a small coloured marker on the patient
@@ -195,7 +196,9 @@ services and are NOT rebuilt here.
   and removed as needed, several per visit. Each section: reminder chips of what to
   examine (editable in Settings) + free text. AI transcript fills these sections.
 - Money per visit: fee, amount collected → patient totals: fees, collected, balance
-  (as in my-medical)
+  (as in my-medical). **Decided 11 Oct 2026:** consultation visits carry a charge,
+  follow-ups none (default per visit type); entered and collected by the **secretary**;
+  never shown on the surgeon's screens.
 - **Vitals / measurements on every visit:** weight (required prompt), height,
   BMI (auto), blood pressure, pulse — list extensible. Weight shown as a trend chart.
 - Optional: audio recording + AI transcript + AI review (§9)
@@ -670,8 +673,8 @@ and who appears as treating doctor. It does not add permissions beyond the level
   calendar, check-in, payments and receipts, waiting list, intake review, documents,
   surgery administration (hospital booking, deposit, quotes). Her own screens show no
   clinical notes, but she **may open and read the full patient record** — access to
-  everything in her companies (decided Phase 1, confirmed again 11 Oct 2026; v1.1 text
-  said "no clinical notes (hidden)" — to reconfirm, see §13).
+  everything in her companies (decided Phase 1, confirmed again 11 Oct 2026; the
+  "clinical notes" remark meant the old comments field, now removed — §4).
 - **Spa staff**: usually Spa company only.
 - **Other** (e.g. research guest, IT).
 Admin work (users, settings, backups) comes from the level, not the role.
@@ -700,8 +703,7 @@ Admin work (users, settings, backups) comes from the level, not the role.
 - **Trusted devices:** after a successful 2FA login the user may tick "Trust this
   device". That device skips the 2FA code (password still required) for 90 days.
 - **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
-- No automatic logout on inactivity (Phase 1 decision; v1.1 §3 proposes 10-minute
-  auto-logout with PIN — pending, see §13).
+- No automatic logout on inactivity (Phase 1 decision, confirmed 11 Oct 2026).
 - **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
   activity) and trusted devices; end any session or remove trust. All logged.
 
@@ -748,14 +750,6 @@ secretary or PA; outcomes/complications record — yes.
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
-- Where general comments about a patient (incl. imported my-medical comments) are shown
-- **Before Phase 2 Step 5 (visits):** money on visits now that the surgeon's screens show
-  no money — (a) visits carry no charge, charges live in the Financial tab, or (b) a
-  charge part on the visit visible only to PA/secretary?
-- Auto-logout after inactivity (v1.1 §3) vs Phase 1 "no auto-logout"?
-- Sensitive answers (HIV, hepatitis, substance use, mental health): which roles see them;
-  what the infectious-disease alert shows to the secretary / non-clinical staff?
-- Secretary and clinical notes: "access everything" (confirmed 11 Oct) or "hidden" (v1.1)?
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`

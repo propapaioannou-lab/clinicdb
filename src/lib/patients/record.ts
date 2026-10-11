@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { audit, type RequestContext } from "@/lib/audit";
-import { canArchivePatients, canSeeContactDetails } from "@/lib/permissions";
+import { canArchivePatients, canSeeContactDetails, canSeeSensitiveHistory } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { companyFilter } from "./scope";
 
@@ -38,7 +38,9 @@ export async function openPatient(actor: Actor, id: string, ctx: RequestContext)
     language: p.language,
     registeredAt: p.registeredAt,
     treatingDoctor: p.treatingDoctor?.name ?? null,
-    infectiousDiseases: p.infectiousDiseases,
+    // Which disease is sensitive: other roles only learn that there is one.
+    infectiousDiseases: canSeeSensitiveHistory(actor) ? p.infectiousDiseases : null,
+    infectiousHidden: !canSeeSensitiveHistory(actor) && Boolean(p.infectiousDiseases),
     riskFactors: p.riskFactors,
     archivedAt: p.archivedAt,
   };

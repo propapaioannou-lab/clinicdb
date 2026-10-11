@@ -102,15 +102,15 @@ describe("editing patients", () => {
     expect(Object.keys(log.details as object)).not.toContain("surname");
   });
 
-  it("leaves consent, comments and infectious diseases alone (they are not in this form)", async () => {
+  it("leaves the infectious-disease alert alone (it comes from the medical history)", async () => {
     const user = await makeActor("USER", [c.surgery]);
     const r = await createPatient(user, c.surgery, input(), ctx);
     if (!r.ok) throw new Error(r.error);
-    await db.patient.update({ where: { id: r.id }, data: { marketingConsent: true, comments: "Παλιό σχόλιο", infectiousDiseases: "HCV" } });
+    await db.patient.update({ where: { id: r.id }, data: { infectiousDiseases: "HCV" } });
     const p0 = await db.patient.findUniqueOrThrow({ where: { id: r.id } });
     expect(await updatePatient(user, r.id, input({ surname: p0.surname, city: "Βέροια" }), ctx)).toEqual({ ok: true });
     expect(await db.patient.findUniqueOrThrow({ where: { id: r.id } })).toMatchObject({
-      city: "Βέροια", marketingConsent: true, comments: "Παλιό σχόλιο", infectiousDiseases: "HCV",
+      city: "Βέροια", infectiousDiseases: "HCV",
     });
   });
 

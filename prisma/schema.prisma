@@ -301,14 +301,11 @@ model Patient {
   // my-medical keeps these apart for e-prescription.
   eprescriptionCity  String?
   eprescriptionPhone String?
-  // Until the consent system (SPEC §7) takes over.
-  marketingConsent   Boolean         @default(false)
   // Shown as an alert on the patient header.
   infectiousDiseases String?
   // High-risk profile, worked out from the latest medical history (src/lib/history/risk.ts).
   riskFactors        String[]        @default([])
   treatingDoctorId   String?
-  comments           String?
   // Staff-only marker; never sent to GHL or shown to the patient.
   flag               PatientFlag     @default(NONE)
   flagNote           String?

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
 import { allUnansweredNo, answeredCount, bmi, changedParts, cleanHistory } from "./data";
 import { riskFactors } from "./risk";
+import { openPatient } from "@/lib/patients/record";
 import { canVerifyHistory, infectionAlert, loadHistory, loadHistoryVersion, saveHistory, unverifyHistory, verifyHistory } from "./history";
 import { HISTORY_QUESTIONS } from "./questions-seed";
 
@@ -147,6 +148,27 @@ describe("quick picks, 'Όλα Όχι' and the high-risk profile", () => {
     expect((await db.patient.findUniqueOrThrow({ where: { id: p.id } })).riskFactors).toEqual(["bloodThinners"]);
     await saveHistory(secretary, p.id, { answers: { anticoag: { a: "no" } } }, ctx);
     expect((await db.patient.findUniqueOrThrow({ where: { id: p.id } })).riskFactors).toEqual([]);
+  });
+});
+
+describe("sensitive answers (HIV, hepatitis, substance use, mental health)", () => {
+  it("are seen by Surgeon, PA/nurse and Secretary only; others get a nameless infectious alert", async () => {
+    const p = await makePatient(c.surgery, { surname: "Απορρήτου" });
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    await saveHistory(surgeon, p.id, { answers: { hepc: { a: "yes", d: "2020" }, hepb: { a: "no" }, hiv: { a: "no" }, otherinf: { a: "no" }, mental: { a: "yes" }, hyper: { a: "no" } } }, ctx);
+
+    const secretary = await makeActor("USER", [c.surgery], "SECRETARY");
+    expect((await loadHistory(secretary, p.id))?.data?.answers.hepc).toEqual({ a: "yes", d: "2020" });
+    expect((await openPatient(secretary, p.id, ctx))?.infectiousDiseases).toBe("Ηπατίτιδα C (2020)");
+
+    const spa = await makeActor("USER", [c.surgery], "SPA_STAFF");
+    const seen = await loadHistory(spa, p.id);
+    expect(Object.keys(seen?.data?.answers ?? {})).toEqual(["hyper"]);
+    expect(seen?.questions.some((q) => q.key === "hepc" || q.key === "mental")).toBe(false);
+    const view = await openPatient(spa, p.id, ctx);
+    expect(view?.infectiousDiseases).toBeNull();
+    expect(view?.infectiousHidden).toBe(true);
+    expect(JSON.stringify(view)).not.toContain("Ηπατίτιδα");
   });
 });
 

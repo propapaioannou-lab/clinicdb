@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { audit, type RequestContext } from "@/lib/audit";
 import type { HistorySource, Prisma } from "@/generated/prisma/client";
-import { canEditPatients, canSeeContactDetails } from "@/lib/permissions";
+import { canEditPatients, canSeeSensitiveHistory } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { changedParts, cleanHistory, type HistoryData } from "./data";
 import { riskFactors } from "./risk";
@@ -33,12 +33,12 @@ export async function historyQuestions(companyId: string, opts: { includeSensiti
   });
 }
 
-// Everything the history tab and widget need. Guests do not get sensitive questions or
-// their answers (e.g. substance use).
+// Everything the history tab and widget need. Sensitive questions and their answers
+// (HIV, hepatitis, substance use, mental health) only for Surgeon, PA/nurse, Secretary.
 export async function loadHistory(actor: Actor, patientId: string) {
   const patient = await findPatient(actor, patientId);
   if (!patient) return null;
-  const includeSensitive = canSeeContactDetails(actor.level);
+  const includeSensitive = canSeeSensitiveHistory(actor);
   const [questions, history, versions] = await Promise.all([
     historyQuestions(patient.companyId, { includeSensitive }),
     db.patientHistory.findUnique({ where: { patientId }, include: { currentVersion: true } }),
@@ -208,7 +208,7 @@ export async function loadHistoryVersion(actor: Actor, patientId: string, number
   const v = await db.patientHistoryVersion.findUnique({ where: { patientId_number: { patientId, number } } });
   if (!v) return null;
   let data = v.data as HistoryData;
-  if (!canSeeContactDetails(actor.level)) {
+  if (!canSeeSensitiveHistory(actor)) {
     const allowed = new Set((await historyQuestions(patient.companyId, { includeSensitive: false })).map((q) => q.key));
     data = { ...data, answers: Object.fromEntries(Object.entries(data.answers).filter(([k]) => allowed.has(k))) };
   }

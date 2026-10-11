@@ -500,7 +500,8 @@
       "RED": "Red flag"
     },
     "maxWeight": "Highest weight {kg} kg",
-    "backToDetails": "All details"
+    "backToDetails": "All details",
+    "infectiousHidden": "Infectious ⚠"
   },
   "roles": {
     "SURGEON": "Surgeon",

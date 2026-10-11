@@ -1,4 +1,4 @@
-import type { Level } from "@/generated/prisma/client";
+import type { Level, Role } from "@/generated/prisma/client";
 
 // Who may manage whom (SPEC §11). Pure functions so the rules are easy to test.
 
@@ -68,4 +68,10 @@ export function canEditPatients(level: Level): boolean {
 // Archiving hides a patient everywhere; only an Owner may do it or undo it.
 export function canArchivePatients(level: Level): boolean {
   return level === "OWNER";
+}
+
+// HIV, hepatitis, substance use, mental health (decided 11 Oct 2026): only the clinical
+// and front-desk roles — Surgeon, PA/nurse, Secretary. Not spa staff, "Other" or Guests.
+export function canSeeSensitiveHistory(user: { level: Level; role: Role }): boolean {
+  return user.level !== "GUEST" && (user.role === "SURGEON" || user.role === "PA_NURSE" || user.role === "SECRETARY");
 }

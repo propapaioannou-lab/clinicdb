@@ -94,10 +94,12 @@ export function PatientCard({
                 {c?.emails[0] && <a href={`mailto:${c.emails[0]}`} className="text-primary hover:text-primary-hover">{c.emails[0]}</a>}
                 <span>{t("language", { language: tf(`languages.${p.language}`) })}</span>
               </div>
-              {(p.infectiousDiseases || alerts.length > 0) && (
+              {(p.infectiousDiseases || p.infectiousHidden || alerts.length > 0) && (
                 <div className="mt-1 flex flex-wrap gap-2">
-                  {p.infectiousDiseases && (
-                    <span className="rounded-lg bg-danger-bg px-2.5 py-1 text-[13px] font-semibold text-danger-ink">{t("infectious", { text: p.infectiousDiseases })}</span>
+                  {(p.infectiousDiseases || p.infectiousHidden) && (
+                    <span className="rounded-lg bg-danger-bg px-2.5 py-1 text-[13px] font-semibold text-danger-ink">
+                      {p.infectiousDiseases ? t("infectious", { text: p.infectiousDiseases }) : t("infectiousHidden")}
+                    </span>
                   )}
                   {alerts.map((a) => (
                     <span key={a.text} className={`rounded-lg px-2.5 py-1 text-[13px] ${a.tone === "danger" ? "bg-danger-bg font-semibold text-danger-ink" : "bg-line-softer text-ink-3"}`}>{a.text}</span>

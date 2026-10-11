@@ -25,9 +25,9 @@ type FakePatient = {
     number: number; surname: string; firstName: string; fatherName: string | null; sex: Sex;
     birthDate: Date | null; registeredAt: Date; occupation: string | null; area: string | null;
     address: string | null; city: string | null; postcode: string | null; country: string;
-    amka: string | null; afm: string | null; infectiousDiseases: string | null; comments: string | null;
+    amka: string | null; afm: string | null; infectiousDiseases: string | null;
     flag: PatientFlag; flagNote: string | null; flagSetAt: Date | null; language: "EL" | "EN";
-    marketingConsent: boolean; maritalStatusId: string | null; referralSourceId: string | null;
+    maritalStatusId: string | null; referralSourceId: string | null;
     taxOfficeId: string | null;
   };
   phones: { number: string; type: PhoneType; isMain: boolean }[];
@@ -84,12 +84,10 @@ function fakePatient(number: number, lists: Record<string, string[]>): FakePatie
         : null,
       afm: chance(0.3) ? digits(9) : null,
       infectiousDiseases: chance(0.01) ? pick(["Ηπατίτιδα Β", "Ηπατίτιδα C", "HIV"]) : null,
-      comments: chance(0.05) ? "Δοκιμαστικό σχόλιο." : null,
       flag,
       flagNote: flag === "NONE" ? null : "Δοκιμαστική σημείωση.",
       flagSetAt: flag === "NONE" ? null : registered,
       language: chance(0.04) ? "EN" : "EL",
-      marketingConsent: chance(0.5),
       maritalStatusId: chance(0.7) ? pick(lists.MARITAL_STATUS) : null,
       referralSourceId: chance(0.6) ? pick(lists.REFERRAL_SOURCE) : null,
       taxOfficeId: chance(0.3) ? pick(lists.TAX_OFFICE) : null,

@@ -2,6 +2,19 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Decisions applied: comments and newsletter removed, sensitive answers
+
+- The **Σχόλια (comments)** field and the **newsletter** tick box are removed from the
+  patient data altogether. Comments came from the old system and caused confusion;
+  newsletter consent will be part of the consent forms (Phase 3).
+- **Sensitive answers** (HIV, hepatitis B/C, other infection, substance use, mental
+  health) are visible only to Χειρουργός, Βοηθός/νοσηλεύτρια and Γραμματεία. Spa staff,
+  "Άλλο" roles and Guests don't see them; for them the red alert reads just
+  "Μολυσματικό ⚠" without naming the disease.
+- Confirmed: no automatic logout; the secretary keeps access to everything.
+- Recorded for Step 5: consultation visits carry a charge, follow-ups don't; the
+  secretary enters and collects it; the surgeon never sees money.
+
 ## 11 Oct 2026 — Medical history: quick picks, "Όλα Όχι", high-risk profile, back buttons
 
 - **Quick picks**: on Ναι, *Φάρμακα* offers the common groups (αντιπηκτικά,

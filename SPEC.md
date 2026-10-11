@@ -1,7 +1,7 @@
-# Clinic Database — Specification v1.8
+# Clinic Database — Specification v1.9
 
 (v1.6 from the surgeon + decisions made in Claude Code, merged 11 Oct 2026; v1.8 adds
-what is actually built and every deviation. Status per phase: `STATE.md`.)
+what is actually built and every deviation; v1.9: build order and Phase 7 status. Status per phase: `STATE.md`.)
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -1121,8 +1121,9 @@ Status of every phase and step: see **`STATE.md`** (kept up to date with each co
    - **6f Tasks:** §4f — manual, from chat, automatic rules, views, reminders, the
      surgeon's "today's review" list. *Test: book a surgery with unsigned consent 14
      days ahead → task appears for the PA; sign consent → task closes by itself.*
-7. AI consultation assistant (built; use with real patients only after the lawyer's
-   answer on AI Act scope and a test with consented recordings)
+7. AI consultation assistant (not started; build after go-live and after the lawyer's
+   answer on AI Act scope; use with real patients only after a test with consented
+   recordings)
 8c. **Integrity** — SPEC §3b: versions instead of overwriting, hash-chained audit log,
    daily qualified timestamps, evidence export. Built before any real data goes in.
 8. Receipts (myDATA through Epsilon Net) — after 8c.
@@ -1144,7 +1145,8 @@ Status of every phase and step: see **`STATE.md`** (kept up to date with each co
 10. **Spa workspace** — after the medical part is live: own treatments, packages,
    intake questions and consents, Spa calendar, separate company details.
 
-**Current order (11 Oct 2026):** 6a → 6f → 8c → 8 → 9a → 9b → 9c → 9d (go-live) → 10.
+**Current order (11 Oct 2026, v1.9):** 6a (finish) → 4 → 6b → 6c → 6f → 3 → 5 → 6d → 6e →
+8c → 8 → 9a → 9b → 9c → 9d (go-live) → 7 → 10 (Spa).
 Send the my-medical export request early: it may take weeks.
 
 ## 13. Open decisions
@@ -1154,9 +1156,8 @@ confirmations and reminders); quote auto-generated, money handled by PA/secretar
 deposit €500 default, refundable ≥ 4 weeks before; capacity override by surgeon,
 secretary or PA; outcomes/complications record — yes.
 
-- Phase 7 is marked "built" in v1.6: the AI assistant is **not built in the app yet**.
-- Phases 3 (intake), 4 (surgeries, consents, brief) and 5 (photo browser) are not in the
-  "current order" — when do they come?
+- Resolved (v1.9): Phase 7 is not built — after go-live and the lawyer's answer; Phases
+  3, 4 and 5 are now in the current order (§12).
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)

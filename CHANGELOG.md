@@ -2,6 +2,15 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — SPEC v1.9: new build order
+
+- Build order now: finish 6a (calendar) → 4 surgeries, consents, brief → 6b surgery
+  scheduling → 6c schedule e-mails → 6f tasks → 3 intake → 5 photos → 6d GHL → 6e front
+  desk → 8c integrity → 8 receipts → 9a–9d mini PC, test import, backups, go-live → 7 AI
+  assistant → 10 Spa.
+- Phase 7 (AI assistant) is marked "not started": it comes after go-live and after the
+  lawyer's answer on the AI Act. STATE.md follows the same order.
+
 ## 11 Oct 2026 — Phase 6a-2: the calendar day (front desk)
 
 - **Ημερολόγιο** in the menu now works: today, with ‹ Σήμερα › to move between days.

@@ -1,0 +1,10 @@
+{
+  "app": {
+    "name": "Patient Records",
+    "description": "Medical records for a plastic surgery practice"
+  },
+  "home": {
+    "title": "Welcome",
+    "subtitle": "The app is running. User login comes in the next step."
+  }
+}

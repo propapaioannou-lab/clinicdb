@@ -234,6 +234,21 @@ services and are NOT rebuilt here.
   laxity). Genital — labia minora (Franco, length), clitoral hood, labia majora, vaginal,
   MtF prerequisites. Other — scar (Vancouver), skin lesion (ABCDE). Write-ups never
   assume the patient's gender.
+- **Προεγχειρητική εκτίμηση** (decided 11 Oct 2026; was "Επεμβάσεις που συζητήθηκαν" —
+  it is my-medical's "Προεγχειρητική εκτίμηση"): areas (Πρόσωπο, Μαστός, Σώμα, Γεννητικά,
+  Άλλο) are added like the evaluation areas; an area opens its procedures; ✕ closes it
+  and unselects its procedures. **Every implant records its specs**: breast —
+  manufacturer (Motiva: Round / Ergonomix / Ergonomix 2, projection Mini / Demi / Full /
+  Corsé; Mentor: MemoryGel / Xtra / Boost / MemoryShape, Moderate … Ultra High), size cc,
+  diameter and projection (Δ/Α), technique (subglandular, subfascial, dual plane,
+  submuscular, PRESERVE, MIA), incision; facial — maker, material, size; buttock —
+  maker, shape, cc, plane. **Lift / reduction**: pattern (crescent, periareolar
+  Benelli, vertical Lejour / Hall-Findlay, L/J, Wise / keyhole inverted-T, no vertical
+  scar), pedicle, extras (auto-augmentation, mesh, fat). Gynaecomastia / top surgery:
+  technique. The choices are written as one line next to the procedure. **Size charts**:
+  choosing a size from the official Motiva / Mentor charts fills diameter and projection
+  automatically — the charts are loaded only from the manufacturers' official tables
+  (never typed from memory); until then size, diameter and projection are typed.
 - **Clinical evaluation** (main content): (the "General / patient's request" box was
   dropped — decided 11 Oct 2026)
   one section per area of interest (Breast, Face, Body, Nose, Genital, Other), added

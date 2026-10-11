@@ -2,6 +2,20 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Προεγχειρητική εκτίμηση with implant specs
+
+- "Επεμβάσεις που συζητήθηκαν" is now **Προεγχειρητική εκτίμηση**. Areas are added with
+  "+ Μαστός" etc., like the clinical evaluation; ✕ closes the area and unticks its
+  procedures.
+- Ticking an implant procedure asks for the implant: manufacturer (Motiva / Mentor),
+  type, projection, size in cc for each side, diameter, projection, technique (dual plane,
+  PRESERVE, MIA…) and incision. Lifts and reductions ask for the pattern (Wise/keyhole,
+  vertical, periareolar…) and pedicle. The choices appear as one line under "Επιλεγμένες".
+- Size charts: not loaded yet; size, diameter and projection are typed for now.
+- Check: Νέα επίσκεψη → Προεγχειρητική εκτίμηση → + Μαστός → Αυξητική-ανορθωτική →
+  Motiva → Round → Full → 325 → dual plane → ανεστραμμένο Τ; read the line under
+  "Επιλεγμένες".
+
 ## 11 Oct 2026 — Structured examination for every area
 
 - Every area (Μαστός / θώρακας, Πρόσωπο, Μύτη, Σώμα, Γεννητικά, Άλλο) now works like the

@@ -94,6 +94,7 @@ export const PROCEDURE_AREAS: ProcedureArea[] = [
       p("backLift", "Ανόρθωση πλάτης", "Back lift"),
       p("buttockLift", "Ανόρθωση γλουτών", "Buttock lift"),
       p("bbl", "Μεταμόσχευση λίπους γλουτών", "Buttock fat grafting (BBL)"),
+      p("buttockImplants", "Ενθέματα γλουτών", "Buttock implants"),
       p("bodyLift", "Body lift", "Body lift"),
       p("gynaeLipo", "Γυναικομαστία (λιπο)", "Gynaecomastia (liposuction)"),
     ],

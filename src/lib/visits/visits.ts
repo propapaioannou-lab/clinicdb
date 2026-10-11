@@ -5,7 +5,8 @@ import { canCloseVisit, canEditPatients, canHandleMoney, canReopenVisit } from "
 import type { Actor } from "@/lib/users/manage";
 import { EXAM_AREA_KEYS, findProcedure } from "./catalog";
 import { EXAMS } from "./exams/areas";
-import { cleanExam, type ExamValue } from "./exams/engine";
+import { cleanExam, type ExamValue, type FindingValue } from "./exams/engine";
+import { cleanProcedureDetails } from "./procedure-details";
 
 // Visits (SPEC §4 Visit). Clinical part: anyone who may edit patients. Charge part:
 // Secretary or PA/nurse only, and never returned to anyone else.
@@ -20,7 +21,8 @@ export function findingsText(areas: VisitArea[] | null): string | null {
   const t = (areas ?? []).map((a) => a.text).filter(Boolean).join(" ");
   return t || null;
 }
-export type VisitProcedure = { key: string; subs: string[] };
+// `details`: implant specs, technique… (procedure-details.ts).
+export type VisitProcedure = { key: string; subs: string[]; details?: FindingValue };
 
 export type VisitInput = {
   typeId: string | null;
@@ -75,7 +77,10 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
     if (!def || procedures.some((x) => x.key === key)) continue;
     const allowed = new Set((def.subs ?? []).map((s) => s.key));
     const subs = Array.isArray((pr as Record<string, unknown>).subs) ? ((pr as Record<string, unknown>).subs as unknown[]) : [];
-    procedures.push({ key: def.key, subs: [...new Set(subs.filter((s): s is string => typeof s === "string" && allowed.has(s)))] });
+    const entry: VisitProcedure = { key: def.key, subs: [...new Set(subs.filter((s): s is string => typeof s === "string" && allowed.has(s)))] };
+    const details = cleanProcedureDetails(def.key, (pr as Record<string, unknown>).details);
+    if (details) entry.details = details;
+    procedures.push(entry);
   }
   const weightKg = num(raw.weightKg, 20, 400, 1);
   const heightCm = num(raw.heightCm, 50, 250, 1);

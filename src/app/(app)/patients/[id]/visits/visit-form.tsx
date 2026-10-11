@@ -9,9 +9,11 @@ import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 import { EXAMS, missingMeasurements, requiredBreastMeasurements } from "@/lib/visits/exams/areas";
-import { summarize, type ExamValue } from "@/lib/visits/exams/engine";
+import { summarize, type ExamValue, type FieldValue } from "@/lib/visits/exams/engine";
+import { chartFor, detailsPhrase, PROCEDURE_DETAILS } from "@/lib/visits/procedure-details";
 import type { VisitActionState } from "./actions";
 import { ExamPanel } from "./exam-panel";
+import { FieldsEditor } from "./fields-editor";
 
 export type VisitFormValues = {
   typeId: string;
@@ -48,7 +50,11 @@ export function VisitForm({
 }) {
   const t = useTranslations("visit");
   const [v, setV] = useState<VisitFormValues>(initial);
-  const [cat, setCat] = useState(PROCEDURE_AREAS[0].key);
+  // Open areas of the preoperative assessment: those with chosen procedures, plus any the
+  // doctor opened; ✕ closes an area and unselects its procedures.
+  const [procAreas, setProcAreas] = useState<string[]>(() =>
+    PROCEDURE_AREAS.filter((a) => a.procedures.some((p) => initial.procedures.some((x) => x.key === p.key))).map((a) => a.key),
+  );
   const [state, setState] = useState<VisitActionState>({});
   const [pending, start] = useTransition();
   const set = (patch: Partial<VisitFormValues>) => setV((x) => ({ ...x, ...patch }));
@@ -68,6 +74,23 @@ export function VisitForm({
     setV((x) => ({
       ...x,
       procedures: x.procedures.map((p) => (p.key !== key ? p : { ...p, subs: p.subs.includes(sub) ? p.subs.filter((s) => s !== sub) : [...p.subs, sub] })),
+    }));
+  const closeProcArea = (area: string) => {
+    const keys = new Set(PROCEDURE_AREAS.find((a) => a.key === area)!.procedures.map((p) => p.key));
+    setProcAreas((x) => x.filter((a) => a !== area));
+    setV((x) => ({ ...x, procedures: x.procedures.filter((p) => !keys.has(p.key)) }));
+  };
+  const setDetail = (key: string, field: string, update: (prev: FieldValue | undefined) => FieldValue | undefined) =>
+    setV((x) => ({
+      ...x,
+      procedures: x.procedures.map((p) => {
+        if (p.key !== key) return p;
+        const details = { ...(p.details ?? {}) };
+        const val = update(details[field]);
+        if (val === undefined || val === false || (Array.isArray(val) && !val.length)) delete details[field];
+        else details[field] = val;
+        return { ...p, details };
+      }),
     }));
   const addArea = (area: string) => setV((x) => ({ ...x, areas: [...x.areas, { area, text: "" }] }));
   const removeArea = (area: string) => setV((x) => ({ ...x, areas: x.areas.filter((a) => a.area !== area) }));
@@ -176,46 +199,78 @@ export function VisitForm({
           </section>
 
           <section className={`${card} flex flex-col gap-3 p-5`}>
-            <h2 className="text-[17px] font-semibold">{t("procedures")}</h2>
-            <div role="tablist" aria-label={t("procedureArea")} className="flex flex-wrap gap-2">
-              {PROCEDURE_AREAS.map((a) => {
-                const count = a.procedures.filter((p) => chosen.has(p.key)).length;
-                return (
-                  <button key={a.key} type="button" role="tab" aria-selected={cat === a.key} onClick={() => setCat(a.key)} className={softChip(cat === a.key)}>
-                    {a.el}{count ? ` · ${count}` : ""}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-[17px] font-semibold">{t("procedures")}</h2>
+              <div role="group" aria-label={t("addArea")} className="flex flex-wrap gap-2">
+                {PROCEDURE_AREAS.filter((a) => !procAreas.includes(a.key)).map((a) => (
+                  <button key={a.key} type="button" onClick={() => setProcAreas((x) => [...x, a.key])} className="inline-flex min-h-9 items-center gap-1 rounded-full border border-dashed border-line-strong px-3 text-[13px] text-ink-3 hover:border-primary hover:text-primary">
+                    <PlusIcon size={14} />{a.el}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {PROCEDURE_AREAS.find((a) => a.key === cat)!.procedures.map((p) => (
-                <button key={p.key} type="button" aria-pressed={chosen.has(p.key)} onClick={() => toggleProcedure(p.key)} className={chip(chosen.has(p.key))}>
-                  {chosen.has(p.key) ? "✓ " : "+ "}{p.el}
-                </button>
-              ))}
-            </div>
-            {v.procedures.filter((p) => findProcedure(p.key)?.subs).map((p) => {
-              const def = findProcedure(p.key)!;
-              return (
-                <div key={p.key} className="flex flex-col gap-1.5 border-t border-line-softer pt-3">
-                  <span className="text-sm font-semibold">{def.el}</span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {def.subs!.map((s) => (
-                      <button key={s.key} type="button" aria-pressed={p.subs.includes(s.key)} onClick={() => toggleSub(p.key, s.key)} className={softChip(p.subs.includes(s.key))}>
-                        {p.subs.includes(s.key) ? "✓ " : ""}{s.el}
-                      </button>
-                    ))}
-                  </div>
+            {PROCEDURE_AREAS.filter((a) => procAreas.includes(a.key)).map((area) => (
+              <div key={area.key} aria-label={t("procedureAreaLabel", { area: area.el })} className="flex flex-col gap-3 rounded-[12px] border border-line-soft bg-surface-2 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-[15px] font-semibold">{area.el}</h3>
+                  <button type="button" onClick={() => closeProcArea(area.key)} aria-label={t("removeArea", { area: area.el })} className="text-sm text-muted hover:text-danger">✕</button>
                 </div>
-              );
-            })}
+                <div className="flex flex-wrap gap-2">
+                  {area.procedures.map((p) => (
+                    <button key={p.key} type="button" aria-pressed={chosen.has(p.key)} onClick={() => toggleProcedure(p.key)} className={chip(chosen.has(p.key))}>
+                      {chosen.has(p.key) ? "✓ " : "+ "}{p.el}
+                    </button>
+                  ))}
+                </div>
+                {v.procedures.filter((p) => area.procedures.some((x) => x.key === p.key) && (findProcedure(p.key)?.subs || PROCEDURE_DETAILS[p.key])).map((p) => {
+                  const def = findProcedure(p.key)!;
+                  const details = PROCEDURE_DETAILS[p.key];
+                  const chart = details ? chartFor(p.details ?? {}) : [];
+                  return (
+                    <div key={p.key} className="flex flex-col gap-2 rounded-[10px] border border-line-soft bg-surface px-3 py-2.5">
+                      <span className="text-sm font-semibold">{def.el}</span>
+                      {def.subs && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {def.subs.map((s) => (
+                            <button key={s.key} type="button" aria-pressed={p.subs.includes(s.key)} onClick={() => toggleSub(p.key, s.key)} className={softChip(p.subs.includes(s.key))}>
+                              {p.subs.includes(s.key) ? "✓ " : ""}{s.el}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {details && <FieldsEditor label={def.el} fields={details.fields} value={p.details ?? {}} onField={(field, u) => setDetail(p.key, field, u)} />}
+                      {chart.length > 0 && (
+                        <div role="group" aria-label={t("sizeChart")} className="flex flex-wrap items-center gap-1.5">
+                          <span className="w-28 shrink-0 text-[13px] text-muted">{t("sizeChart")}</span>
+                          {chart.map((row) => (
+                            <button
+                              key={row.cc}
+                              type="button"
+                              onClick={() => {
+                                setDetail(p.key, "cc", () => ({ r: row.cc, l: row.cc }));
+                                setDetail(p.key, "diameter", () => ({ r: row.diameter, l: row.diameter }));
+                                setDetail(p.key, "projection", () => ({ r: row.projection, l: row.projection }));
+                              }}
+                              className={softChip(false)}
+                            >
+                              {row.cc} cc · {num1(row.diameter)} × {num1(row.projection)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
             <p className="border-t border-line-softer pt-3 text-sm">
               <span className="text-muted">{t("chosen")}: </span>
               {v.procedures.length
                 ? v.procedures.map((p) => {
                     const def = findProcedure(p.key);
                     const subs = p.subs.map((s) => def?.subs?.find((x) => x.key === s)?.el).filter(Boolean);
-                    return subs.length ? `${def?.el} (${subs.join(", ")})` : def?.el;
+                    const spec = detailsPhrase(p.key, p.details);
+                    return `${def?.el}${subs.length ? ` (${subs.join(", ")})` : ""}${spec ? `: ${spec}` : ""}`;
                   }).join(" · ")
                 : t("noneChosen")}
             </p>

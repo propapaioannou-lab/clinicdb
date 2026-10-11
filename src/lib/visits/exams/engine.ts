@@ -5,7 +5,9 @@
 
 export type Opt = { key: string; el: string; phrase?: string };
 
-type FieldBase = { key: string; el: string; prefix?: string; suffix?: string };
+// `showIf`: the field is offered (and kept) only while another field has one of these
+// values, e.g. Motiva lines only after "Motiva" is picked.
+type FieldBase = { key: string; el: string; prefix?: string; suffix?: string; showIf?: { field: string; in: string[] } };
 export type Field =
   | (FieldBase & { type: "one" | "many"; options: Opt[] })
   | (FieldBase & { type: "bool"; phrase: string })
@@ -98,7 +100,7 @@ function fieldPhrase(field: Field | undefined, value: FieldValue | undefined): s
 const tidy = (s: string) =>
   s.replace(/\s+/g, " ").replace(/\s+([,.)])/g, "$1").replace(/\(\s+/g, "(").replace(/^[\s,]+|[\s,]+$/g, "").trim();
 
-function fill(template: string, finding: Finding, v: FindingValue): string {
+function fill(template: string, finding: Pick<Finding, "fields">, v: FindingValue): string {
   const text = template.replace(/\{([^}|]+)(?:\|([^}]*))?\}/g, (_, key: string, fallback?: string) => {
     const phrase = fieldPhrase(finding.fields.find((f) => f.key === key), v[key]);
     return phrase || fallback || "";
@@ -106,7 +108,7 @@ function fill(template: string, finding: Finding, v: FindingValue): string {
   return tidy(text);
 }
 
-export function findingPhrase(finding: Finding, v: FindingValue): string | null {
+export function findingPhrase(finding: Pick<Finding, "fields" | "parts" | "after" | "empty">, v: FindingValue): string | null {
   const parts = finding.parts.map((p) => fill(p, finding, v)).filter(Boolean);
   if (!parts.length) return finding.empty ?? null;
   const after = finding.after ? fill(finding.after, finding, v) : "";
@@ -165,6 +167,20 @@ function cleanMeasure(f: Extract<Field, { type: "measure" }>, raw: unknown): Mea
   return Object.keys(out).length ? out : null;
 }
 
+export const fieldShown = (f: Field, v: FindingValue) => !f.showIf || f.showIf.in.includes(v[f.showIf.field] as string);
+
+// Keeps known fields and options only; drops fields whose `showIf` no longer holds.
+export function cleanValues(fields: Field[], raw: unknown): FindingValue {
+  const src = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const val: FindingValue = {};
+  for (const field of fields) {
+    const v = cleanField(field, src[field.key]);
+    if (v !== undefined) val[field.key] = v;
+  }
+  for (const field of fields) if (!fieldShown(field, val)) delete val[field.key];
+  return val;
+}
+
 function cleanField(f: Field, v: unknown): FieldValue | undefined {
   if (f.type === "bool") return v === true ? true : undefined;
   if (f.type === "measure") return cleanMeasure(f, v) ?? undefined;
@@ -187,13 +203,7 @@ export function cleanExam(area: AreaExam, raw: unknown): ExamValue | null {
   const findings: Record<string, FindingValue> = {};
   for (const f of area.findings) {
     if (!(f.key in rawFindings) || (f.revisionOnly && !revisionOn)) continue;
-    const src = (rawFindings[f.key] && typeof rawFindings[f.key] === "object" ? rawFindings[f.key] : {}) as Record<string, unknown>;
-    const val: FindingValue = {};
-    for (const field of f.fields) {
-      const v = cleanField(field, src[field.key]);
-      if (v !== undefined) val[field.key] = v;
-    }
-    findings[f.key] = val;
+    findings[f.key] = cleanValues(f.fields, rawFindings[f.key]);
   }
   const exam: ExamValue = { findings };
   if (area.measurements && r.measurements && typeof r.measurements === "object") {

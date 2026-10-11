@@ -2,43 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { fieldClass } from "@/components/ui";
-import { difficultyModifiers, type AreaExam, type ExamValue as Exam, type Field, type FieldValue, type MeasureValue } from "@/lib/visits/exams/engine";
+import { difficultyModifiers, type AreaExam, type ExamValue as Exam, type FieldValue, type MeasureValue } from "@/lib/visits/exams/engine";
+import { FieldsEditor, MeasureInputs, opt } from "./fields-editor";
 
 const pill = (on: boolean) =>
   `min-h-10 rounded-full px-3.5 py-1.5 text-sm ${on ? "border border-primary bg-primary font-semibold text-white" : "border border-line-strong bg-surface text-ink-2 hover:border-primary"}`;
-const opt = (on: boolean) =>
-  `min-h-9 rounded-full px-3 py-1 text-[13px] ${on ? "border border-primary bg-primary-tint font-semibold text-primary" : "border border-line-strong bg-surface text-ink-3 hover:border-primary"}`;
-
-const shown = (n: number | undefined) => (n === undefined ? "" : String(n).replace(".", ","));
-const parse = (s: string) => {
-  const n = Number(s.replace(",", "."));
-  return s.trim() && Number.isFinite(n) ? n : undefined;
-};
-
-// Number inputs for one measurement: one box, or Δ / Α boxes. Uncontrolled so a half-typed
-// "21," is not rewritten while typing.
-function MeasureInputs({ field, value, onChange }: { field: Extract<Field, { type: "measure" }>; value: MeasureValue | undefined; onChange: (v: MeasureValue | undefined) => void }) {
-  const t = useTranslations("exam");
-  const put = (k: keyof MeasureValue, s: string) => {
-    const next = { ...(value ?? {}) };
-    const n = parse(s);
-    if (n === undefined) delete next[k];
-    else next[k] = n;
-    onChange(Object.keys(next).length ? next : undefined);
-  };
-  const box = (k: keyof MeasureValue, label: string) => (
-    <label className="flex items-center gap-1 text-[13px] text-muted">
-      {label}
-      <input defaultValue={shown(value?.[k])} onChange={(e) => put(k, e.target.value)} inputMode="decimal" aria-label={`${field.el}${label ? ` ${label}` : ""}`} className={`${fieldClass} w-[72px] text-center`} />
-    </label>
-  );
-  return (
-    <span className="flex flex-wrap items-center gap-2">
-      {field.sides ? <>{box("r", t("right"))}{box("l", t("left"))}</> : box("v", "")}
-      {field.unit && <span className="text-[13px] text-muted">{field.unit}</span>}
-    </span>
-  );
-}
 
 // Structured examination of one area (decided 11 Oct 2026): tap a finding, answer its
 // options; the sentences are written into "Επιπλέον ευρήματα", where they stay editable.
@@ -168,56 +136,12 @@ export function ExamPanel({
         );
       })}
 
-      {findings.filter((f) => f.key in exam.findings).map((f) => {
-        const val = exam.findings[f.key] ?? {};
-        const bools = f.fields.filter((x) => x.type === "bool");
-        return (
-          <div key={f.key} className="flex flex-col gap-2 rounded-[10px] border border-line-soft bg-surface px-3 py-2.5">
-            <span className="text-sm font-semibold">{f.el}</span>
-            {bools.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {bools.map((field) => (
-                  <button key={field.key} type="button" aria-pressed={val[field.key] === true} onClick={() => setField(f.key, field.key, (p) => !p)} className={opt(val[field.key] === true)}>
-                    {val[field.key] === true ? "✓ " : ""}{field.el}
-                  </button>
-                ))}
-              </div>
-            )}
-            {f.fields.filter((x): x is Exclude<Field, { type: "bool" }> => x.type !== "bool").map((field) => {
-              const v = val[field.key];
-              return (
-                <div key={field.key} role="group" aria-label={`${f.el}: ${field.el}`} className="flex flex-wrap items-center gap-1.5">
-                  <span className="w-28 shrink-0 text-[13px] text-muted">{field.el}</span>
-                  {field.type === "measure" ? (
-                    <MeasureInputs field={field} value={v as MeasureValue | undefined} onChange={(m) => setField(f.key, field.key, () => m)} />
-                  ) : (
-                    field.options.map((o) => {
-                      const on = field.type === "one" ? v === o.key : Array.isArray(v) && v.includes(o.key);
-                      return (
-                        <button
-                          key={o.key}
-                          type="button"
-                          aria-pressed={on}
-                          onClick={() =>
-                            setField(f.key, field.key, (p) =>
-                              field.type === "one"
-                                ? p === o.key ? undefined : o.key
-                                : Array.isArray(p) && p.includes(o.key) ? p.filter((x) => x !== o.key) : [...(Array.isArray(p) ? p : []), o.key],
-                            )
-                          }
-                          className={opt(on)}
-                        >
-                          {o.el}
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        );
-      })}
+      {findings.filter((f) => f.key in exam.findings).map((f) => (
+        <div key={f.key} className="flex flex-col gap-2 rounded-[10px] border border-line-soft bg-surface px-3 py-2.5">
+          <span className="text-sm font-semibold">{f.el}</span>
+          <FieldsEditor label={f.el} fields={f.fields} value={exam.findings[f.key] ?? {}} onField={(field, u) => setField(f.key, field, u)} />
+        </div>
+      ))}
 
       <div className="flex flex-col gap-1.5">
         <span className="text-[13px] font-medium text-muted">{t("difficulty")}</span>

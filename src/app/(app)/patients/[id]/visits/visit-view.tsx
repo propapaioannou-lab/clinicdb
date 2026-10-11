@@ -4,6 +4,7 @@ import { card } from "@/components/ui";
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, findProcedure } from "@/lib/visits/catalog";
 import { difficultyModifiers } from "@/lib/visits/exams/engine";
+import { detailsPhrase } from "@/lib/visits/procedure-details";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
 
 // A closed visit (or any visit for read-only users), in the same layout as the form.
@@ -51,7 +52,8 @@ export async function VisitView({
               ? v.procedures.map((p) => {
                   const def = findProcedure(p.key);
                   const subs = p.subs.map((s) => def?.subs?.find((x) => x.key === s)?.el).filter(Boolean);
-                  return subs.length ? `${def?.el ?? p.key} (${subs.join(", ")})` : (def?.el ?? p.key);
+                  const spec = detailsPhrase(p.key, p.details);
+                  return `${def?.el ?? p.key}${subs.length ? ` (${subs.join(", ")})` : ""}${spec ? `: ${spec}` : ""}`;
                 }).join(" · ")
               : t("noneChosen")}
           </p>

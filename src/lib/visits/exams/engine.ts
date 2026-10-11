@@ -6,8 +6,9 @@
 export type Opt = { key: string; el: string; phrase?: string };
 
 // `showIf`: the field is offered (and kept) only while another field has one of these
-// values, e.g. Motiva lines only after "Motiva" is picked.
-type FieldBase = { key: string; el: string; prefix?: string; suffix?: string; showIf?: { field: string; in: string[] } };
+// values, e.g. Motiva lines only after "Motiva" is picked; a list = all must hold.
+type Cond = { field: string; in: string[] };
+type FieldBase = { key: string; el: string; prefix?: string; suffix?: string; showIf?: Cond | Cond[] };
 export type Field =
   | (FieldBase & { type: "one" | "many"; options: Opt[] })
   | (FieldBase & { type: "bool"; phrase: string })
@@ -170,7 +171,8 @@ function cleanMeasure(f: Extract<Field, { type: "measure" }>, raw: unknown): Mea
   return Object.keys(out).length ? out : null;
 }
 
-export const fieldShown = (f: Field, v: FindingValue) => !f.showIf || f.showIf.in.includes(v[f.showIf.field] as string);
+export const fieldShown = (f: Field, v: FindingValue) =>
+  !f.showIf || [f.showIf].flat().every((c) => c.in.includes(v[c.field] as string));
 
 // Keeps known fields and options only; drops fields whose `showIf` no longer holds.
 export function cleanValues(fields: Field[], raw: unknown): FindingValue {

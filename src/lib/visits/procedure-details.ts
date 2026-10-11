@@ -64,11 +64,26 @@ const BUTTOCK_IMPLANT: Field[] = [
   { key: "plane", el: "Πλάνο", type: "one", options: [o("intramuscular", "ενδομυϊκά"), o("subfascial", "υποπεριτονιακά"), o("submuscular", "υπομυϊκά")] },
 ];
 
+// Reconstruction: expander (two stages), direct-to-implant or autologous (decided 11 Oct 2026).
+const RECON_DEVICE: Field = { key: "device", el: "Τύπος", type: "one", options: [o("expander", "διατατήρας ιστών"), o("dti", "άμεσο ένθεμα (DTI)"), o("autologous", "αυτόλογη (κρημνός)")] };
+const onlyFor = (device: string) => (f: Field): Field => ({ ...f, showIf: [{ field: "device", in: [device] }, ...(f.showIf ? [f.showIf].flat() : [])] });
+const EXPANDER: Field[] = ([
+  { key: "expanderLine", el: "Mentor", type: "one", prefix: "διατατήρας Mentor ", options: [o("cpx4", "CPX4"), o("cpx4Tabs", "CPX4 με suture tabs"), o("artoura", "Artoura")] },
+  sided("expanderCc", "Όγκος", "cc", "", 1500),
+  sided("expanderWidth", "Πλάτος", "cm", "πλάτος", 20),
+  sided("fill", "Αρχική πλήρωση", "cc", "αρχική πλήρωση", 1500),
+  { key: "expanderPlane", el: "Θέση", type: "one", options: [o("prepectoral", "προθωρακικά"), o("subpectoral", "υποθωρακικά")] },
+] satisfies Field[]).map(onlyFor("expander"));
+const FLAP: Field[] = ([{ key: "flap", el: "Κρημνός", type: "one", prefix: "κρημνός ", options: [o("diep", "DIEP"), o("ld", "πλατύς ραχιαίος (LD)"), o("tug", "TUG"), o("pap", "PAP"), o("siea", "SIEA")] }] satisfies Field[]).map(onlyFor("autologous"));
+
 const BREAST_IMPLANT_DETAILS = { fields: BREAST_IMPLANT, parts: IMPLANT_PARTS };
 export const PROCEDURE_DETAILS: Record<string, ProcedureDetails> = {
   augmentation: BREAST_IMPLANT_DETAILS,
   implantExchange: BREAST_IMPLANT_DETAILS,
-  reconstruction: BREAST_IMPLANT_DETAILS,
+  reconstruction: {
+    fields: [RECON_DEVICE, ...EXPANDER, ...BREAST_IMPLANT.map(onlyFor("dti")), ...FLAP],
+    parts: ["{device}", "{expanderLine} {expanderCc}", "{expanderWidth}", "{fill}", "{expanderPlane}", ...IMPLANT_PARTS, "{flap}"],
+  },
   augMastopexy: { fields: [...BREAST_IMPLANT, ...LIFT], parts: [...IMPLANT_PARTS, ...LIFT_PARTS] },
   mastopexy: { fields: LIFT, parts: LIFT_PARTS },
   reduction: { fields: LIFT, parts: LIFT_PARTS },

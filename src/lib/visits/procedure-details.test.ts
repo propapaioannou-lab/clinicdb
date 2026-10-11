@@ -26,3 +26,14 @@ describe("procedure details", () => {
     expect(v.procedures).toEqual([{ key: "augmentation", subs: [], details: { maker: "motiva", plane: "preserve" } }, { key: "facelift", subs: [] }]);
   });
 });
+
+describe("breast reconstruction", () => {
+  it("records a Mentor expander, and drops implant fields unless direct-to-implant", () => {
+    const d = cleanProcedureDetails("reconstruction", {
+      device: "expander", expanderLine: "cpx4", expanderCc: { r: 400 }, fill: { r: 150 }, expanderPlane: "prepectoral", maker: "motiva",
+    })!;
+    expect(d.maker).toBeUndefined();
+    expect(detailsPhrase("reconstruction", d)).toBe("διατατήρας ιστών, διατατήρας Mentor CPX4 Δ 400 cc, αρχική πλήρωση Δ 150 cc, προθωρακικά");
+    expect(cleanProcedureDetails("reconstruction", { device: "dti", maker: "mentor", mentorLine: "xtra" })).toEqual({ device: "dti", maker: "mentor", mentorLine: "xtra" });
+  });
+});

@@ -246,7 +246,10 @@ services and are NOT rebuilt here.
   manufacturer (Motiva: Round / Ergonomix / Ergonomix 2, projection Mini / Demi / Full /
   Corsé; Mentor: MemoryGel / Xtra / Boost / MemoryShape, Moderate … Ultra High), size cc,
   diameter and projection (Δ/Α), technique (subglandular, subfascial, dual plane,
-  submuscular, PRESERVE, MIA), incision; facial — maker, material, size; buttock —
+  submuscular, PRESERVE, MIA), incision; **reconstruction** — tissue expander (Mentor
+  CPX4 / CPX4 with suture tabs / Artoura, volume, width, initial fill, pre- or
+  subpectoral), direct-to-implant (implant fields) or autologous (DIEP, LD, TUG, PAP,
+  SIEA); facial — maker, material, size; buttock —
   maker, shape, cc, plane. **Lift / reduction**: pattern (crescent, periareolar
   Benelli, vertical Lejour / Hall-Findlay, L/J, Wise / keyhole inverted-T, no vertical
   scar), pedicle, extras (auto-augmentation, mesh, fat). Gynaecomastia / top surgery:

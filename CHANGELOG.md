@@ -2,6 +2,13 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Breast reconstruction: expanders
+
+- "Αποκατάσταση μαστού" asks first for the type: διατατήρας ιστών (Mentor CPX4, CPX4
+  with suture tabs, Artoura; volume, width, initial fill, pre/subpectoral), άμεσο ένθεμα
+  (the implant fields) or αυτόλογη (DIEP, LD, TUG, PAP, SIEA).
+- Check: Προεγχειρητική εκτίμηση → + Μαστός → Αποκατάσταση μαστού → διατατήρας ιστών.
+
 ## 11 Oct 2026 — Gender: trans man, trans woman, non-binary; breast findings follow it
 
 - Patient "Φύλο" now offers Γυναίκα, Άνδρας, Τρανς άνδρας, Τρανς γυναίκα, Μη δυαδικό

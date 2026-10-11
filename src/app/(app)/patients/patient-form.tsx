@@ -53,6 +53,7 @@ export function PatientForm({
   action,
   mergeAction,
   onCancel,
+  onSaved,
 }: {
   mode: "create" | "edit";
   initial: PatientFormValues;
@@ -60,6 +61,8 @@ export function PatientForm({
   action: (fd: FormData) => Promise<PatientFormState>;
   mergeAction?: (existingId: string, fd: FormData) => Promise<PatientFormState>;
   onCancel?: () => void;
+  // Called after a successful save (edit mode closes the form).
+  onSaved?: () => void;
 }) {
   const t = useTranslations("patientForm");
   const [state, setState] = useState<PatientFormState>({});
@@ -75,6 +78,10 @@ export function PatientForm({
   const run = (fn: () => Promise<PatientFormState>) =>
     start(async () => {
       const r = await fn();
+      if (r.saved && onSaved) {
+        onSaved();
+        return;
+      }
       setState(r);
       if (r.duplicates?.length || r.error) setTimeout(() => panel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
     });

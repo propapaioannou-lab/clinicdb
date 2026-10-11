@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { listDeletedUsers } from "@/lib/users/queries";
@@ -15,6 +17,7 @@ export default async function DeletedUsersPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl p-4">
+      <BackLink href="/admin/users" label={await backLabel("users")} />
       <div className="mb-2 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <Link href="/admin/users" className="text-sm underline-offset-2 hover:underline">{tu("title")}</Link>

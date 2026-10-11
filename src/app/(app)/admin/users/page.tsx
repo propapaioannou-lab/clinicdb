@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Badge, primaryButton } from "@/components/ui";
@@ -19,6 +21,7 @@ export default async function UsersPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl p-4">
+      <BackLink href="/settings" label={await backLabel("settings")} />
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t("users.title")}</h1>
         <div className="flex items-center gap-4">

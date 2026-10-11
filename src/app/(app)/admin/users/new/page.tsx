@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import { getTranslations } from "next-intl/server";
 import type { Level } from "@/generated/prisma/client";
 import { canAssignLevel } from "@/lib/permissions";
@@ -15,6 +17,7 @@ export default async function NewUserPage() {
   const canGrant = (id: string) => actor.level === "OWNER" || actor.companyIds.includes(id);
   return (
     <main className="mx-auto w-full max-w-lg p-4">
+      <BackLink href="/admin/users" label={await backLabel("users")} />
       <h1 className="mb-4 text-2xl font-semibold">{t("new")}</h1>
       <UserForm
         mode="create"

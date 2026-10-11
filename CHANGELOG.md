@@ -2,6 +2,16 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Fixes: back links, saving patient edits
+
+- Every page inside **Ρυθμίσεις** has a **← Ρυθμίσεις** link at the top (a user's page,
+  "Νέος χρήστης" and "Διαγραμμένοι χρήστες" lead back to **← Χρήστες**).
+- **Bug fixed:** saving a patient's edited details seemed to do nothing. Any change (even
+  just the city) set off the duplicate warning, because the patient's own name resembles
+  other patients'; the warning sat at the top of the long form, out of view. Now editing
+  checks only what you changed (a new phone or email, a new AMKA, a changed name or birth
+  date). After a successful save the form closes and "Οι αλλαγές αποθηκεύτηκαν" appears.
+
 ## 11 Oct 2026 — Patient details form trimmed
 
 - Removed from the patient details form and the details view, at your request:

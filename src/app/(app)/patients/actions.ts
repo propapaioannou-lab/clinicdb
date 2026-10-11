@@ -6,7 +6,7 @@ import type { ContactLanguage, PatientFlag, PhoneType, Sex } from "@/generated/p
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { activeCompany } from "@/lib/company";
 import { db } from "@/lib/db";
-import { findDuplicates, type DuplicateCandidate } from "@/lib/patients/duplicates";
+import { changedIdentity, findDuplicates, type DuplicateCandidate } from "@/lib/patients/duplicates";
 import {
   cleanInput,
   createPatient,
@@ -172,12 +172,20 @@ export async function updatePatientAction(id: string, fd: FormData): Promise<Pat
   const input = cleanInput(raw);
   const invalid = validateInput(input);
   if (invalid) return { error: invalid };
-  const current = await db.patient.findFirst({ where: { id, companyId: { in: actor.companyIds } }, select: { companyId: true } });
+  const current = await db.patient.findFirst({
+    where: { id, companyId: { in: actor.companyIds } },
+    select: {
+      companyId: true, surname: true, firstName: true, birthDate: true, amka: true,
+      phones: { select: { digits: true } }, emails: { select: { email: true } },
+    },
+  });
   if (!current) return { error: "not_found" };
   const ctx = await requestContext();
 
-  if (fd.get("confirmed") !== "1") {
-    const duplicates = await findDuplicates(current.companyId, input, id);
+  // Only what changed is checked: editing the city never stops the save.
+  const changed = changedIdentity(current, input);
+  if (changed && fd.get("confirmed") !== "1") {
+    const duplicates = await findDuplicates(current.companyId, changed, id);
     if (duplicates.length) return { duplicates };
   }
   const r = await updatePatient(actor, id, input, ctx);

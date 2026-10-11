@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Avatar, Badge, card, ErrorBox, inputClass, primaryButton, secondaryButton, dangerButton } from "@/components/ui";
+import { Avatar, Badge, card, dangerButton, ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
 import { patientCode } from "@/lib/patients/format";
 import type { PatientFormOptions } from "@/lib/patients/options";
 import type { PatientView } from "@/lib/patients/record";
@@ -41,6 +41,15 @@ export function PatientCard({
   const format = useFormatter();
   const [mode, setMode] = useState<Mode>("summary");
   const [flagError, setFlagError] = useState<string | null>(null);
+  const [savedNote, setSavedNote] = useState(false);
+  const show = (m: Mode) => {
+    setSavedNote(false);
+    setMode(m);
+  };
+  const saved = () => {
+    setMode("details");
+    setSavedNote(true);
+  };
   const [pending, start] = useTransition();
   const name = `${p.surname} ${p.firstName}`.trim();
   const c = p.contacts;
@@ -88,7 +97,7 @@ export function PatientCard({
           <button
             type="button"
             aria-expanded={mode !== "summary"}
-            onClick={() => setMode(mode === "summary" ? "details" : "summary")}
+            onClick={() => show(mode === "summary" ? "details" : "summary")}
             className="self-start text-[13.5px] font-semibold text-primary hover:text-primary-hover"
           >
             {mode === "summary" ? `${t("showAll")} ▾` : `${t("showLess")} ▴`}
@@ -102,6 +111,7 @@ export function PatientCard({
         <section aria-label={t("cardLabel")} className={`${card} px-6 py-5`}>
           {mode === "details" && (
             <div className="flex flex-col gap-4">
+              {savedNote && <Notice>{tf("saved")}</Notice>}
               <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
                 <Detail label={tf("fatherName")} value={p.fatherName} />
                 {c && <Detail label={tf("birthDate")} value={date(c.birthDate, true)} />}
@@ -123,8 +133,8 @@ export function PatientCard({
                 {p.flag !== "NONE" && <Detail label={t("flagLabel")} value={[flagText, p.flagNote, p.flagSetAt && date(p.flagSetAt)].filter(Boolean).join(" · ")} wide />}
               </dl>
               <div className="flex flex-wrap gap-2">
-                {editable && <button type="button" onClick={() => setMode("edit")} className={primaryButton}>{t("edit")}</button>}
-                {editable && <button type="button" onClick={() => setMode("flag")} className={secondaryButton}>{t("flagButton")}</button>}
+                {editable && <button type="button" onClick={() => show("edit")} className={primaryButton}>{t("edit")}</button>}
+                {editable && <button type="button" onClick={() => show("flag")} className={secondaryButton}>{t("flagButton")}</button>}
                 {archivable && !p.archivedAt && (
                   <button
                     type="button"
@@ -141,7 +151,7 @@ export function PatientCard({
 
           {mode === "edit" && options && formValues && (
             <div>
-              <PatientForm mode="edit" initial={formValues} options={options} action={updateAction} onCancel={() => setMode("details")} />
+              <PatientForm mode="edit" initial={formValues} options={options} action={updateAction} onCancel={() => show("details")} onSaved={saved} />
             </div>
           )}
 
@@ -153,7 +163,7 @@ export function PatientCard({
                 start(async () => {
                   const r = await flagAction(fd);
                   if (r.error) setFlagError(tf(`errors.${r.error}`));
-                  else setMode("details");
+                  else saved();
                 });
               }}
               className="flex flex-col gap-3"
@@ -184,7 +194,7 @@ export function PatientCard({
               {flagError && <ErrorBox>{flagError}</ErrorBox>}
               <div className="flex flex-wrap gap-2">
                 <button type="submit" disabled={pending} className={primaryButton}>{tf("save")}</button>
-                <button type="button" onClick={() => setMode("details")} className={secondaryButton}>{tf("cancel")}</button>
+                <button type="button" onClick={() => show("details")} className={secondaryButton}>{tf("cancel")}</button>
               </div>
             </form>
           )}

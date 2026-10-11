@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
-import { findDuplicates } from "./duplicates";
+import { changedIdentity, findDuplicates } from "./duplicates";
 import { cleanInput, createPatient, markNotDuplicate, setArchived, setFlag, updatePatient, type PatientInput } from "./manage";
 
 let c: { surgery: string; spa: string };
@@ -201,3 +201,28 @@ describe("duplicate check", () => {
     expect(await findDuplicates(c.surgery, { ...blank(), phones: [{ number: "6943334455", type: "MOBILE", isMain: true }] }, r.id)).toEqual([]);
   });
 });
+
+describe("checking duplicates when editing", () => {
+  const before = {
+    surname: "Παπαδάκη", firstName: "Μαρία", birthDate: new Date(Date.UTC(1980, 0, 1)), amka: "01018012345",
+    phones: [{ digits: "6941112233" }], emails: [{ email: "maria@example.com" }],
+  };
+  const same = {
+    surname: "Παπαδάκη", firstName: "Μαρία", birthDate: new Date(Date.UTC(1980, 0, 1)), amka: "01018012345",
+    phones: [{ number: "+30 694 111 2233", type: "MOBILE" as const, isMain: true }], emails: ["maria@example.com"],
+  };
+
+  it("checks nothing when no identifying detail changed (e.g. only the city)", () => {
+    expect(changedIdentity(before, same)).toBeNull();
+  });
+
+  it("checks only the new phone, not the name", () => {
+    const r = changedIdentity(before, { ...same, phones: [...same.phones, { number: "6950000000", type: "HOME", isMain: false }] });
+    expect(r).toEqual({ surname: "", firstName: "", birthDate: null, amka: null, phones: [{ number: "6950000000", type: "HOME", isMain: false }], emails: [] });
+  });
+
+  it("checks the name when it changed (e.g. married name)", () => {
+    expect(changedIdentity(before, { ...same, surname: "Γεωργίου" })).toMatchObject({ surname: "Γεωργίου", firstName: "Μαρία", phones: [] });
+  });
+});
+

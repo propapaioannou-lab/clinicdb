@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -53,6 +55,7 @@ export default async function UserPage({ params, searchParams }: PageProps<"/adm
 
   return (
     <main className="mx-auto w-full max-w-4xl space-y-4 p-4">
+      <BackLink href="/admin/users" label={await backLabel("users")} />
       <div className="flex flex-wrap items-center gap-2">
         <h1 className="text-2xl font-semibold">{user.name}</h1>
         <Badge>{tl(user.level)}</Badge>

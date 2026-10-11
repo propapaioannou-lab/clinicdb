@@ -116,3 +116,31 @@ export async function findDuplicates(
     .sort((a, b) => RANK[a.strength] - RANK[b.strength] || a.surname.localeCompare(b.surname, "el"))
     .slice(0, LIMIT);
 }
+
+type Identity = Pick<PatientInput, "surname" | "firstName" | "birthDate" | "amka" | "phones" | "emails">;
+
+// When an existing patient is edited, check only what changed: new phones and emails,
+// a new AMKA, a new name or birth date. Editing e.g. the city never warns. Returns null
+// when nothing that identifies a person changed.
+export function changedIdentity(
+  before: { surname: string; firstName: string; birthDate: Date | null; amka: string | null; phones: { digits: string }[]; emails: { email: string }[] },
+  after: Identity,
+): Identity | null {
+  const oldDigits = new Set(before.phones.map((p) => p.digits));
+  const oldEmails = new Set(before.emails.map((e) => e.email));
+  const phones = after.phones.filter((p) => !oldDigits.has(phoneDigits(p.number)));
+  const emails = after.emails.filter((e) => !oldEmails.has(e));
+  const amka = after.amka && after.amka !== before.amka ? after.amka : null;
+  const nameChanged = patientSearchName(after) !== patientSearchName(before);
+  const birthChanged = (after.birthDate?.getTime() ?? null) !== (before.birthDate?.getTime() ?? null);
+  const who = nameChanged || birthChanged;
+  if (!phones.length && !emails.length && !amka && !who) return null;
+  return {
+    surname: who ? after.surname : "",
+    firstName: who ? after.firstName : "",
+    birthDate: who ? after.birthDate : null,
+    amka,
+    phones,
+    emails,
+  };
+}

@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Badge, ErrorBox, Notice, Section } from "@/components/ui";
 import { backupHealth, listBackupRuns, STALE_AFTER_HOURS } from "@/lib/backups";
@@ -14,6 +16,7 @@ export default async function BackupsPage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-4 p-4">
+      <BackLink href="/settings" label={await backLabel("settings")} />
       <h1 className="text-2xl font-semibold">{t("title")}</h1>
       <p className="text-sm text-neutral-500">{t("intro")}</p>
 

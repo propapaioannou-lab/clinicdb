@@ -1,3 +1,5 @@
+import { BackLink } from "@/components/back-link";
+import { backLabel } from "@/components/back-label";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { inputClass, primaryButton, secondaryButton } from "@/components/ui";
@@ -94,6 +96,7 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
 
   return (
     <main className="mx-auto w-full max-w-7xl p-4">
+      <BackLink href="/settings" label={await backLabel("settings")} />
       <h1 className="text-2xl font-semibold">{t("title")}</h1>
       <p className="mb-4 text-sm text-neutral-500">{t("intro")}</p>
 

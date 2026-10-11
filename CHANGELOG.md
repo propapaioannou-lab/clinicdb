@@ -2,6 +2,24 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 6a-2: the calendar day (front desk)
+
+- **Ημερολόγιο** in the menu now works: today, with ‹ Σήμερα › to move between days.
+- One column per resource (you, the nurse…), 09:00–21:00 as your hours say. Out of
+  hours is grey, blocked time is hatched, and every free gap shows a green
+  **"+ ελεύθερο 30′"**: click it to book exactly there.
+- **Booking** ("+ Ραντεβού" or a free gap): find the patient as you type, pick the type
+  (its length fills in), date, time, with whom, a short reason (no medical notes). If the
+  time isn't free you see why and the next free times to tap, or "Κράτηση παρόλα αυτά"
+  (logged).
+- **Click an appointment**: Επιβεβαίωση → Άφιξη ✓ → Έτοιμος · ειδοποίηση (room) → Με τον
+  γιατρό → Τέλος επίσκεψης → Εξοφλήθηκε (front desk / PA only). Also Δεν ήρθε, Ακύρωση
+  (with reason), Επαναφορά, one step back (↺) for a mistaken tap, Μετακίνηση, and the full
+  history (who, when).
+- Right side: tomorrow's confirmations; booking requests and the WhatsApp switches come
+  with GHL (6d). Week, month and your own physician views come next (6a-3).
+- To fill your test calendar with fake appointments: `podman compose exec app npm run db:fake-calendar`
+
 ## 11 Oct 2026 — SPEC v1.7 and Phase 6a-1: calendar foundations
 
 - Your SPEC v1.6 is merged with the decisions made here (v1.7). Changed by your answers:

@@ -60,7 +60,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <nav aria-label={t("nav.main")} className="flex flex-col gap-0.5">
           <NavLink href="/" icon={<HomeIcon />} label={t("nav.office")} />
           <NavLink href="/patients" icon={<PatientsIcon />} label={t("nav.patients")} />
-          <NavLink href="/calendar" icon={<CalendarIcon />} label={t("nav.calendar")} soon={soon} />
+          <NavLink href="/calendar" icon={<CalendarIcon />} label={t("nav.calendar")} />
           <NavLink href="/surgeries" icon={<ScalpelIcon />} label={t("nav.surgeries")} soon={soon} />
           <NavLink href="/tasks" icon={<TasksIcon />} label={t("nav.tasks")} soon={soon} />
         </nav>
@@ -105,7 +105,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         <NavLink variant="bottom" href="/" icon={<HomeIcon />} label={t("nav.today")} />
         <NavLink variant="bottom" href="/patients" icon={<SearchIcon size={19} />} label={t("nav.search")} />
         <NavLink variant="bottom" href="/chat" icon={<ChatIcon />} label={t("nav.chat")} soon={soon} />
-        <NavLink variant="bottom" href="/calendar" icon={<CalendarIcon />} label={t("nav.calendar")} soon={soon} />
+        <NavLink variant="bottom" href="/calendar" icon={<CalendarIcon />} label={t("nav.calendar")} />
       </nav>
     </div>
   );

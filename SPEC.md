@@ -571,6 +571,15 @@ appointment titles; more than one location.
   logged; status rules (one step back allowed and logged; "done" after "to pay" is money:
   secretary / PA). Settings → Ημερολόγιο: types and resources (Owner/Admin), blocked
   time (any staff member).
+- **Built (6a-2, 11 Oct 2026):** menu "Ημερολόγιο" → secretary day view (DESIGN 6a–6f):
+  ‹ Σήμερα ›; one column per resource (operating room comes with surgeries, 6b), 96 px/h;
+  out-of-hours grey, blocks hatched, free gaps "+ ελεύθερο X′" (click = book there),
+  status chips, red now-line; booking panel (patient search, type chips with default
+  length, date/time/length, column, short reason; clash → reasons + free times + "book
+  anyway"); appointment panel (one button per next status, room for "ready", no-show,
+  cancel with reason, restore, one step back, move with clash check, history); side
+  panel: booking requests (with GHL, 6d) and tomorrow's confirmations. WhatsApp /
+  reminder / intake / deposit switches appear but wait for GHL (6d).
 **Views**: day (one column per resource, more detail), week (Mon–Sat, layers on/off,
 surgical load bar per day), month (counts per day + surgery load). Click empty slot →
 new appointment. Clash warning and suggested free slots when booking.

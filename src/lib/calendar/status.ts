@@ -31,6 +31,8 @@ const NEXT: Record<AppointmentStatus, AppointmentStatus[]> = {
   NO_SHOW: ["BOOKED"],
 };
 
+export const nextStatuses = (from: AppointmentStatus) => NEXT[from];
+
 export type StatusRefusal = "not_allowed" | "forbidden";
 
 // May this person move the appointment from → to? "Done" after "to pay" is money: the

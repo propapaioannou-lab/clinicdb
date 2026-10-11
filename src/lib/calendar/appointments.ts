@@ -257,3 +257,10 @@ export async function listAppointments(actor: Actor, companyId: string, from: Da
     },
   });
 }
+
+// The status history of one appointment, newest first (side panel).
+export async function appointmentHistory(actor: Actor, id: string) {
+  const a = await own(actor, id);
+  if (!a || !canEditPatients(actor.level)) return null;
+  return db.appointmentEvent.findMany({ where: { appointmentId: id }, orderBy: { at: "desc" }, take: 30 });
+}

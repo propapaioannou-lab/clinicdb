@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chartFor, cleanProcedureDetails, detailsPhrase, fillFromChart } from "./procedure-details";
+import { chartFor, cleanProcedureDetails, detailsPhrase, fillFromChart, PROCEDURE_DETAILS } from "./procedure-details";
 import { cleanVisitInput } from "./visits";
 
 describe("procedure details", () => {
@@ -60,6 +60,18 @@ describe("implant size charts (Motiva)", () => {
     for (const k of ["round", "ergonomix", "ergonomix2"]) for (const prof of ["mini", "demi", "full", "corse"]) {
       const rows = chartFor({ maker: "motiva", motivaLine: k, motivaProfile: prof });
       rows.slice(1).forEach((r, i) => expect(r.cc, `${k} ${prof} ${r.diameter}`).toBeGreaterThan(rows[i].cc));
+    }
+  });
+});
+
+describe("every procedure with breast-implant fields uses the size charts", () => {
+  it("augmentation, aug-mastopexy, exchange, tuberous, deformity and direct-to-implant reconstruction", () => {
+    const withImplant = Object.entries(PROCEDURE_DETAILS).filter(([, d]) => d.fields.some((f) => f.key === "motivaLine")).map(([k]) => k);
+    expect(withImplant.sort()).toEqual(["augMastopexy", "augmentation", "deformity", "implantExchange", "reconstruction", "tuberous"]);
+    for (const key of withImplant) {
+      const raw = { ...(key === "reconstruction" && { device: "dti" }), maker: "motiva", motivaLine: "round", motivaProfile: "full", cc: { r: 335, l: 355 } };
+      const clean = cleanProcedureDetails(key, raw)!;
+      expect(fillFromChart(clean), key).toMatchObject({ diameter: { r: 11.25, l: 11.5 }, projection: { r: 4.6, l: 4.7 } });
     }
   });
 });

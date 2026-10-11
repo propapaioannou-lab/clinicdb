@@ -86,6 +86,9 @@ export const PROCEDURE_DETAILS: Record<string, ProcedureDetails> = {
     parts: ["{device}", "{expanderLine} {expanderCc}", "{expanderWidth}", "{fill}", "{expanderPlane}", ...IMPLANT_PARTS, "{flap}"],
   },
   augMastopexy: { fields: [...BREAST_IMPLANT, ...LIFT], parts: [...IMPLANT_PARTS, ...LIFT_PARTS] },
+  // Tuberous and deformity corrections often use an implant, with or without a lift.
+  tuberous: { fields: [...BREAST_IMPLANT, ...LIFT], parts: [...IMPLANT_PARTS, ...LIFT_PARTS] },
+  deformity: { fields: [...BREAST_IMPLANT, ...LIFT], parts: [...IMPLANT_PARTS, ...LIFT_PARTS] },
   mastopexy: { fields: LIFT, parts: LIFT_PARTS },
   reduction: { fields: LIFT, parts: LIFT_PARTS },
   breastFat: { fields: FAT, parts: ["{fatCc}"] },

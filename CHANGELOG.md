@@ -8,6 +8,9 @@ Plain-language record of what changed and how to check it.
   Demi, Full, Corsé) and Ergonomix 2 (Full, Corsé). Pick type and projection, then type the
   size from the list in each Μέγεθος box (Δ and Α), e.g. "230 cc · βάση 10,5 · προβ. 3,6":
   base width and projection fill in by themselves. Different sizes left and right work.
+- Works in every procedure with an implant: Αυξητική, Αυξητική-ανορθωτική, Αφαίρεση/αλλαγή
+  ενθεμάτων, Αποκατάσταση (άμεσο ένθεμα), and now also **Σωληνοειδείς μαστοί** and
+  **Παραμόρφωση μαστού**, which gained the implant and lift options.
 - Mentor and Ergonomix 2 Mini/Demi still need their charts; until then type the numbers.
 - Check: Νέα επίσκεψη → Προεγχειρητική εκτίμηση → + Μαστός → Αυξητική → Motiva →
   Ergonomix → Demi → Μέγεθος Δ: 230 cc → Διάμετρος 10,5 · Προβολή 3,6.

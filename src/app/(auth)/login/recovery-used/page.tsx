@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/current";
-import { AuthCard, primaryButton } from "../../ui";
+import { AuthCard, primaryButton } from "@/components/ui";
 
 export default async function RecoveryUsedPage({ searchParams }: PageProps<"/login/recovery-used">) {
   await requireSession();

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { primaryButton, secondaryButton } from "../../ui";
+import { primaryButton, secondaryButton } from "@/components/ui";
 
 export function CodesView({ codes }: { codes: string[] }) {
   const t = useTranslations("setup2fa");

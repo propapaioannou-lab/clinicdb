@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/current";
 import { takeRecoveryCodesForDisplay } from "@/lib/auth/two-factor";
-import { AuthCard, primaryButton } from "../../ui";
+import { AuthCard, primaryButton } from "@/components/ui";
 import { CodesView } from "./codes-view";
 
 // Shown once right after 2FA setup. Reloading the page does not show them again.

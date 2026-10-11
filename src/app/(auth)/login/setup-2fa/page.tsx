@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import QRCode from "qrcode";
 import { getPendingSession } from "@/lib/auth/current";
 import { startEnrollment, TRUST_DAYS } from "@/lib/auth/two-factor";
-import { AuthCard } from "../../ui";
+import { AuthCard } from "@/components/ui";
 import { CancelButton } from "../cancel-button";
 import { SetupForm } from "./setup-form";
 

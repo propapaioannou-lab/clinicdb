@@ -61,9 +61,23 @@ See the audit log so far:
 5. Tick "Εμπιστεύομαι αυτή τη συσκευή", log out, log in again → no code asked.
 6. Try one recovery code in a private browser window → "Σας έμειναν 9 κωδικοί".
 
+## Test users and invitations
+
+1. Χρήστες → Νέος χρήστης. Use a made-up email such as `test-secretary@example.com`,
+   level Χρήστης, company Πλαστική Χειρουργική, "Αποστολή πρόσκλησης με email".
+2. Open the test mailbox http://localhost:8025 — the invitation is there. Open its link
+   in a **private browser window** (so you stay logged in as yourself in the other).
+3. Choose or generate a password, set up 2FA with your phone → logged in as the new user.
+   No Χρήστες/Συσκευές links for them.
+4. Back as yourself: Συσκευές shows both logins. Open the new user, press Τερματισμός
+   on their login → the private window is sent to the login page.
+5. Try Νέος χρήστης → Επισκέπτης without an end date → refused.
+
 ## Lost phone and recovery codes (emergency)
 
-Removes the person's 2FA, trusted devices and logins; they set up 2FA again at next login:
+Owners and Admins: open the user → "Επαναφορά 2FA". If nobody can log in at all:
+
+this command removes the person's 2FA, trusted devices and logins; they set up 2FA again at next login:
 
     podman compose exec app npx tsx scripts/reset-2fa.ts name@example.com
 

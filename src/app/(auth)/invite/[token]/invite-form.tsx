@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { generatePassword } from "@/lib/password-generator";
-import { ErrorBox, inputClass, primaryButton, secondaryButton } from "../../ui";
+import { ErrorBox, inputClass, primaryButton, secondaryButton } from "@/components/ui";
 import { acceptInviteAction, type InviteState } from "./actions";
 
 export function InviteForm({ token, minLength }: { token: string; minLength: number }) {

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { ErrorBox, inputClass, primaryButton } from "../../ui";
+import { ErrorBox, inputClass, primaryButton } from "@/components/ui";
 import { TrustCheckbox } from "../trust-checkbox";
 import { verifyCodeAction, type CodeState } from "../two-factor-actions";
 

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getPendingSession } from "@/lib/auth/current";
 import { TRUST_DAYS } from "@/lib/auth/two-factor";
-import { AuthCard } from "../../ui";
+import { AuthCard } from "@/components/ui";
 import { CancelButton } from "../cancel-button";
 import { CodeForm } from "./code-form";
 

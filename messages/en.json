@@ -23,7 +23,9 @@
   },
   "nav": {
     "logout": "Log out",
-    "sessionEnds": "Session ends: {date}"
+    "sessionEnds": "Session ends: {date}",
+    "users": "Users",
+    "devices": "Devices"
   },
   "levels": {
     "OWNER": "Owner",
@@ -96,6 +98,116 @@
       "too_short": "The password must have at least {min} characters.",
       "mismatch": "The two passwords differ.",
       "invalid_link": "The link is no longer valid."
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "Users",
+      "new": "New user",
+      "name": "Name",
+      "email": "Email",
+      "level": "Level",
+      "companies": "Companies",
+      "status": "Status",
+      "twoFactor": "2FA",
+      "lastLogin": "Last login",
+      "devices": "Devices",
+      "never": "Never",
+      "until": "until {date}",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "status": {
+      "invited": "Invited",
+      "inactive": "Inactive",
+      "expired": "Expired",
+      "locked": "Locked",
+      "active": "Active"
+    },
+    "form": {
+      "name": "Full name",
+      "email": "Email",
+      "level": "Level",
+      "companies": "Company access",
+      "guestEnd": "Access ends (guest)",
+      "active": "Account active",
+      "method": "How will the person get in?",
+      "methodInvite": "Send an email invitation (recommended)",
+      "methodPassword": "Generate a password now (you hand it over)",
+      "create": "Create",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "cancel": "Back",
+      "levelHelp": {
+        "OWNER": "Everything. Can never be removed in the app.",
+        "ADMIN": "Everything a User can, plus users, devices, settings.",
+        "USER": "Day-to-day work with full patient access.",
+        "GUEST": "Read-only, no contact details. Needs an end date."
+      }
+    },
+    "errors": {
+      "forbidden": "You are not allowed to do this.",
+      "not_found": "User not found.",
+      "self": "You cannot do this to yourself.",
+      "invalid_email": "Invalid email.",
+      "name_required": "Enter the name.",
+      "email_taken": "A user with this email already exists.",
+      "no_company": "Choose at least one company.",
+      "guest_needs_end_date": "A guest needs an end date in the future.",
+      "not_invited": "The user already has a password."
+    },
+    "created": {
+      "invited": "Invitation sent to {email}.",
+      "mailFailed": "The user was created but the email was NOT sent. Try “Re-send invitation”.",
+      "password": "The user's password — shown only now. Hand it over in person:",
+      "copy": "Copy",
+      "copied": "Copied"
+    },
+    "detail": {
+      "account": "Account",
+      "actions": "Actions",
+      "created": "Created",
+      "invitation": "Invitation",
+      "invitationValid": "valid until {date}",
+      "invitationExpired": "expired — send a new one",
+      "lockedUntil": "Locked until {date}",
+      "resend": "Re-send invitation",
+      "resent": "Invitation sent again. The old link no longer works.",
+      "generate": "Generate new password",
+      "generateConfirm": "The current password stops working and the user is logged out. Continue?",
+      "reset2fa": "Reset 2FA (lost phone)",
+      "reset2faConfirm": "Removes their 2FA, trusted devices and logins. They set it up again at next login. Continue?",
+      "reset2faDone": "2FA was reset.",
+      "unlock": "Unlock",
+      "unlocked": "Account unlocked.",
+      "delete": "Delete user",
+      "deleteConfirm": "Permanently delete this user? Their activity history stays. To pause access, deactivate instead.",
+      "ownerProtected": "Owners cannot be deleted, deactivated or demoted in the app.",
+      "readOnlyOwner": "Only an Owner can change an Owner's details.",
+      "endedAll": "All logins were ended.",
+      "trustRemoved": "Trust removed."
+    },
+    "devices": {
+      "title": "Logged-in devices",
+      "overviewTitle": "Who is logged in now",
+      "user": "User",
+      "device": "Device",
+      "ip": "IP",
+      "since": "Logged in",
+      "lastSeen": "Last activity",
+      "ends": "Ends",
+      "none": "No active logins.",
+      "end": "End",
+      "endAll": "End all",
+      "thisDevice": "(this device)",
+      "viaTrusted": "trusted device",
+      "trustedTitle": "Trusted devices (no 2FA code)",
+      "trustedNone": "No trusted devices.",
+      "trustedSince": "Since",
+      "trustedUntil": "Until",
+      "lastUsed": "Last used",
+      "removeTrust": "Remove trust"
     }
   }
 }

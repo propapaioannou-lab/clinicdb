@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/current";
+import { canManageUsers } from "@/lib/permissions";
 import { logoutAction } from "./actions";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -10,7 +12,15 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-4 py-3 dark:border-neutral-800">
-        <span className="font-semibold">{t("app.name")}</span>
+        <nav className="flex items-center gap-4">
+          <Link href="/" className="font-semibold">{t("app.name")}</Link>
+          {canManageUsers(user.level) && (
+            <>
+              <Link href="/admin/users" className="text-sm hover:underline">{t("nav.users")}</Link>
+              <Link href="/admin/devices" className="text-sm hover:underline">{t("nav.devices")}</Link>
+            </>
+          )}
+        </nav>
         <div className="flex items-center gap-4 text-sm">
           <span className="hidden text-neutral-500 sm:inline">
             {t("nav.sessionEnds", {

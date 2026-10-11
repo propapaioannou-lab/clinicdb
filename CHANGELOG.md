@@ -2,6 +2,33 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 1, Step 5: Users, invitations, devices
+
+- **Χρήστες** and **Συσκευές** links in the header (Owner and Admin only). Everyone
+  else gets "page not found" for these pages.
+- **Users list:** name, level, companies, status (active, invited, locked, expired,
+  inactive), 2FA, last login, number of logged-in devices.
+- **New user:** name, email, level, company access, end date for Guests, and either
+  - an **email invitation** (link valid 72 hours, single use), or
+  - a **generated permanent password**, shown once, that you hand over in person.
+- **Invitation page:** the person chooses a password (or presses "Δημιουργία ισχυρού
+  κωδικού"), then sets up 2FA straight away.
+- **User page:** change name, level, companies, Guest end date, active/inactive;
+  re-send invitation; generate a new password; reset 2FA (lost phone); unlock;
+  delete. Every change is in the audit log with before/after values.
+- **Devices:** per user, all logged-in browsers (device, IP, since, last activity,
+  ends) with **Τερματισμός**, and trusted devices with **Κατάργηση εμπιστοσύνης**.
+  The Συσκευές page shows everyone logged in right now.
+- Rules enforced on the server (not just hidden buttons): Owners are never deleted,
+  deactivated or demoted; Admins cannot touch Owners or create Owners; nobody can
+  deactivate, demote or delete themselves; Admins only give access to their own
+  companies; Guests must have a future end date.
+- **Laptop test mailbox** at http://localhost:8025 — every email the app sends lands
+  there; nothing leaves the laptop. The real email provider is set at deployment.
+- 57 automated tests, including a real invitation email.
+
+**Check it:** see README, "Test users and invitations".
+
 ## 11 Oct 2026 — Phase 1, Step 4: Two-step verification (2FA)
 
 - **Everyone now needs a 6-digit code** from an authenticator app (Google

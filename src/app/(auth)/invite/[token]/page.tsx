@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { MIN_PASSWORD_LENGTH } from "@/lib/password";
 import { findValidInvitation } from "@/lib/users/invitations";
-import { AuthCard } from "../../ui";
+import { AuthCard } from "@/components/ui";
 import { InviteForm } from "./invite-form";
 
 export default async function InvitePage({ params }: PageProps<"/invite/[token]">) {

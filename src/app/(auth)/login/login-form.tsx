@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useTranslations } from "next-intl";
-import { ErrorBox, inputClass, primaryButton } from "../ui";
+import { ErrorBox, inputClass, primaryButton } from "@/components/ui";
 import { loginAction, type LoginState } from "./actions";
 
 export function LoginForm() {

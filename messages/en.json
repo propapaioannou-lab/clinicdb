@@ -508,7 +508,17 @@
     "infectiousHidden": "Infectious ⚠",
     "backToRecord": "Patient record",
     "weightTrend": "Weight per visit: {list} kg",
-    "weightChange": "{change} kg since {date}"
+    "weightChange": "{change} kg since {date}",
+    "incomplete": "Incomplete: {list}",
+    "completeNow": "Fill in the details",
+    "historyIncomplete": "Incomplete",
+    "missing": {
+      "surname": "surname",
+      "firstName": "first name",
+      "birthDate": "date of birth",
+      "phone": "phone",
+      "email": "email"
+    }
   },
   "roles": {
     "SURGEON": "Surgeon",

@@ -2,6 +2,14 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Red "incomplete" warnings
+
+- Patient card: if surname, first name, date of birth, phone or email is missing, a red
+  "Ελλιπή στοιχεία: …" badge names what is missing. Tap it to open editing.
+- Medical history never filled in (by you, the staff or the patient): red "Ελλιπές" on
+  the history card and a red dot on the "Ιατρικό ιστορικό" tab.
+- Check: open a patient without email → badge under the name; fill the email → it goes.
+
 ## 11 Oct 2026 — Eyelid diagram; latest choice on top
 
 - Πρόσωπο → tap Φρύδια, Άνω or Κάτω βλέφαρα: a "Βλέφαρα (mm)" box appears with MRD1,

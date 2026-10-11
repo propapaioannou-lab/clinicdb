@@ -508,7 +508,17 @@
     "infectiousHidden": "Μολυσματικό ⚠",
     "backToRecord": "Καρτέλα ασθενή",
     "weightTrend": "Βάρος ανά επίσκεψη: {list} kg",
-    "weightChange": "{change} kg από {date}"
+    "weightChange": "{change} kg από {date}",
+    "incomplete": "Ελλιπή στοιχεία: {list}",
+    "completeNow": "Συμπληρώστε τα στοιχεία",
+    "historyIncomplete": "Ελλιπές",
+    "missing": {
+      "surname": "επώνυμο",
+      "firstName": "όνομα",
+      "birthDate": "ημερομηνία γέννησης",
+      "phone": "τηλέφωνο",
+      "email": "email"
+    }
   },
   "roles": {
     "SURGEON": "Χειρουργός",

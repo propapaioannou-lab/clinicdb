@@ -250,6 +250,11 @@ services and are NOT rebuilt here.
   upper blepharoplasty, Λιποίδημα → lipoedema liposuction); "+ Όλες" shows the full list.
   Inside an area, the most recently tapped finding (and chosen procedure) shows its
   details first.
+- **Incomplete warnings** (decided 11 Oct 2026): the patient card shows a red "Ελλιπή
+  στοιχεία: …" badge naming what is missing among surname, first name, date of birth,
+  phone and email (contact details checked only for users allowed to see them; tapping
+  it opens editing). Medical history never saved by staff or the patient → red
+  "Ελλιπές" on the history card and a red dot on the history tab.
 - **Eyelid measurements** (decided 11 Oct 2026): when brows or eyelids are examined, a
   block with MRD1, MRD2, LF, MCD (lid crease), TPS (mm, Δ/Α) and a standard eyelid
   diagram (both eyes, brow, crease, lid margins, light reflex) showing the values.

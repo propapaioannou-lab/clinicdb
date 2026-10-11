@@ -62,6 +62,16 @@ export function PatientCard({
   const date = (d: Date | null, utc = false) =>
     d ? format.dateTime(new Date(d), { day: "2-digit", month: "2-digit", year: "numeric", ...(utc && { timeZone: "UTC" }) }) : "";
 
+  // Red "incomplete" warning when key details are missing (decided 11 Oct 2026). Contact
+  // details are checked only for users who may see them.
+  const missing = [
+    !p.surname.trim() && "surname",
+    !p.firstName.trim() && "firstName",
+    c && !c.birthDate && "birthDate",
+    c && !c.phones.length && "phone",
+    c && !c.emails.length && "email",
+  ].filter((x): x is string => !!x);
+
   const flagTone = p.flag === "RED" ? "red" : "amber";
   const flagText = [t(`flag.${p.flag}`), ...p.flagReasons.map((r) => r.label)].join(" · ");
 
@@ -76,6 +86,14 @@ export function PatientCard({
                 <h1 className="text-[26px] font-semibold tracking-[-0.01em]">{name}</h1>
                 {p.riskFactors.length > 0 && (
                   <RiskBadge label={th("risk.title")} reasons={p.riskFactors.map((r) => th(`risk.factors.${r}` as "risk.factors.thyroxine"))} />
+                )}
+                {missing.length > 0 && (
+                  <button type="button" onClick={() => show(editable ? "edit" : "details")} title={editable ? t("completeNow") : undefined} className="cursor-pointer">
+                    <Badge tone="red">
+                      <span className="h-2 w-2 rounded-full bg-danger" />
+                      {t("incomplete", { list: missing.map((m) => t(`missing.${m}` as "missing.phone")).join(", ") })}
+                    </Badge>
+                  </button>
                 )}
                 {p.flag !== "NONE" && (
                   <Badge tone={flagTone}>

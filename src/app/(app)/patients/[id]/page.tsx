@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ageToday } from "@/components/patient-bits";
-import { card } from "@/components/ui";
+import { Badge, card } from "@/components/ui";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { canArchivePatients, canEditPatients } from "@/lib/permissions";
 import { patientFormOptions } from "@/lib/patients/options";
@@ -177,8 +177,11 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
           <>
             <WeightCard series={series} historyWeight={hd?.weightKg ?? null} heightCm={heightForBmi} maxWeightKg={hd?.maxWeightKg ?? null} />
             <section aria-label={t("history")} className={`${card} flex min-w-0 flex-[1_1_300px] flex-col gap-2.5 px-5 py-[18px]`}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-[17px] font-semibold">{t("history")}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <h2 className="flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold">
+                  {t("history")}
+                  {!hd && <Badge tone="red">{t("historyIncomplete")}</Badge>}
+                </h2>
                 {editable && (
                   <Link href={`/patients/${p.id}?tab=history&edit=1`} className="text-[13.5px] font-semibold text-primary hover:text-primary-hover">
                     {hd ? th("edit") : th("fillIn")}
@@ -222,6 +225,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
               className={`whitespace-nowrap px-3.5 py-3 text-[14.5px] ${on ? "font-semibold text-primary shadow-[inset_0_-2px_0_var(--color-primary)]" : "font-medium text-ink-3 hover:text-ink"}`}
             >
               {label}
+              {x.key === "history" && !hd && <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-danger align-middle" title={t("historyIncomplete")} />}
             </Link>
           );
         })}

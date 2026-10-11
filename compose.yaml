@@ -20,6 +20,14 @@ services:
       timeout: 5s
       retries: 10
 
+  # Development only: catches every email the app sends. Nothing leaves the laptop.
+  # Read them at http://localhost:8025
+  mail:
+    image: docker.io/axllent/mailpit:v1.29
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
   app:
     build:
       context: .
@@ -28,9 +36,14 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      SMTP_SECURE: "false"
     depends_on:
       db:
         condition: service_healthy
+      mail:
+        condition: service_started
     volumes:
       - .:/app:z
       - /app/node_modules

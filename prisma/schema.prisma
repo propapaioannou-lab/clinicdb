@@ -28,7 +28,8 @@ model User {
   id              String          @id @default(cuid())
   email           String          @unique // stored lower-case
   name            String
-  passwordHash    String
+  // Empty until an invited user chooses a password.
+  passwordHash    String?
   level           Level           @default(USER)
   isActive        Boolean         @default(true)
   // Required for Guests: access stops after this moment.
@@ -48,6 +49,7 @@ model User {
   sessions        Session[]
   recoveryCodes   RecoveryCode[]
   trustedDevices  TrustedDevice[]
+  invitations     Invitation[]
 }
 
 // Which companies a user can see and work in.
@@ -143,4 +145,20 @@ model TrustedDevice {
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
+}
+
+// Email link to set up an account: single use, 72 hours. Only the token's hash is stored.
+model Invitation {
+  id          String    @id @default(cuid())
+  userId      String
+  tokenHash   String    @unique
+  createdById String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  usedAt      DateTime?
+  // Replaced by a newer link, or cancelled.
+  revokedAt   DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

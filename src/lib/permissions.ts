@@ -40,3 +40,18 @@ export function isReadOnly(level: Level): boolean {
 export function hasExpired(user: { level: Level; accessExpiresAt: Date | null }, now = new Date()) {
   return user.level === "GUEST" && (!user.accessExpiresAt || user.accessExpiresAt <= now);
 }
+
+// Owners may grant any company; Admins only companies they have themselves.
+// Returns the final company list: requested changes inside the actor's reach,
+// everything outside it left as it was.
+export function resolveCompanyAccess(
+  actor: { level: Level; companyIds: string[] },
+  current: string[],
+  requested: string[],
+): string[] {
+  if (actor.level === "OWNER") return [...new Set(requested)];
+  const reach = new Set(actor.companyIds);
+  const kept = current.filter((c) => !reach.has(c));
+  const granted = requested.filter((c) => reach.has(c));
+  return [...new Set([...kept, ...granted])];
+}

@@ -25,10 +25,15 @@ export async function checkPassword(
   const email = emailInput.trim().toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
 
-  if (!user) {
+  if (!user || !user.passwordHash) {
     dummyHash ??= hashPassword("not-a-real-password");
     await verifyPassword(password, await dummyHash);
-    await audit({ action: "auth.login.failure", actorEmail: email, details: { reason: "unknown_email" } }, ctx);
+    await audit(
+      user
+        ? { action: "auth.login.failure", actor: { id: user.id, email: user.email }, details: { reason: "invitation_not_accepted" } }
+        : { action: "auth.login.failure", actorEmail: email, details: { reason: "unknown_email" } },
+      ctx,
+    );
     return { ok: false, reason: "invalid" };
   }
   const actor = { id: user.id, email: user.email };

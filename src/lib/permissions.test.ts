@@ -7,6 +7,7 @@ import {
   canRemoveUser,
   hasExpired,
   isReadOnly,
+  resolveCompanyAccess,
 } from "./permissions";
 
 describe("permissions", () => {
@@ -57,5 +58,13 @@ describe("permissions", () => {
     expect(hasExpired({ level: "GUEST", accessExpiresAt: new Date("2026-12-01T00:00:00Z") }, now)).toBe(false);
     expect(hasExpired({ level: "GUEST", accessExpiresAt: null }, now)).toBe(true);
     expect(hasExpired({ level: "USER", accessExpiresAt: null }, now)).toBe(false);
+  });
+
+  it("lets Admins grant only their own companies; Owners any", () => {
+    const admin = { level: "ADMIN" as const, companyIds: ["spa"] };
+    expect(resolveCompanyAccess(admin, [], ["spa", "surgery"])).toEqual(["spa"]);
+    // An existing Surgery access the admin cannot manage is kept, not removed.
+    expect(resolveCompanyAccess(admin, ["surgery", "spa"], []).sort()).toEqual(["surgery"]);
+    expect(resolveCompanyAccess({ level: "OWNER", companyIds: [] }, ["spa"], ["surgery"])).toEqual(["surgery"]);
   });
 });

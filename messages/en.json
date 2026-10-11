@@ -66,5 +66,36 @@
     "saved": "I saved them — continue",
     "alreadyShown": "The codes are shown only once and have already been shown.",
     "continueHome": "Continue"
+  },
+  "emails": {
+    "invitation": {
+      "subject": "Invitation to Patient Records",
+      "greeting": "Hello {name},",
+      "body": "{inviter} created an account for you in the practice's Patient Records. Use the link to choose a password and set up two-step verification:",
+      "button": "Set up account",
+      "expires": "The link works once and expires in {hours} hours.",
+      "network": "It only opens through the practice's private network (Tailscale).",
+      "ignore": "If you did not expect this message, ignore it."
+    }
+  },
+  "invite": {
+    "title": "Set up your account",
+    "hello": "Hello {name}",
+    "intro": "Choose a password for {email}. Next you will set up two-step verification.",
+    "password": "New password (at least {min} characters)",
+    "repeat": "Repeat password",
+    "generate": "Generate a strong password",
+    "generated": "Your password — save it now (e.g. in a password manager):",
+    "copy": "Copy",
+    "copied": "Copied",
+    "submit": "Continue",
+    "submitting": "Saving…",
+    "invalidTitle": "This link is not valid",
+    "invalid": "The link was already used or has expired. Ask the administrator to send a new one.",
+    "errors": {
+      "too_short": "The password must have at least {min} characters.",
+      "mismatch": "The two passwords differ.",
+      "invalid_link": "The link is no longer valid."
+    }
   }
 }

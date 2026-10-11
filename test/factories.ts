@@ -32,3 +32,26 @@ export const ctx = { ip: "127.0.0.1", userAgent: "vitest" };
 export function totpCode(secret: string, now = new Date(), offset = 0) {
   return hotp(base32Decode(secret), currentStep(now) + offset);
 }
+
+export async function companies() {
+  const surgery = await db.company.upsert({ where: { code: "surgery" }, update: {}, create: { code: "surgery", name: "Surgery" } });
+  const spa = await db.company.upsert({ where: { code: "spa" }, update: {}, create: { code: "spa", name: "Spa" } });
+  return { surgery: surgery.id, spa: spa.id };
+}
+
+// An Actor for the user-management service, with company access.
+export async function makeActor(level: Level, companyIds: string[]) {
+  const { user } = await makeUser({ level });
+  await db.membership.createMany({ data: companyIds.map((companyId) => ({ userId: user.id, companyId })) });
+  return { id: user.id, email: user.email, name: user.name, level, companyIds };
+}
+
+// Latest email to `to` in the local test mailbox (Mailpit), or null.
+export async function lastMailTo(to: string): Promise<{ subject: string; text: string } | null> {
+  const base = `http://${process.env.SMTP_HOST ?? "mail"}:8025/api/v1`;
+  const search = await fetch(`${base}/search?query=${encodeURIComponent(`to:"${to}"`)}`).then((r) => r.json());
+  const id = search.messages?.[0]?.ID;
+  if (!id) return null;
+  const msg = await fetch(`${base}/message/${id}`).then((r) => r.json());
+  return { subject: msg.Subject, text: msg.Text };
+}

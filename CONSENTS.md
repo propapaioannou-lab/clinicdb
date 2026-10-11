@@ -1,8 +1,13 @@
 # Consent forms — DRAFT v0.1 (seed templates)
 
 Status: **PLACEHOLDER — awaiting lawyers' version.** Not legal advice.
-Language: Greek. English versions are produced once the Greek is approved
-(so the lawyers approve one text, not two).
+Languages: Greek and English. The app shows each form in the patient's
+**communication language** (patient record). The Greek text is the reference
+version the lawyers approve; English versions are at the end of this file and in
+each procedure file, and must be updated whenever the Greek changes.
+
+Procedure-specific consents (21 procedures) live in `consents/procedures/`,
+one file per procedure, Greek + English — see `consents/procedures/_FORMAT.md`.
 
 How to read this file (for Claude Code):
 - Each form = `type`, `company`, `flow` (where it appears), information text,
@@ -224,8 +229,11 @@ How to read this file (for Claude Code):
 ## Φόρμα 6 — Ειδική συγκατάθεση για χειρουργική επέμβαση (ΔΟΜΗ ΠΡΟΤΥΠΟΥ)
 
 - type: `procedure_consent` · company: Surgery · flow: when a surgery is **booked**
-  (required before surgery) · one template **per procedure**, content written by the
-  surgeon. Below is the shared structure; `{{...}}` fields come from the surgery record.
+  (required before surgery) · one template **per procedure**. Below is the shared
+  frame (header + standard declarations + signatures). Sections 1–8 come from
+  `consents/procedures/NN-<procedure>.md`, general risks from
+  `consents/procedures/00-general-risks.md`; assembly order in `_FORMAT.md`.
+  `{{...}}` fields come from the surgery record.
 
 **ΣΥΓΚΑΤΑΘΕΣΗ ΜΕΤΑ ΑΠΟ ΕΝΗΜΕΡΩΣΗ ΓΙΑ ΧΕΙΡΟΥΡΓΙΚΗ ΕΠΕΜΒΑΣΗ**
 

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Quick first gate: no session cookie -> login page. The real check (database)
 // happens on every page in requireSession().
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/invite"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

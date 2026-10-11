@@ -1,4 +1,4 @@
-# Clinic Database — Specification v0.1
+# Clinic Database — Specification v0.8
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -46,6 +46,10 @@ services and are NOT rebuilt here.
 - Phones: several, each with a type (mobile, home, work); one marked main/WhatsApp
 - Emails (several)
 - Sex, occupation
+- **Communication language** (Greek / English; default Greek). Decides the language
+  of every form, consent, link and message for this patient; synced to GHL as a field
+  so GHL workflows send in the right language. Set at intake from the language the
+  patient chose on the form; staff can change it.
 - AMKA — optional, searchable
 - Tax data for receipts: ΑΦΜ, ΔΟΥ (list)
 - City + phone for e-prescription (separate fields in my-medical)
@@ -247,6 +251,23 @@ contact details change:
   warns if unsigned as surgery approaches.
 - Templates: one per procedure, editable by the surgeon, versioned (we always know
   which version a patient signed).
+- **Procedure consent texts** (seed): `consents/procedures/`, 21 procedures + general
+  risks, each in Greek and English. Format and assembly order: `_FORMAT.md`.
+  - Each file's `key` = an entry in the surgery-type list; seeding creates the
+    surgery types and their consent templates together.
+  - A surgery with several procedures produces ONE consent document: each
+    procedure's sections 1–8, general risks once, the surgeon's "risks specific to
+    me", all specific declarations (de-duplicated), standard declarations, signatures.
+  - Language = patient's communication language; the surgeon can switch it before
+    sending.
+  - Conditional items (e.g. "only if implants", "only if buttock area", the optional
+    gender-affirming paragraph) are shown only when the surgeon ticks the matching
+    option on the surgery record.
+  - Placeholders such as `{{implant_brand}}`, `{{implant_pocket}}`,
+    `{{blepharoplasty_extent}}` are filled from structured surgery fields; missing
+    values block sending with a clear message.
+  - Every file is marked "awaiting medical review / legal approval"; the badge stays
+    until the surgeon marks each one approved in the consent manager (§7b).
 
 ### 7a. Template structure (based on current documents)
 Current first-contact documents (today in my-medical, issued by
@@ -318,6 +339,9 @@ surgeon only; every action audited.
 - Review the consultation against a per-procedure checklist: options discussed,
   risks/complications explained, alternatives, recovery, costs; medical history
   completeness. Output: a short private report to the surgeon.
+  The checklists are the "Consultation checklist" sections of the procedure consent
+  files (`consents/procedures/`), editable in the consent manager, so consent content
+  and consultation review stay in step.
 - Privacy: transcription/AI either runs locally (needs stronger hardware than the
   DS224+) or through an API provider with a signed DPA and zero data retention.
   **Decision pending.** Audio retention policy to be decided.
@@ -341,44 +365,17 @@ surgeon only; every action audited.
   Import scripts run locally; real data never leaves our machines.
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
-## 11. Users and permissions
+## 11. Users and roles (draft)
 
-Each user has one **level** and **company access** (Surgery, Spa, or both); a user
-only sees records of the companies they have access to.
-
-| Level | Can do |
-|---|---|
-| **Owner** | Everything. Only an Owner can make someone Owner or edit an Owner. **An Owner can never be deleted, deactivated or demoted in the app — not even by another Owner** (only by a deliberate command on the server). |
-| **Admin** | Everything a User can, plus: invite users, set levels (up to Admin) and company access, manage devices, settings, backups. |
-| **User** | Day-to-day work: full patient records (including clinical notes) in their companies. Secretary and spa staff are Users. |
-| **Guest** | Research (e.g. a medical student). **Read-only.** Sees clinical data, patient name, age (not date of birth) and photos. **Never** sees contact details (phones, emails, address) or AMKA/ΑΦΜ. Account has a mandatory **end date**. Every view logged. |
-
-Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
-
-### New users (invitation)
-- Only Owner and Admin create users: enter name, email, level, company access
-  (and end date for Guests). The app emails an **invitation link**.
-- The link is single-use, expires after **72 hours**, contains no personal data, and
-  can be re-sent (the old link stops working). It opens only over Tailscale, so the
-  person must be added to Tailscale first.
-- On the setup page the person chooses a password (or clicks "generate a strong
-  password") and sets up 2FA.
-- Alternatively an Owner/Admin can **generate a password** for a user and hand it over
-  in person. Generated passwords are permanent (16 characters, no look-alike letters).
-  Passwords are never sent by email.
-
-### Login and sessions
-- Password + 2FA (authenticator app) with one-time recovery codes.
-- **Trusted devices:** after a successful 2FA login the user may tick "Trust this
-  device". That device skips the 2FA code (password still required) for 90 days.
-- **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
-- No automatic logout on inactivity.
-- **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
-  activity) and trusted devices; end any session or remove trust. All logged.
+- Surgeon: everything
+- Secretary: patients' contact details, appointments, intake review, documents;
+  clinical notes read-only or hidden (to decide)
+- Spa staff: Spa company only
+- Admin: users, settings, backups
 
 ## 12. Build phases
 
-1. Foundation — login (with 2FA), user levels & invitations, companies, devices, audit log, backups
+1. Foundation — login (with 2FA), roles, companies, audit log, backups
 2. Patients, visits & vitals, documents, global search
 3. Intake: guest/tablet mode, QR, remote link, first-contact consents
 4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
@@ -392,10 +389,10 @@ Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
 
 - Calendar: built-in vs GHL
 - AI: local vs API provider
-- Off-site backup destination (needed by deployment)
+- Secretary's access to clinical notes
 - Exact patient fields (my-medical screenshots)
 - Photo folder structure on the Synology today
 - Legal check: e-signatures for surgical consent; consent wording
-- Legal check: Guest (research) access to identifiable data — legal basis (consent or
-  ethics approval) and confidentiality agreement for the guest
-- Email provider with DPA (for invitations now; briefs and consent links later)
+- Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
+- Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
+- Whether `neck_lift` becomes its own procedure or stays within `facelift`

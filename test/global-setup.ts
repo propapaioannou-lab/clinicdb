@@ -20,4 +20,10 @@ export default async function setup() {
     stdio: "ignore",
   });
   process.env.TEST_DATABASE_URL = testUrl.toString();
+
+  // Afterwards: remove the test emails from the local mailbox (all go to @example.com).
+  return async () => {
+    const base = `http://${process.env.SMTP_HOST ?? "mail"}:8025/api/v1`;
+    await fetch(`${base}/search?query=${encodeURIComponent("to:@example.com")}`, { method: "DELETE" }).catch(() => {});
+  };
 }

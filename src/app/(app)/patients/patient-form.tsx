@@ -188,8 +188,8 @@ export function PatientForm({
             <div className="flex flex-col gap-2 sm:col-span-2">
               <span className="text-sm font-medium text-ink-2">{t("phones")}</span>
               {phones.map((p, i) => (
-                <div key={p.key} className="grid grid-cols-[minmax(0,1fr)_8rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto_1.5rem]">
-                  <PhoneInput defaultValue={p.number} label={t("phone")} codeLabel={t("countryCode")} />
+                <div key={p.key} className="grid grid-cols-[minmax(0,1fr)_auto_1.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto_1.5rem]">
+                  <PhoneInput defaultValue={p.number} label={t("phone")} codeLabel={t("countryCode")} className="col-span-3 sm:col-span-1" />
                   <select name="phoneType" defaultValue={p.type} aria-label={t("phoneType")} className={`${inputClass} mt-0`}>
                     {PHONE_TYPES.map((pt) => <option key={pt} value={pt}>{t(`phoneTypes.${pt}`)}</option>)}
                   </select>

@@ -2,6 +2,13 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Fix: phone number box
+
+- The phone number box was squeezed out by the country-code list, so only the list
+  could be used. Now: a small country-code box (GR +30 by default) and a wide box for the
+  number beside it; on a phone they get their own row. The two are saved together,
+  e.g. "+357 99 123456".
+
 ## 11 Oct 2026 — Phase 2, Step 4: Medical history
 
 - **Ιατρικό ιστορικό** tab: the questionnaire from your design (Ναι / Όχι buttons, a details

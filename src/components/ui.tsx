@@ -1,8 +1,11 @@
 // Shared look (DESIGN.md tokens): inputs, buttons, cards, badges.
 
-export const inputClass =
-  "mt-1 w-full h-11 rounded-control border border-line-strong bg-surface px-3 text-[15px] text-ink " +
+// A text box or select without a width, for fields sitting side by side.
+export const fieldClass =
+  "h-11 rounded-control border border-line-strong bg-surface px-3 text-[15px] text-ink " +
   "focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint disabled:bg-surface-2 disabled:text-muted";
+
+export const inputClass = `mt-1 w-full ${fieldClass}`;
 
 export const textareaClass =
   "mt-1 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-[15px] text-ink " +

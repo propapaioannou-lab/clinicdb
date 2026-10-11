@@ -1,19 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { inputClass } from "@/components/ui";
+import { fieldClass, inputClass } from "@/components/ui";
 import { COUNTRY_CODES, joinPhone, splitPhone } from "@/lib/patients/phone";
 
 // Country code (Greece by default) + number; the form receives them joined as "phoneNumber".
-export function PhoneInput({ defaultValue, label, codeLabel }: { defaultValue: string; label: string; codeLabel: string }) {
+export function PhoneInput({ defaultValue, label, codeLabel, className = "" }: { defaultValue: string; label: string; codeLabel: string; className?: string }) {
   const [parts, setParts] = useState(() => splitPhone(defaultValue));
   return (
-    <div className="flex min-w-0 gap-1.5">
+    <div className={`flex min-w-0 gap-1.5 ${className}`}>
       <select
         value={parts.code}
         onChange={(e) => setParts({ ...parts, code: e.target.value })}
         aria-label={codeLabel}
-        className={`${inputClass} mt-0 w-[6.5rem] shrink-0 px-2`}
+        className={`${fieldClass} w-[6.75rem] shrink-0 px-2`}
       >
         {COUNTRY_CODES.map((c) => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
       </select>
@@ -23,7 +23,7 @@ export function PhoneInput({ defaultValue, label, codeLabel }: { defaultValue: s
         onChange={(e) => setParts({ ...parts, local: e.target.value })}
         placeholder="69X XXX XXXX"
         aria-label={label}
-        className={`${inputClass} mt-0 min-w-0`}
+        className={`${fieldClass} min-w-0 flex-1`}
       />
       <input type="hidden" name="phoneNumber" value={joinPhone(parts.code, parts.local)} />
     </div>

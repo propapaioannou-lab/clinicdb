@@ -1,7 +1,9 @@
 // The shape of one saved medical history (SPEC §4). Stored as JSON in each version.
+import { ALLERGY_CHOICES, MEDICATION_CHOICES } from "./choices";
 
 export type YesNo = "yes" | "no";
-export type Answer = { a: YesNo; d?: string };
+// d = details / notes; items = quick picks (medication and allergies).
+export type Answer = { a: YesNo; d?: string; items?: string[] };
 
 export const SMOKING = ["yes", "no", "former"] as const;
 export const PER_DAY = ["0-5", "5-20", "20+"] as const;
@@ -26,7 +28,7 @@ export type HistoryData = {
   weightKg?: number;
   maxWeightKg?: number;
   heightCm?: number;
-  surgeries?: { a: YesNo; items: PreviousSurgery[] };
+  surgeries?: { a: YesNo; items: PreviousSurgery[]; notes?: string };
   notes?: string;
 };
 
@@ -42,14 +44,19 @@ function yesNo(v: unknown): YesNo | undefined {
   return v === "yes" || v === "no" ? v : undefined;
 }
 
-function answer(v: unknown): Answer | undefined {
+function answer(v: unknown, choices: readonly string[] = []): Answer | undefined {
   if (!v || typeof v !== "object") return undefined;
   const o = v as Record<string, unknown>;
   const a = yesNo(o.a);
   if (!a) return undefined;
-  // Details only make sense for "yes".
-  const d = a === "yes" ? text(o.d) : undefined;
-  return d ? { a, d } : { a };
+  // Details and picks only make sense for "yes".
+  if (a === "no") return { a };
+  const out: Answer = { a };
+  const d = text(o.d);
+  if (d) out.d = d;
+  const items = Array.isArray(o.items) ? [...new Set(o.items.filter((i): i is string => choices.includes(i as string)))] : [];
+  if (items.length) out.items = items;
+  return out;
 }
 
 function oneOf<T extends readonly string[]>(list: T, v: unknown): T[number] | undefined {
@@ -74,9 +81,9 @@ export function cleanHistory(raw: unknown, questionKeys: Set<string>): HistoryDa
     if (a) answers[k] = a;
   }
   const data: HistoryData = { answers };
-  const medication = answer(o.medication);
+  const medication = answer(o.medication, MEDICATION_CHOICES);
   if (medication) data.medication = medication;
-  const allergies = answer(o.allergies);
+  const allergies = answer(o.allergies, ALLERGY_CHOICES);
   if (allergies) data.allergies = allergies;
 
   const s = (o.smoking && typeof o.smoking === "object" ? o.smoking : null) as Record<string, unknown> | null;
@@ -124,6 +131,8 @@ export function cleanHistory(raw: unknown, questionKeys: Set<string>): HistoryDa
         })
         .filter((x): x is PreviousSurgery => x !== null),
     };
+    const surgeryNotes = sgA === "yes" ? text(sg.notes) : undefined;
+    if (surgeryNotes) data.surgeries.notes = surgeryNotes;
   }
 
   const notes = text(o.notes, 5000);
@@ -160,5 +169,19 @@ export function answeredCount(data: HistoryData, questionKeys: string[]) {
   return {
     answered: questionKeys.filter((k) => data.answers[k]).length + fixed.filter(Boolean).length,
     total: questionKeys.length + fixed.length,
+  };
+}
+
+// "Όλα Όχι": every question still unanswered becomes No. Nothing already answered changes.
+export function allUnansweredNo(data: HistoryData, questionKeys: string[]): HistoryData {
+  const answers = { ...data.answers };
+  for (const k of questionKeys) if (!answers[k]) answers[k] = { a: "no" };
+  return {
+    ...data,
+    answers,
+    medication: data.medication ?? { a: "no" },
+    allergies: data.allergies ?? { a: "no" },
+    smoking: data.smoking ?? { a: "no" },
+    surgeries: data.surgeries ?? { a: "no", items: [] },
   };
 }

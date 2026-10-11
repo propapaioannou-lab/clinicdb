@@ -2,6 +2,30 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Medical history: quick picks, "Όλα Όχι", high-risk profile, back buttons
+
+- **Quick picks**: on Ναι, *Φάρμακα* offers the common groups (αντιπηκτικά,
+  αντιαιμοπεταλιακά, θυροξίνη/T4, αντισυλληπτικά, ορμονοθεραπεία, υπνωτικά, αγχολυτικά,
+  αντικαταθλιπτικά, …), *Αλλεργίες* the most often recorded drug allergies (πενικιλίνη,
+  Augmentin, κεφαλοσπορίνες, σουλφοναμίδες, ΜΣΑΦ, οπιοειδή, τοπικά αναισθητικά, …) and
+  *Προηγούμενα χειρουργεία* the most frequent operations (καισαρική, σκωληκοειδεκτομή,
+  χολοκυστεκτομή, κήλη, υστερεκτομή, …) — one tap adds a row for year and complications.
+  Each has a notes box for anything else.
+- **"Όλα Όχι"** (top bar and on every section): everything still unanswered becomes Όχι;
+  what you already answered stays. Answers are never pre-filled.
+- **Υψηλός κίνδυνος**: a red badge with the reasons on the patient record, and a small
+  marker in the patient list and search results, when the history shows: smoker >20/day,
+  anticoagulants/antiplatelets, thrombophilia or past thrombosis/PE, or thyroxine (T4). It
+  updates at every save. Visits, calendar and surgeries will show it as they are built.
+- Allergy chip on the patient card now lists the ticked allergies plus notes.
+- New question **Θρομβοφιλία** in "Αίμα και πήξη".
+- **Back buttons**: "← Όλα τα στοιχεία" in the patient edit and flag panels,
+  "← Ιατρικό ιστορικό" in the history form, "← Ασθενείς" on Νέος ασθενής.
+- Fixed: two quick picks tapped fast one after the other could cancel each other.
+
+**Check it:** open a patient → Ιατρικό ιστορικό → Επεξεργασία. Tap Ναι on Φάρμακα and tick
+Θυροξίνη; Ναι on Κάπνισμα with >20/ημέρα; then "Όλα Όχι" and save. The red badge appears.
+
 ## 11 Oct 2026 — Fix: phone number box
 
 - The phone number box was squeezed out by the country-code list, so only the list

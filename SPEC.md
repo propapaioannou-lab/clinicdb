@@ -130,6 +130,26 @@ services and are NOT rebuilt here.
     **previous surgeries table** (procedure, year, complications; add rows).
 - Any Yes in Infections also fills the "Infectious diseases" alert on the patient
   header (§4) — after verification.
+- **Quick picks** (decided 11 Oct 2026): on Yes, medication, allergies and previous
+  surgeries offer the most common choices to tick, each with a notes box:
+  medication (anticoagulants, antiplatelets, thyroxine/T4, contraceptive, HRT, sleeping
+  pills, anxiolytics, antidepressants, antihypertensives, antidiabetic/insulin, GLP-1,
+  corticosteroids, immunosuppressants, statins, supplements); allergies (penicillin,
+  amoxicillin/Augmentin, cephalosporins, sulfonamides, macrolides, quinolones, NSAIDs,
+  aspirin, metamizole, opioids, local anaesthetics, chlorhexidine, iodine/contrast,
+  foods); surgeries (caesarean, appendectomy, cholecystectomy, hernia, hysterectomy,
+  tonsillectomy, thyroidectomy, bariatric, breast, orthopaedic, varicose veins,
+  rhinoplasty/septum, liposuction/abdominoplasty, cataract). Lists editable in Settings.
+- **"Όλα Όχι"** button (whole form and per section) sets every *unanswered* item to No;
+  answers are never pre-filled, so every No was given by someone.
+- **High-risk profile** (decided 11 Oct 2026), worked out from the latest answers
+  (verified or not): smoker >20/day; anticoagulants or antiplatelets; thrombophilia or
+  past thrombosis/PE; thyroxine (T4). Shown as a red "Υψηλός κίνδυνος" badge with the
+  reasons on the patient record, patient lists and search, and later on visits,
+  planning, calendar, surgery booking and surgery-day cards. Rules editable in Settings.
+- **Allergy reminder**: when a surgery is booked (Phase 4/6) and when medication is
+  prescribed or listed for a surgery/brief, the patient's recorded allergies are shown
+  as a warning to confirm.
 - **Verification** (required): patient-entered history is marked "Pending
   verification" until a physician or PA/nurse reviews it with the patient and presses
   "Verify ✓". Stored: verified by (user + role), date/time, and a snapshot/version of

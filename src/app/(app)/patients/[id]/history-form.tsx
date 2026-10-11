@@ -5,7 +5,8 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { PlusIcon } from "@/components/icons";
 import { card, ErrorBox, inputClass, primaryButton, secondaryButton, textareaClass } from "@/components/ui";
-import { answeredCount, bmi, PER_DAY, PRODUCTS, SMOKING, type Answer, type HistoryData, type YesNo } from "@/lib/history/data";
+import { ALLERGY_CHOICES, MEDICATION_CHOICES, SURGERY_CHOICES } from "@/lib/history/choices";
+import { allUnansweredNo, answeredCount, bmi, PER_DAY, PRODUCTS, SMOKING, type Answer, type HistoryData, type YesNo } from "@/lib/history/data";
 
 export type QuestionView = { key: string; section: string; label: string; detail: string | null; hint: string | null };
 
@@ -56,6 +57,59 @@ function QuestionRow({
   );
 }
 
+const pickChip = (on: boolean) =>
+  `min-h-10 rounded-full px-3.5 py-1.5 text-sm ${on ? "border border-primary bg-primary-tint font-semibold text-primary" : "border border-line-strong bg-surface text-ink-2 hover:border-primary"}`;
+
+// Yes / No, and on Yes: common choices to tick plus a notes box (medication, allergies).
+function PickRow({
+  label,
+  choices,
+  choiceLabel,
+  notesLabel,
+  notesHint,
+  value,
+  onChange,
+}: {
+  label: string;
+  choices: readonly string[];
+  choiceLabel: (key: string) => string;
+  notesLabel: string;
+  notesHint: string;
+  value?: Answer;
+  // Gets the latest answer, so quick clicks in a row never undo each other.
+  onChange: (update: (prev: Answer | undefined) => Answer) => void;
+}) {
+  const items = value?.items ?? [];
+  const toggle = (k: string) =>
+    onChange((prev) => {
+      const now = prev?.items ?? [];
+      return { a: "yes", d: prev?.d, items: now.includes(k) ? now.filter((i) => i !== k) : [...now, k] };
+    });
+  return (
+    <div className="flex flex-col gap-3 border-t border-line-softer py-3 first:border-t-0">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="min-w-0 flex-[1_1_260px] text-[15px]">{label}</span>
+        <YesNoButtons value={value?.a} label={label} onChange={(a) => onChange((prev) => (a === "yes" ? { a, d: prev?.d, items: prev?.items } : { a }))} />
+      </div>
+      {value?.a === "yes" && (
+        <>
+          <div role="group" aria-label={label} className="flex flex-wrap gap-2">
+            {choices.map((k) => (
+              <button key={k} type="button" aria-pressed={items.includes(k)} onClick={() => toggle(k)} className={pickChip(items.includes(k))}>
+                {choiceLabel(k)}
+              </button>
+            ))}
+          </div>
+          <label className="block text-sm text-ink-3">
+            {notesLabel}
+            <input value={value.d ?? ""} onChange={(e) => { const d = e.target.value; onChange((prev) => ({ a: "yes", d, items: prev?.items })); }} placeholder={notesHint} className={inputClass} />
+          </label>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function HistoryForm({
   patientId,
   questions,
@@ -80,6 +134,24 @@ export function HistoryForm({
   const chip = (on: boolean) =>
     `h-10 rounded-full px-3.5 text-sm ${on ? "border border-primary bg-primary font-semibold text-white" : "border border-line-strong bg-surface text-ink-2 hover:border-primary"}`;
 
+  const keysOf = (section?: string) => questions.filter((q) => !section || q.section === section).map((q) => q.key);
+  // "Όλα Όχι": unanswered → No (for one section, or the whole form incl. medication etc.).
+  const allNo = (section?: string) =>
+    setData((d) => (section ? { ...d, answers: allUnansweredNo({ answers: d.answers }, keysOf(section)).answers } : allUnansweredNo(d, keysOf())));
+  const surgeryItems = data.surgeries?.items ?? [];
+  const toggleSurgery = (name: string) =>
+    setData((d) => {
+      const items = d.surgeries?.items ?? [];
+      return {
+        ...d,
+        surgeries: {
+          a: "yes",
+          notes: d.surgeries?.notes,
+          items: items.some((i) => i.procedure === name) ? items.filter((i) => i.procedure !== name) : [...items, { procedure: name }],
+        },
+      };
+    });
+
   const save = () =>
     start(async () => {
       const r = await action(JSON.stringify(data));
@@ -88,9 +160,14 @@ export function HistoryForm({
 
   return (
     <div className="flex flex-col gap-4">
+      <Link href={`/patients/${patientId}?tab=history`} className="inline-flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-primary hover:text-primary-hover">
+        <span aria-hidden="true">←</span>
+        {t("title")}
+      </Link>
       <div className="sticky top-[83px] z-20 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-line bg-surface-2/95 px-4 py-3 backdrop-blur">
         <span className="text-sm font-semibold text-ink-2">{t("progress", { answered, total })}</span>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => allNo()} className={secondaryButton} title={t("allNoHelp")}>{t("allNo")}</button>
           <Link href={`/patients/${patientId}?tab=history`} className={secondaryButton}>{t("cancel")}</Link>
           <button type="button" onClick={save} disabled={pending} className={primaryButton}>{pending ? t("saving") : t("save")}</button>
         </div>
@@ -99,8 +176,24 @@ export function HistoryForm({
 
       <section className={`${card} flex flex-col gap-1 p-5`}>
         <h2 className="mb-1 text-[17px] font-semibold">{t("basics")}</h2>
-        <QuestionRow label={t("medication")} detail={t("medicationDetail")} hint={t("medicationHint")} value={data.medication} onChange={(a) => set({ medication: a })} />
-        <QuestionRow label={t("allergies")} detail={t("allergiesDetail")} hint={t("allergiesHint")} value={data.allergies} onChange={(a) => set({ allergies: a })} />
+        <PickRow
+          label={t("medication")}
+          choices={MEDICATION_CHOICES}
+          choiceLabel={(k) => t(`medItems.${k}` as "medItems.thyroxine")}
+          notesLabel={t("medicationDetail")}
+          notesHint={t("medicationHint")}
+          value={data.medication}
+          onChange={(update) => setData((d) => ({ ...d, medication: update(d.medication) }))}
+        />
+        <PickRow
+          label={t("allergies")}
+          choices={ALLERGY_CHOICES}
+          choiceLabel={(k) => t(`allergyItems.${k}` as "allergyItems.penicillin")}
+          notesLabel={t("allergiesDetail")}
+          notesHint={t("allergiesHint")}
+          value={data.allergies}
+          onChange={(update) => setData((d) => ({ ...d, allergies: update(d.allergies) }))}
+        />
 
         <div className="flex flex-col gap-3 border-t border-line-softer py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -160,7 +253,12 @@ export function HistoryForm({
 
       {sections.map((s) => (
         <section key={s} className={`${card} p-5`}>
-          <h2 className="mb-1 text-[17px] font-semibold">{t(`sections.${s}` as "sections.heart")}</h2>
+          <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-[17px] font-semibold">{t(`sections.${s}` as "sections.heart")}</h2>
+            <button type="button" onClick={() => allNo(s)} className="h-9 rounded-[9px] border border-line-strong px-3 text-[13px] text-ink-3 hover:border-primary hover:text-primary">
+              {t("allNoSection")}
+            </button>
+          </div>
           {questions.filter((q) => q.section === s).map((q) => (
             <QuestionRow key={q.key} label={q.label} detail={q.detail} hint={q.hint} value={data.answers[q.key]} onChange={(a) => setAnswer(q.key, a)} />
           ))}
@@ -173,37 +271,54 @@ export function HistoryForm({
           <YesNoButtons
             value={data.surgeries?.a}
             label={t("surgeries")}
-            onChange={(a) => set({ surgeries: { a, items: a === "yes" ? (data.surgeries?.items.length ? data.surgeries.items : [{ procedure: "" }]) : [] } })}
+            onChange={(a) => set({ surgeries: { a, items: a === "yes" ? surgeryItems : [], notes: a === "yes" ? data.surgeries?.notes : undefined } })}
           />
         </div>
         {data.surgeries?.a === "yes" && (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-left text-sm">
-                <thead className="text-xs text-muted">
-                  <tr><th className="py-1.5 pr-2 font-semibold">{t("procedure")}</th><th className="w-28 py-1.5 pr-2 font-semibold">{t("year")}</th><th className="py-1.5 pr-2 font-semibold">{t("complications")}</th><th className="w-8" /></tr>
-                </thead>
-                <tbody>
-                  {data.surgeries.items.map((it, i) => {
-                    const upd = (patch: Partial<typeof it>) =>
-                      set({ surgeries: { a: "yes", items: data.surgeries!.items.map((x, j) => (j === i ? { ...x, ...patch } : x)) } });
-                    return (
-                      <tr key={i}>
-                        <td className="py-1 pr-2"><input aria-label={t("procedure")} value={it.procedure} onChange={(e) => upd({ procedure: e.target.value })} className={`${inputClass} mt-0`} /></td>
-                        <td className="py-1 pr-2"><input aria-label={t("year")} inputMode="numeric" value={it.year ?? ""} onChange={(e) => upd({ year: e.target.value })} className={`${inputClass} mt-0`} /></td>
-                        <td className="py-1 pr-2"><input aria-label={t("complications")} value={it.complications ?? ""} onChange={(e) => upd({ complications: e.target.value })} className={`${inputClass} mt-0`} /></td>
-                        <td>
-                          <button type="button" aria-label={t("remove")} onClick={() => set({ surgeries: { a: "yes", items: data.surgeries!.items.filter((_, j) => j !== i) } })} className="text-muted hover:text-danger">✕</button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div role="group" aria-label={t("surgeries")} className="flex flex-wrap gap-2">
+              {SURGERY_CHOICES.map((k) => {
+                const name = t(`surgeryItems.${k}` as "surgeryItems.caesarean");
+                const on = surgeryItems.some((i) => i.procedure === name);
+                return (
+                  <button key={k} type="button" aria-pressed={on} onClick={() => toggleSurgery(name)} className={pickChip(on)}>
+                    {name}
+                  </button>
+                );
+              })}
             </div>
-            <button type="button" onClick={() => set({ surgeries: { a: "yes", items: [...data.surgeries!.items, { procedure: "" }] } })} className="inline-flex items-center gap-1 self-start text-sm font-semibold text-primary">
+            {surgeryItems.length > 0 && (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-left text-sm">
+                  <thead className="text-xs text-muted">
+                    <tr><th className="py-1.5 pr-2 font-semibold">{t("procedure")}</th><th className="w-28 py-1.5 pr-2 font-semibold">{t("year")}</th><th className="py-1.5 pr-2 font-semibold">{t("complications")}</th><th className="w-8" /></tr>
+                  </thead>
+                  <tbody>
+                    {surgeryItems.map((it, i) => {
+                      const upd = (patch: Partial<typeof it>) =>
+                        set({ surgeries: { a: "yes", notes: data.surgeries?.notes, items: surgeryItems.map((x, j) => (j === i ? { ...x, ...patch } : x)) } });
+                      return (
+                        <tr key={i}>
+                          <td className="py-1 pr-2"><input aria-label={t("procedure")} value={it.procedure} onChange={(e) => upd({ procedure: e.target.value })} className={`${inputClass} mt-0`} /></td>
+                          <td className="py-1 pr-2"><input aria-label={t("year")} inputMode="numeric" value={it.year ?? ""} onChange={(e) => upd({ year: e.target.value })} className={`${inputClass} mt-0`} /></td>
+                          <td className="py-1 pr-2"><input aria-label={t("complications")} value={it.complications ?? ""} onChange={(e) => upd({ complications: e.target.value })} className={`${inputClass} mt-0`} /></td>
+                          <td>
+                            <button type="button" aria-label={t("remove")} onClick={() => set({ surgeries: { a: "yes", notes: data.surgeries?.notes, items: surgeryItems.filter((_, j) => j !== i) } })} className="text-muted hover:text-danger">✕</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <button type="button" onClick={() => set({ surgeries: { a: "yes", notes: data.surgeries?.notes, items: [...surgeryItems, { procedure: "" }] } })} className="inline-flex items-center gap-1 self-start text-sm font-semibold text-primary">
               <PlusIcon size={15} />{t("addSurgery")}
             </button>
+            <label className="block text-sm text-ink-3">
+              {t("surgeryNotes")}
+              <input value={data.surgeries.notes ?? ""} onChange={(e) => set({ surgeries: { a: "yes", items: surgeryItems, notes: e.target.value } })} className={inputClass} />
+            </label>
           </>
         )}
       </section>

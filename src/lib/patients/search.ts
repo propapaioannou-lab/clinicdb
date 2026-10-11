@@ -60,6 +60,7 @@ const RESULT_SELECT = {
   birthDate: true,
   flag: true,
   infectiousDiseases: true,
+  riskFactors: true,
   company: { select: { name: true, code: true } },
 } satisfies Prisma.PatientSelect;
 

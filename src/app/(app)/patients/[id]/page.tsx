@@ -97,12 +97,14 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
       unverifyAction={unverifyHistoryAction.bind(null, p.id)}
     />
   ) : null;
-  const ynShort = (a?: { a: string; d?: string }) => (!a ? "—" : a.a === "yes" ? a.d || th("yes") : th("no"));
+  // Picks + notes, short: "Πενικιλίνη, ΜΣΑΦ · εξάνθημα".
+  const picks = (a: { a: string; d?: string; items?: string[] } | undefined, kind: "medItems" | "allergyItems") =>
+    !a ? "—" : a.a === "no" ? th("no") : [(a.items ?? []).map((k) => th(`${kind}.${k}` as "medItems.thyroxine")).join(", "), a.d].filter(Boolean).join(" · ") || th("yes");
   const familyYes = questions.filter((q) => q.section === "family" && hd?.answers[q.key]?.a === "yes");
   const keyAnswers = hd
     ? [
-        { label: th("short.medication"), value: ynShort(hd.medication) },
-        { label: th("short.allergies"), value: ynShort(hd.allergies) },
+        { label: th("short.medication"), value: picks(hd.medication, "medItems") },
+        { label: th("short.allergies"), value: picks(hd.allergies, "allergyItems") },
         {
           label: th("short.surgeries"),
           value: !hd.surgeries ? "—" : hd.surgeries.a === "no" || !hd.surgeries.items.length ? th("no") : hd.surgeries.items.map((i) => [i.procedure, i.year].filter(Boolean).join(" ")).join(", "),
@@ -121,7 +123,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
     : [];
   // Shown on the patient card next to the infectious-disease alert.
   const alerts = [
-    ...(hd?.allergies?.a === "yes" ? [{ text: th("allergyChip", { text: hd.allergies.d || th("yes") }), tone: "danger" as const }] : []),
+    ...(hd?.allergies?.a === "yes" ? [{ text: th("allergyChip", { text: picks(hd.allergies, "allergyItems") }), tone: "danger" as const }] : []),
     ...(hd?.smoking && hd.smoking.a !== "no"
       ? [{ text: [th(`smokingChip.${hd.smoking.a}`), hd.smoking.perDay && th(`perDayOptions.${hd.smoking.perDay}`)].filter(Boolean).join(" · "), tone: "neutral" as const }]
       : []),

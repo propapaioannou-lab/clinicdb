@@ -499,7 +499,8 @@
       "YELLOW": "Κίτρινη σήμανση",
       "RED": "Κόκκινη σήμανση"
     },
-    "maxWeight": "Μέγιστο βάρος {kg} kg"
+    "maxWeight": "Μέγιστο βάρος {kg} kg",
+    "backToDetails": "Όλα τα στοιχεία"
   },
   "roles": {
     "SURGEON": "Χειρουργός",
@@ -638,10 +639,10 @@
     "progress": "{answered} / {total} απαντήθηκαν",
     "basics": "Φάρμακα, αλλεργίες, κάπνισμα, σωματομετρικά",
     "medication": "Φάρμακα που παίρνει τακτικά",
-    "medicationDetail": "Ποια και δόση",
+    "medicationDetail": "Σημειώσεις (ποιο φάρμακο, δόση, άλλα)",
     "medicationHint": "π.χ. Eltroxin 50 mcg, αντισυλληπτικό",
     "allergies": "Αλλεργίες (φάρμακα, τροφές, άλλα)",
-    "allergiesDetail": "Σε τι και τι αντίδραση",
+    "allergiesDetail": "Σημειώσεις (άλλη αλλεργία, αντίδραση)",
     "allergiesHint": "π.χ. Πενικιλίνη — εξάνθημα",
     "smoking": "Κάπνισμα",
     "smokingStatus": {
@@ -670,7 +671,7 @@
     "procedure": "Επέμβαση",
     "year": "Έτος",
     "complications": "Επιπλοκές",
-    "addSurgery": "Προσθήκη χειρουργείου",
+    "addSurgery": "Άλλη επέμβαση",
     "notes": "Σημειώσεις ιστορικού",
     "family": "Οικογενειακό ιστορικό",
     "sections": {
@@ -721,6 +722,69 @@
       "fam_breast": "Ca μαστού",
       "fam_diab": "Διαβήτης",
       "fam_clot": "Διαταραχή πήξης"
+    },
+    "medItems": {
+      "anticoagulants": "Αντιπηκτικά (Sintrom, NOAC, ηπαρίνη)",
+      "antiplatelets": "Αντιαιμοπεταλιακά (ασπιρίνη, κλοπιδογρέλη)",
+      "thyroxine": "Θυροξίνη (Eltroxin, T4)",
+      "contraceptive": "Αντισυλληπτικά",
+      "hrt": "Ορμονοθεραπεία (εμμηνόπαυση)",
+      "sleeping": "Υπνωτικά",
+      "anxiolytics": "Αγχολυτικά",
+      "antidepressants": "Αντικαταθλιπτικά",
+      "antihypertensives": "Αντιυπερτασικά",
+      "antidiabetic": "Αντιδιαβητικά / ινσουλίνη",
+      "glp1": "GLP-1 (Ozempic, Mounjaro)",
+      "corticosteroids": "Κορτικοστεροειδή",
+      "immunosuppressants": "Ανοσοκατασταλτικά",
+      "statins": "Στατίνες",
+      "supplements": "Συμπληρώματα (ω-3, βιτ. Ε, ginkgo)"
+    },
+    "allergyItems": {
+      "penicillin": "Πενικιλίνη",
+      "amoxiclav": "Αμοξικιλλίνη / Augmentin",
+      "cephalosporins": "Κεφαλοσπορίνες",
+      "sulfonamides": "Σουλφοναμίδες",
+      "macrolides": "Μακρολίδες",
+      "quinolones": "Κινολόνες",
+      "nsaids": "ΜΣΑΦ (ιβουπροφαίνη, δικλοφενάκη)",
+      "aspirin": "Ασπιρίνη",
+      "metamizole": "Μεταμιζόλη (Algofren)",
+      "opioids": "Οπιοειδή (κωδεΐνη, μορφίνη)",
+      "localAnaesthetics": "Τοπικά αναισθητικά",
+      "chlorhexidine": "Χλωρεξιδίνη",
+      "iodine": "Ιώδιο / σκιαγραφικά",
+      "foods": "Τροφές"
+    },
+    "surgeryItems": {
+      "caesarean": "Καισαρική",
+      "appendectomy": "Σκωληκοειδεκτομή",
+      "cholecystectomy": "Χολοκυστεκτομή",
+      "hernia": "Κήλη (βουβωνοκήλη, ομφαλοκήλη)",
+      "hysterectomy": "Υστερεκτομή",
+      "tonsillectomy": "Αμυγδαλεκτομή",
+      "thyroidectomy": "Θυρεοειδεκτομή",
+      "bariatric": "Βαριατρική (sleeve, bypass)",
+      "breast": "Επέμβαση μαστού",
+      "orthopaedic": "Ορθοπαιδική (αρθροσκόπηση, πρόσθεση)",
+      "varicose": "Κιρσοί",
+      "rhinoplasty": "Ρινοπλαστική / διάφραγμα",
+      "bodyContouring": "Λιποαναρρόφηση / κοιλιοπλαστική",
+      "cataract": "Καταρράκτης"
+    },
+    "surgeryNotes": "Σημειώσεις για προηγούμενα χειρουργεία",
+    "allNo": "Όλα Όχι",
+    "allNoSection": "Όλα Όχι",
+    "allNoHelp": "Όσα δεν έχουν απάντηση γίνονται Όχι· όσα έχουν απάντηση δεν αλλάζουν.",
+    "risk": {
+      "title": "Υψηλός κίνδυνος",
+      "short": "Υψ. κίνδυνος",
+      "factors": {
+        "heavySmoker": "Καπνίζει >20/ημέρα",
+        "bloodThinners": "Αντιπηκτικά / αντιαιμοπεταλιακά",
+        "thrombosis": "Θρομβοφιλία / θρόμβωση",
+        "thyroxine": "Θυροξίνη (T4)"
+      }
     }
   }
 }

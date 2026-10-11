@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PlusIcon } from "@/components/icons";
-import { ageToday, FlagDot } from "@/components/patient-bits";
+import { ageToday, FlagDot, RiskBadge } from "@/components/patient-bits";
 import { Avatar, Badge, card, primaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { activeCompany, userCompanies } from "@/lib/company";
@@ -23,6 +23,7 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
   const [companies, current] = await Promise.all([userCompanies(actor.companyIds), activeCompany(actor)]);
   const t = await getTranslations("patients");
   const tc = await getTranslations("companies");
+  const th = await getTranslations("history");
   const format = await getFormatter();
   const contacts = canSeeContactDetails(actor.level);
 
@@ -103,6 +104,9 @@ export default async function PatientsPage({ searchParams }: PageProps<"/patient
                     {name}
                     <FlagDot flag={p.flag} label={t(`flag.${p.flag}`)} />
                     {p.infectiousDiseases && <span title={t("infectious")} className="text-xs text-danger">⚠</span>}
+                    {p.riskFactors.length > 0 && (
+                      <RiskBadge label={th("risk.short")} reasons={p.riskFactors.map((r) => th(`risk.factors.${r}` as "risk.factors.thyroxine"))} compact />
+                    )}
                     <span className="text-[13px] font-normal text-muted">
                       · {patientCode(p.number, p.company.code)}{age ? ` · ${t("years", { years: age.years })}` : ""}
                     </span>

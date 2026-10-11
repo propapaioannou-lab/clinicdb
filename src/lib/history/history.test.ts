@@ -1,7 +1,8 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
-import { answeredCount, bmi, changedParts, cleanHistory } from "./data";
+import { allUnansweredNo, answeredCount, bmi, changedParts, cleanHistory } from "./data";
+import { riskFactors } from "./risk";
 import { canVerifyHistory, infectionAlert, loadHistory, loadHistoryVersion, saveHistory, unverifyHistory, verifyHistory } from "./history";
 import { HISTORY_QUESTIONS } from "./questions-seed";
 
@@ -114,3 +115,38 @@ describe("saving and verifying", () => {
     expect(await loadHistory(await makeActor("ADMIN", [c.spa]), p.id)).toBeNull();
   });
 });
+
+describe("quick picks, 'Όλα Όχι' and the high-risk profile", () => {
+  it("keeps only known picks, and notes, on Yes", () => {
+    const d = cleanHistory({ medication: { a: "yes", items: ["thyroxine", "bogus", "thyroxine"], d: "Eltroxin 50" }, allergies: { a: "no", items: ["penicillin"] } }, keys);
+    expect(d.medication).toEqual({ a: "yes", d: "Eltroxin 50", items: ["thyroxine"] });
+    expect(d.allergies).toEqual({ a: "no" });
+  });
+
+  it("sets only unanswered items to No", () => {
+    const d = allUnansweredNo({ answers: { hyper: { a: "yes" } }, smoking: { a: "yes", perDay: "20+" } }, ["hyper", "heart"]);
+    expect(d.answers).toEqual({ hyper: { a: "yes" }, heart: { a: "no" } });
+    expect(d.smoking).toEqual({ a: "yes", perDay: "20+" });
+    expect(d.medication).toEqual({ a: "no" });
+  });
+
+  it("flags heavy smokers (>20), blood thinners, thrombosis/thrombophilia and thyroxine", () => {
+    expect(riskFactors({ answers: {}, smoking: { a: "yes", perDay: "5-20" } })).toEqual([]);
+    expect(riskFactors({
+      answers: { thrombophilia: { a: "yes" } },
+      smoking: { a: "yes", perDay: "20+" },
+      medication: { a: "yes", items: ["antiplatelets", "thyroxine"] },
+    })).toEqual(["heavySmoker", "bloodThinners", "thrombosis", "thyroxine"]);
+    expect(riskFactors({ answers: { anticoag: { a: "yes" }, clot: { a: "yes" } } })).toEqual(["bloodThinners", "thrombosis"]);
+  });
+
+  it("stores the profile on the patient at every save, even before verification", async () => {
+    const p = await makePatient(c.surgery, { surname: "Κινδύνου" });
+    const secretary = await makeActor("USER", [c.surgery], "SECRETARY");
+    await saveHistory(secretary, p.id, { answers: { anticoag: { a: "yes", d: "Sintrom" } } }, ctx);
+    expect((await db.patient.findUniqueOrThrow({ where: { id: p.id } })).riskFactors).toEqual(["bloodThinners"]);
+    await saveHistory(secretary, p.id, { answers: { anticoag: { a: "no" } } }, ctx);
+    expect((await db.patient.findUniqueOrThrow({ where: { id: p.id } })).riskFactors).toEqual([]);
+  });
+});
+

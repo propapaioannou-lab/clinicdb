@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { SearchResult } from "@/app/api/patients/search/route";
 import { SearchIcon } from "./icons";
-import { FlagDot } from "./patient-bits";
+import { FlagDot, RiskBadge } from "./patient-bits";
 
 // The search bar on every screen (SPEC §5): results appear as you type.
 export function PatientSearch({ limited }: { limited: boolean }) {
   const t = useTranslations("search");
   const tp = useTranslations("patients");
+  const th = useTranslations("history");
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
@@ -123,6 +124,7 @@ export function PatientSearch({ limited }: { limited: boolean }) {
                         <span className="truncate font-medium">{r.name}</span>
                         <FlagDot flag={r.flag} label={tp(`flag.${r.flag}`)} />
                         {r.infectious && <span title={tp("infectious")} className="text-xs font-semibold text-danger">⚠</span>}
+                        {r.highRisk && <RiskBadge label={th("risk.short")} compact />}
                       </span>
                       <span className="block truncate text-xs text-muted">
                         {[

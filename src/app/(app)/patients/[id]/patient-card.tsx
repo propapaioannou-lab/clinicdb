@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Avatar, Badge, card, dangerButton, ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
+import { RiskBadge } from "@/components/patient-bits";
 import { patientCode } from "@/lib/patients/format";
 import type { PatientFormOptions } from "@/lib/patients/options";
 import type { PatientView } from "@/lib/patients/record";
@@ -41,6 +42,7 @@ export function PatientCard({
 }) {
   const t = useTranslations("patient");
   const tf = useTranslations("patientForm");
+  const th = useTranslations("history");
   const format = useFormatter();
   const [mode, setMode] = useState<Mode>("summary");
   const [flagError, setFlagError] = useState<string | null>(null);
@@ -72,6 +74,9 @@ export function PatientCard({
             <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-[26px] font-semibold tracking-[-0.01em]">{name}</h1>
+                {p.riskFactors.length > 0 && (
+                  <RiskBadge label={th("risk.title")} reasons={p.riskFactors.map((r) => th(`risk.factors.${r}` as "risk.factors.thyroxine"))} />
+                )}
                 {p.flag !== "NONE" && (
                   <Badge tone={flagTone}>
                     <span className={`h-2 w-2 rounded-full ${p.flag === "RED" ? "bg-danger" : "bg-warn"}`} />
@@ -117,6 +122,12 @@ export function PatientCard({
 
       {mode !== "summary" && (
         <section aria-label={t("cardLabel")} className={`${card} px-6 py-5`}>
+          {(mode === "edit" || mode === "flag") && (
+            <button type="button" onClick={() => show("details")} className="mb-3 inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-hover">
+              <span aria-hidden="true">←</span>
+              {t("backToDetails")}
+            </button>
+          )}
           {mode === "details" && (
             <div className="flex flex-col gap-4">
               {savedNote && <Notice>{tf("saved")}</Notice>}

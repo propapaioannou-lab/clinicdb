@@ -4,6 +4,7 @@ import type { HistorySource, Prisma } from "@/generated/prisma/client";
 import { canEditPatients, canSeeContactDetails } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { changedParts, cleanHistory, type HistoryData } from "./data";
+import { riskFactors } from "./risk";
 
 // Medical history (SPEC §4): every save is a new version; a Surgeon or PA/nurse verifies.
 
@@ -129,6 +130,8 @@ export async function saveHistory(
       update: { currentVersionId: version.id, ...status },
     });
     if (verified) await applyInfectionAlert(tx, patientId, patient.companyId, data);
+    // The high-risk profile follows the latest answers at once, verified or not: safety first.
+    await tx.patient.update({ where: { id: patientId }, data: { riskFactors: riskFactors(data) } });
     return { number, changed: changedParts(prev ? (prev.currentVersion.data as HistoryData) : null, data) };
   });
 

@@ -15,6 +15,7 @@ export type SearchResult = {
   age: number | null;
   flag: "NONE" | "YELLOW" | "RED";
   infectious: boolean;
+  highRisk: boolean;
   company: string;
   phone: string | null;
 };
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
     age: ageToday(p.birthDate)?.years ?? null,
     flag: p.flag,
     infectious: Boolean(p.infectiousDiseases),
+    highRisk: p.riskFactors.length > 0,
     company: p.company.name,
     phone: "phones" in p ? (p.phones[0]?.number ?? null) : null,
   }));

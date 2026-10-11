@@ -61,6 +61,7 @@ export async function listPatients(
         birthDate: true,
         flag: true,
         infectiousDiseases: true,
+        riskFactors: true,
         registeredAt: true,
         company: { select: { code: true, name: true } },
         ...(contacts && {

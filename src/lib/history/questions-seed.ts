@@ -41,6 +41,8 @@ export const HISTORY_QUESTIONS: Q[] = [
   ["fam_breast", "family", "Καρκίνος μαστού σε συγγενή α΄ βαθμού", "Ποιος;", "", "Breast cancer in a first-degree relative", "Who?"],
   ["fam_diab", "family", "Σακχαρώδης διαβήτης σε συγγενή α΄ βαθμού", "Ποιος;", "", "Diabetes in a first-degree relative", "Who?"],
   ["fam_clot", "family", "Διαταραχή πήξης σε συγγενή α΄ βαθμού", "Ποιος;", "", "Clotting disorder in a first-degree relative", "Who?"],
+  // Added later; sorts last in its section.
+  ["thrombophilia", "blood", "Θρομβοφιλία (π.χ. Leiden, έλλειψη πρωτεΐνης C/S)", "Ποια;", "", "Thrombophilia (e.g. factor V Leiden, protein C/S deficiency)", "Which?"],
 ];
 
 // Order of sections on screen.

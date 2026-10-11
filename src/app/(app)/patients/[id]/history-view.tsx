@@ -86,7 +86,9 @@ export async function HistoryView({
     );
   }
 
-  const yn = (a?: { a: string; d?: string }) => (!a ? "—" : a.a === "yes" ? a.d || t("yes") : t("no"));
+  // Picks + notes, e.g. "Θυροξίνη (Eltroxin, T4), Υπνωτικά · Eltroxin 50 mcg".
+  const picks = (a: { a: string; d?: string; items?: string[] } | undefined, kind: "medItems" | "allergyItems") =>
+    !a ? "—" : a.a === "no" ? t("no") : [ (a.items ?? []).map((k) => t(`${kind}.${k}` as "medItems.thyroxine")).join(", "), a.d ].filter(Boolean).join(" · ") || t("yes");
   const b = bmi(data.weightKg, data.heightCm);
   const sections = [...new Set(questions.map((q) => q.section))];
   const smoking = data.smoking
@@ -113,8 +115,8 @@ export async function HistoryView({
           </div>
           {status}
           <dl className="grid gap-x-6 gap-y-3 border-t border-line-softer pt-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-            <Item label={t("medication")} value={yn(data.medication)} strong={data.medication?.a === "yes"} />
-            <Item label={t("allergies")} value={yn(data.allergies)} strong={data.allergies?.a === "yes"} danger={data.allergies?.a === "yes"} />
+            <Item label={t("medication")} value={picks(data.medication, "medItems")} strong={data.medication?.a === "yes"} />
+            <Item label={t("allergies")} value={picks(data.allergies, "allergyItems")} strong={data.allergies?.a === "yes"} danger={data.allergies?.a === "yes"} />
             <Item label={t("smoking")} value={smoking} strong={data.smoking?.a === "yes"} />
             <Item label={t("weight")} value={data.weightKg ? `${data.weightKg} kg${b ? ` · BMI ${b}` : ""}` : "—"} />
             <Item label={t("maxWeight")} value={data.maxWeightKg ? `${data.maxWeightKg} kg` : "—"} />
@@ -160,6 +162,7 @@ export async function HistoryView({
               ))}
             </ul>
           )}
+          {data.surgeries?.notes && <p className="text-sm text-ink-3">{data.surgeries.notes}</p>}
         </section>
 
         {data.notes && (

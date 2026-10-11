@@ -499,7 +499,8 @@
       "YELLOW": "Yellow flag",
       "RED": "Red flag"
     },
-    "maxWeight": "Highest weight {kg} kg"
+    "maxWeight": "Highest weight {kg} kg",
+    "backToDetails": "All details"
   },
   "roles": {
     "SURGEON": "Surgeon",
@@ -638,10 +639,10 @@
     "progress": "{answered} / {total} answered",
     "basics": "Medication, allergies, smoking, body measurements",
     "medication": "Regular medication",
-    "medicationDetail": "Which and dose",
+    "medicationDetail": "Notes (which medicine, dose, other)",
     "medicationHint": "e.g. Eltroxin 50 mcg, contraceptive pill",
     "allergies": "Allergies (medicines, food, other)",
-    "allergiesDetail": "To what and which reaction",
+    "allergiesDetail": "Notes (other allergy, reaction)",
     "allergiesHint": "e.g. Penicillin — rash",
     "smoking": "Smoking",
     "smokingStatus": {
@@ -670,7 +671,7 @@
     "procedure": "Procedure",
     "year": "Year",
     "complications": "Complications",
-    "addSurgery": "Add surgery",
+    "addSurgery": "Other procedure",
     "notes": "History notes",
     "family": "Family history",
     "sections": {
@@ -721,6 +722,69 @@
       "fam_breast": "Breast cancer",
       "fam_diab": "Diabetes",
       "fam_clot": "Clotting disorder"
+    },
+    "medItems": {
+      "anticoagulants": "Anticoagulants (warfarin, NOAC, heparin)",
+      "antiplatelets": "Antiplatelets (aspirin, clopidogrel)",
+      "thyroxine": "Thyroxine (Eltroxin, T4)",
+      "contraceptive": "Contraceptive pill",
+      "hrt": "Hormone replacement (menopause)",
+      "sleeping": "Sleeping pills",
+      "anxiolytics": "Anxiolytics",
+      "antidepressants": "Antidepressants",
+      "antihypertensives": "Blood-pressure medicines",
+      "antidiabetic": "Diabetes medicines / insulin",
+      "glp1": "GLP-1 (Ozempic, Mounjaro)",
+      "corticosteroids": "Corticosteroids",
+      "immunosuppressants": "Immunosuppressants",
+      "statins": "Statins",
+      "supplements": "Supplements (omega-3, vit. E, ginkgo)"
+    },
+    "allergyItems": {
+      "penicillin": "Penicillin",
+      "amoxiclav": "Amoxicillin / Augmentin",
+      "cephalosporins": "Cephalosporins",
+      "sulfonamides": "Sulfonamides",
+      "macrolides": "Macrolides",
+      "quinolones": "Quinolones",
+      "nsaids": "NSAIDs (ibuprofen, diclofenac)",
+      "aspirin": "Aspirin",
+      "metamizole": "Metamizole",
+      "opioids": "Opioids (codeine, morphine)",
+      "localAnaesthetics": "Local anaesthetics",
+      "chlorhexidine": "Chlorhexidine",
+      "iodine": "Iodine / contrast",
+      "foods": "Foods"
+    },
+    "surgeryItems": {
+      "caesarean": "Caesarean section",
+      "appendectomy": "Appendectomy",
+      "cholecystectomy": "Cholecystectomy",
+      "hernia": "Hernia repair",
+      "hysterectomy": "Hysterectomy",
+      "tonsillectomy": "Tonsillectomy",
+      "thyroidectomy": "Thyroidectomy",
+      "bariatric": "Bariatric (sleeve, bypass)",
+      "breast": "Breast surgery",
+      "orthopaedic": "Orthopaedic (arthroscopy, joint replacement)",
+      "varicose": "Varicose veins",
+      "rhinoplasty": "Rhinoplasty / septum",
+      "bodyContouring": "Liposuction / abdominoplasty",
+      "cataract": "Cataract"
+    },
+    "surgeryNotes": "Notes on previous surgeries",
+    "allNo": "All No",
+    "allNoSection": "All No",
+    "allNoHelp": "Unanswered items become No; answered ones do not change.",
+    "risk": {
+      "title": "High risk",
+      "short": "High risk",
+      "factors": {
+        "heavySmoker": "Smokes >20/day",
+        "bloodThinners": "Anticoagulants / antiplatelets",
+        "thrombosis": "Thrombophilia / thrombosis",
+        "thyroxine": "Thyroxine (T4)"
+      }
     }
   }
 }

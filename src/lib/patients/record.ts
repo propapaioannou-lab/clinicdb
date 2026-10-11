@@ -39,6 +39,7 @@ export async function openPatient(actor: Actor, id: string, ctx: RequestContext)
     registeredAt: p.registeredAt,
     treatingDoctor: p.treatingDoctor?.name ?? null,
     infectiousDiseases: p.infectiousDiseases,
+    riskFactors: p.riskFactors,
     archivedAt: p.archivedAt,
   };
   // Staff notes, not clinical data: Guests (research) do not see them.

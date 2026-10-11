@@ -170,7 +170,7 @@ services and are NOT rebuilt here.
   answers are never pre-filled, so every No was given by someone.
 - **High-risk profile** (decided 11 Oct 2026), worked out from the latest answers
   (verified or not): smoker >20/day; anticoagulants or antiplatelets; thrombophilia or
-  past thrombosis/PE; thyroxine (T4). Shown as a red "Υψηλός κίνδυνος" badge with the
+  past thrombosis/PE, own or in a first-degree relative (confirmed 11 Oct 2026); thyroxine (T4). Shown as a red "Υψηλός κίνδυνος" badge with the
   reasons on the patient record, patient lists and search, and later on visits,
   planning, calendar, surgery booking and surgery-day cards. Rules editable in Settings.
 - **Allergy reminder**: when a surgery is booked (Phase 4/6) and when medication is

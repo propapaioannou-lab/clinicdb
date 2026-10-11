@@ -1,4 +1,4 @@
-# Clinic Database — Specification v1.0
+# Clinic Database — Specification v1.1
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -37,6 +37,23 @@ services and are NOT rebuilt here.
   private key kept off the server by the owner; keeps 14 daily, 8 weekly, 12 monthly;
   status page and warning bar in the app; every run in the audit log.
 - Development on the Linux laptop; deployment to the Synology with the same containers.
+- **Resilience & security hardening** (from the 11 Oct review):
+  - Encrypted Synology volume; a written, timed restore procedure; one backup copy the
+    server itself cannot delete (immutable/offline) against ransomware.
+  - UPS with automatic safe shutdown; 4G backup router; staff in the office can reach
+    the app over the local network if the internet is down.
+  - Printable "today" sheet (PDF): time, initials, procedure — no full names or
+    clinical details on paper that leaves the building.
+  - Auto-logout after inactivity (e.g. 10 min, PIN to resume) — **conflicts with §11
+    "No automatic logout on inactivity" (Phase 1 decision); pending, see §13**; new devices approved in
+    Tailscale; per-person logins only; same-day disable for departing staff.
+  - Audit log append-only and hash-chained; monthly "who opened what" report flags
+    unusual access.
+  - Extra field encryption + clinical-roles-only visibility for the most sensitive
+    answers (HIV, hepatitis, substance use, mental health); never in schedules, exports
+    or briefs unless needed. **Which roles, and what the infectious-disease alert shows
+    to non-clinical staff: pending, see §13.**
+  - Patients get a secure photo-upload link (instead of sending photos by WhatsApp).
 
 ## 4. Core data
 
@@ -86,6 +103,7 @@ services and are NOT rebuilt here.
 - **Never deleted in the app** (records are kept 10 years, §7a). An Owner can
   **archive** a patient: hidden from search and lists, everything kept, can be undone.
   Permanent removal (e.g. a merged duplicate) only through §6b merge or a server command.
+
 
 
 ### Medical history (from my-medical "Αναμνηστικό")
@@ -206,6 +224,28 @@ New in our app:
   external collaborators with e-mail).
 - Linked: specific consent (§7), surgical brief (§8), photos
 
+### Quote and cost breakdown (decided 11 Oct 2026)
+- The surgeon only sets the surgical plan (procedures, implants, hospital, nights).
+  The app then **generates the estimated cost automatically** from a price list in
+  Settings: surgeon fee per procedure (with combination discount rules), anaesthesia,
+  hospital / operating room per hour and per night, implants, garments, extras.
+- Financial discussion is done by the **PA or secretary**, never the surgeon. They can
+  adjust lines (with reason, logged), then send the quote (branded PDF, patient's
+  language) for signature.
+- Quote: number, date, validity (e.g. 3 months), lines, total, payment terms,
+  deposit and cancellation terms, revision policy, signature (same signing flow as
+  consents) → status draft / sent / signed / expired.
+- **Deposit:** €500 by default (amount editable per quote, depending on total cost) to
+  book the surgery date. Deducted from the surgeon's fee. **Refunded if cancelled ≥ 4
+  weeks before surgery; non-refundable if later.** These terms print on every quote;
+  the app shows the refund deadline on the surgery record. (Lawyer to confirm wording.)
+- Booking a surgery requires a signed quote + deposit, or a logged override.
+
+### Outcomes and complications
+- Per surgery: complications (structured list + free text, date, severity, treatment),
+  revisions linked to the original surgery, patient satisfaction (e.g. at 3 m and 1 y).
+- Used for the surgeon's own audit and as part of the record; never sent to GHL.
+
 ### Treatment (repeated, non-surgical) — kept separate from Surgery
 - Botox, fillers, lasers, skin treatments; Surgery and Spa both record them
 - Date, treatment type, product + lot number, areas, units/ml, performed by, company
@@ -277,9 +317,19 @@ appointment titles; more than one location.
 
 **Data**
 - `Appointment`: company, patient, type, start, duration, resource (doctor / nurse /
-  room / cabin / operating room), location, status (booked → confirmed → arrived →
-  ready → with doctor → to pay → done; or cancelled / no-show), confirmation channel
-  and time, source (staff user or online via GHL), GHL appointment ID.
+  room / cabin / operating room), location, status (ONE list for the whole app, see
+  below), confirmation channel and time, source (staff user or online via GHL), GHL
+  appointment ID.
+- **Appointment status — the only list** (Greek label · who presses it):
+  booked «Κλείστηκε» (staff / online) → confirmed «Επιβεβαιώθηκε» (patient reply via GHL
+  or staff) → arrived «Στην αναμονή» (secretary: Άφιξη) → ready «Έτοιμος · Δωμάτιο X»
+  (the person assigned to that room — PA/nurse, or the secretary when no PA; pressing
+  it twice does nothing, others see who did it) → with doctor «Με τον γιατρό»
+  (surgeon opens the visit) → to pay «Προς πληρωμή» (surgeon closes the visit) → done
+  «Ολοκληρώθηκε» (payment recorded, or no charge). Side exits: cancelled «Ακυρώθηκε»,
+  no-show «Δεν ήρθε» (feeds the patient flag). Every change is logged with user + time.
+- **Online bookings** (GHL / website) create a **pending patient** in our app if no
+  match is found → duplicate check → intake link sent automatically.
 - `AppointmentType` (editable): name GR/EN, colour, default length, calendar layer
   (office / online / surgery / spa), company. Seed practice: first visit 30′,
   follow-up 15′, pre-op 30′, post-op 15′, online 30′, injectable 30′. Seed spa:
@@ -300,7 +350,19 @@ new appointment. Clash warning and suggested free slots when booking.
 - "+ Νέο χειρουργείο": choose procedures → estimated time → availability grid for the
   next 3 weeks (fits / only ≤2 h / full / holiday) → pick day → proposed start after
   the existing cases. Booking creates the Surgery (status booked), its checklist (§4e
-  readiness) and, if ticked, the consent link and deposit request.
+  readiness), the **post-op appointment plan** (1 d, 1 w, 1 m, 3 m, 6 m, 1 y — editable
+  per procedure, linked to the photo timepoints) and, if ticked, the consent link and
+  deposit request.
+- **Override:** the surgeon, the secretary and the PA may book beyond the limits with a
+  reason (e.g. revision, urgent case); logged and shown on the day.
+- Anaesthesiologist / hospital availability is not checked by the app: surgeries are
+  booked 1–2 months ahead and confirmed through the monthly plan.
+- **Safety flags on the surgery checklist**, computed from the verified history:
+  anticoagulants/aspirin, GLP-1 weight-loss drugs, isotretinoin (last 12 m), smoking,
+  BMI above a set limit, personal/family clot history, diabetes, sleep apnoea. Each flag
+  shows the rule (e.g. "stop X days before" — values set by the surgeon in Settings).
+  Body-contouring procedures show a **Caprini VTE score**. Flags inform; the surgeon
+  decides.
 
 **Schedule e-mails** (protected PDF, every send audited):
 - Weekly surgical schedule → external anaesthesiologists and nurses taking part.
@@ -330,7 +392,11 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
 
 ## 4e. Home screen and front-desk workflow (from design review)
 - **Role-based home screens.** Physician sees only clinical flow (clock, ready-in-room
-  banner, today's patients, chat, own tasks). PA/nurse home: room board (waiting /
+  banner, today's patients, chat, own tasks) plus a **"Για έλεγχο σήμερα" (today's
+  review) list**: follow-up photos waiting for review, new-patient emails/messages asking
+  for an evaluation (photos attached), results to sign off, urgent items (e.g. payment
+  issues the staff flagged). Each item opens where it is handled; ticking it off
+  clears it. PA/nurse home: room board (waiting /
   room 1 / room 2) with "ready → notify doctor", today's schedule with confirmation,
   form and payment status, to-dos (intake forms, duplicates, patient messages,
   unconfirmed bookings), surgery checklists with send/remind actions, chat with doctor.
@@ -341,7 +407,7 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   "ready in OR" still arrives as a banner. The "Surgeries" menu opens this same view:
   starts on today, ‹ › for previous/next day, "Today" button to jump back.
 - Live clock (with seconds) at the top left + next-appointment countdown; amber ≤5 min, red "late X min".
-- Patient status flow: Αναμένεται → Στην αναμονή → Έτοιμος · Δωμάτιο X → Ολοκληρώθηκε.
+- Patient status flow: see §4c "Appointment status — the only list".
   The assistant marks "ready in room X" from her screen/phone → surgeon gets a banner,
   sound and optional phone push. Same for "ready in operating room" in surgery mode.
 - Online video consultations: appointment type "Online"; "Start call" button in today's
@@ -534,6 +600,9 @@ surgeon only; every action audited.
   signed procedure consent. Default address per clinic; option to add/override with
   an alternate address. Sent as a protected PDF over secure mail; every send logged.
 - Blocked (with warning) if the procedure consent is not signed.
+- Sent **only** if the surgery is booked for that date, not cancelled or moved, and the
+  consent is valid (not withdrawn). Otherwise nothing is sent and the surgeon and PA get
+  an alert.
 
 ## 9. AI consultation assistant (later phase)
 
@@ -601,7 +670,8 @@ and who appears as treating doctor. It does not add permissions beyond the level
   calendar, check-in, payments and receipts, waiting list, intake review, documents,
   surgery administration (hospital booking, deposit, quotes). Her own screens show no
   clinical notes, but she **may open and read the full patient record** — access to
-  everything in her companies (decided Phase 1, confirmed again 11 Oct 2026).
+  everything in her companies (decided Phase 1, confirmed again 11 Oct 2026; v1.1 text
+  said "no clinical notes (hidden)" — to reconfirm, see §13).
 - **Spa staff**: usually Spa company only.
 - **Other** (e.g. research guest, IT).
 Admin work (users, settings, backups) comes from the level, not the role.
@@ -630,7 +700,8 @@ Admin work (users, settings, backups) comes from the level, not the role.
 - **Trusted devices:** after a successful 2FA login the user may tick "Trust this
   device". That device skips the 2FA code (password still required) for 90 days.
 - **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
-- No automatic logout on inactivity.
+- No automatic logout on inactivity (Phase 1 decision; v1.1 §3 proposes 10-minute
+  auto-logout with PIN — pending, see §13).
 - **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
   activity) and trusted devices; end any session or remove trust. All logged.
 
@@ -654,8 +725,11 @@ Admin work (users, settings, backups) comes from the level, not the role.
 
 ## 13. Open decisions
 
-- Calendar master: our own calendar (recommended; GHL bookings flow in, GHL sends
-  reminders) vs GHL as master — **pending**
+Decided 11 Oct 2026: **our calendar is the master** (GHL bookings flow in; GHL sends
+confirmations and reminders); quote auto-generated, money handled by PA/secretary;
+deposit €500 default, refundable ≥ 4 weeks before; capacity override by surgeon,
+secretary or PA; outcomes/complications record — yes.
+
 - Real locations (offices, hospitals) — "Ιατρείο Αθήνας" in mockups is a placeholder
 - Appointment default lengths (30′ / 15′ guessed)
 - Who may collect payments and issue receipts (secretary? PA? surgeon only?)
@@ -675,6 +749,13 @@ Admin work (users, settings, backups) comes from the level, not the role.
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
 - Where general comments about a patient (incl. imported my-medical comments) are shown
+- **Before Phase 2 Step 5 (visits):** money on visits now that the surgeon's screens show
+  no money — (a) visits carry no charge, charges live in the Financial tab, or (b) a
+  charge part on the visit visible only to PA/secretary?
+- Auto-logout after inactivity (v1.1 §3) vs Phase 1 "no auto-logout"?
+- Sensitive answers (HIV, hepatitis, substance use, mental health): which roles see them;
+  what the infectious-disease alert shows to the secretary / non-clinical staff?
+- Secretary and clinical notes: "access everything" (confirmed 11 Oct) or "hidden" (v1.1)?
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`

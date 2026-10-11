@@ -78,6 +78,10 @@ describes **what it does**. If they disagree, ask the surgeon.
 - Today's appointments, with status Αναμένεται → Στην αναμονή → Έτοιμος · Δωμάτιο X →
   Ολοκληρώθηκε. Online appointments show "Έναρξη κλήσης".
 - Side column: staff chat with one-tap presets, and the physician's own tasks.
+- **"Για έλεγχο σήμερα"** list in the side column: follow-up photos to review, new
+  patients asking for an evaluation (email/WhatsApp with photos), results to sign,
+  urgent items flagged by staff. One tap opens the item; tick to clear. (Not yet drawn.)
+- No money on the surgeon's screens: quotes and payments are handled by PA/secretary.
 
 ### 1b · PA / nurse home
 - Room board (waiting / room 1 / room 2). "Ready → notify doctor" sets the status

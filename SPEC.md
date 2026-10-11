@@ -146,6 +146,9 @@ Login and sessions (decided 11 Oct 2026):
   device". That device skips the 2FA code (password still required) for 90 days.
 - **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
 - No automatic logout on inactivity.
+- **Generated passwords:** when creating a user or resetting a password, the admin can
+  generate a strong password (16 characters, no look-alike letters). It is shown once,
+  is temporary, and the user must choose their own at first login.
 - **Admin devices screen:** per user, see logged-in devices (browser, IP, last
   activity) and trusted devices; end any session or remove trust. All logged.
 

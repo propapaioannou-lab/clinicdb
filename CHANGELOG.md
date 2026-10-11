@@ -2,6 +2,17 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Generated passwords
+
+- The account script can now generate a strong password: press Enter instead of typing
+  one. It looks like `Kx7m-Pq3r-Tz9a-Hw4e` (no look-alike letters such as 0/O or 1/l).
+- A generated password is shown once, is not stored anywhere readable, and is
+  temporary: the user must choose their own at first login (enforced from Step 3).
+- The same generator will be a button on the user screens in Step 5.
+
+**Check it:** run the account script with a test email, press Enter at the password
+question, and see the password printed once.
+
 ## 11 Oct 2026 — Phase 1, Step 2: Companies, users, roles
 
 - The database now has the two companies (Surgery, Spa), users, and which company

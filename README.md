@@ -28,6 +28,7 @@ See the app's log:
 
     podman compose exec app npx tsx scripts/create-admin.ts
 
+Press Enter at the password question to generate a temporary password (shown once).
 Running it again with the same email resets that account's password.
 
 List users and their roles:
@@ -37,3 +38,7 @@ List users and their roles:
 ## Tests
 
     podman compose exec app npm test
+
+## After changing the database schema (developer)
+
+    podman compose exec app npm run db:migrate -- --name what_changed

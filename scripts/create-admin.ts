@@ -2,7 +2,7 @@
 // Run: podman compose exec app npx tsx scripts/create-admin.ts
 import { createInterface } from "node:readline";
 import { db } from "../src/lib/db";
-import { hashPassword, MIN_PASSWORD_LENGTH } from "../src/lib/password";
+import { generatePassword, hashPassword, MIN_PASSWORD_LENGTH } from "../src/lib/password";
 
 const rl = createInterface({
   input: process.stdin,
@@ -34,15 +34,24 @@ async function main() {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Invalid email.");
   const name = await ask("Full name: ");
   if (!name) throw new Error("Name is required.");
-  const password = await ask(`Password (min ${MIN_PASSWORD_LENGTH} characters): `, true);
-  if (password.length < MIN_PASSWORD_LENGTH) throw new Error("Password too short.");
-  if ((await ask("Repeat password: ", true)) !== password) throw new Error("Passwords differ.");
+  let password = await ask(
+    `Password (min ${MIN_PASSWORD_LENGTH} characters, or press Enter to generate one): `,
+    true,
+  );
+  const generated = password === "";
+  if (generated) {
+    password = generatePassword();
+  } else {
+    if (password.length < MIN_PASSWORD_LENGTH) throw new Error("Password too short.");
+    if ((await ask("Repeat password: ", true)) !== password) throw new Error("Passwords differ.");
+  }
 
   const passwordHash = await hashPassword(password);
+  const fields = { name, passwordHash, isAdmin: true, mustChangePassword: generated };
   const user = await db.user.upsert({
     where: { email },
-    update: { name, passwordHash, isAdmin: true, isActive: true },
-    create: { email, name, passwordHash, isAdmin: true },
+    update: { ...fields, isActive: true },
+    create: { email, ...fields },
   });
   for (const c of companies) {
     await db.membership.upsert({
@@ -52,6 +61,10 @@ async function main() {
     });
   }
   console.log(`Admin ready: ${email} (Surgeon in: ${companies.map((c) => c.code).join(", ")})`);
+  if (generated) {
+    console.log(`\nTemporary password (shown once, not stored anywhere):\n\n    ${password}\n`);
+    console.log("It must be changed at first login.");
+  }
 }
 
 main()

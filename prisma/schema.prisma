@@ -24,16 +24,18 @@ model Company {
 }
 
 model User {
-  id               String       @id @default(cuid())
-  email            String       @unique // stored lower-case
-  name             String
-  passwordHash     String
+  id                 String       @id @default(cuid())
+  email              String       @unique // stored lower-case
+  name               String
+  passwordHash       String
+  // True after a generated (temporary) password: user must choose their own at next login.
+  mustChangePassword Boolean      @default(false)
   // Admin is separate from company roles: manages users, devices, settings, backups.
-  isAdmin          Boolean      @default(false)
-  isActive         Boolean      @default(true)
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  memberships      Membership[]
+  isAdmin            Boolean      @default(false)
+  isActive           Boolean      @default(true)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  memberships        Membership[]
 }
 
 // Which companies a user can work in, and with which role.

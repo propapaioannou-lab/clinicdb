@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
-import { listPatients } from "./queries";
+import { listPatients, recentlyOpened } from "./queries";
 import { openPatient } from "./record";
 import { parseQuery, quickSearch } from "./search";
 
@@ -94,6 +94,34 @@ describe("quickSearch", () => {
     const { total, rows } = await listPatients(user, { page: 1, q: "searchopoulou" });
     expect(total).toBe(4);
     expect(rows.map((r) => r.id)).not.toContain(ids.archived);
+    expect(rows.every((r) => r.match === "name")).toBe(true);
+  });
+
+  it("says which field matched", async () => {
+    const user = await makeActor("USER", [c.surgery]);
+    const field = async (q: string) => (await listPatients(user, { page: 1, q })).rows.find((r) => r.id === ids.maria)?.match;
+    expect(await field("6945551212")).toBe("phone");
+    expect(await field("150680")).toBe("amka");
+    expect(await field("maria.s@")).toBe("email");
+    const byCode = await listPatients(user, { page: 1, q: "P-777001" });
+    expect(byCode.rows.map((r) => [r.id, r.match])).toEqual([[ids.numbered, "code"]]);
+  });
+
+  it("lists flagged patients only when asked", async () => {
+    const user = await makeActor("USER", [c.surgery]);
+    await db.patient.update({ where: { id: ids.eleni }, data: { flag: "YELLOW" } });
+    const { rows } = await listPatients(user, { page: 1, q: "σεαρχ", flagged: true });
+    expect(rows.map((r) => r.id)).toEqual([ids.eleni]);
+  });
+});
+
+describe("recentlyOpened", () => {
+  it("lists the patients this user opened, newest first, in their companies only", async () => {
+    const user = await makeActor("USER", [c.surgery]);
+    await openPatient(user, ids.maria, ctx);
+    await openPatient(user, ids.numbered, ctx);
+    await openPatient(user, ids.maria, ctx);
+    expect((await recentlyOpened(user)).map((p) => p.id)).toEqual([ids.maria, ids.numbered]);
   });
 });
 

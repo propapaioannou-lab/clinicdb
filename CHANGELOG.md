@@ -2,6 +2,20 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 3b: Patients page in the new design
+
+- **Ασθενείς** now matches the approved design: a large search box that updates the list
+  as you type, and every result shows **which field matched** (όνομα, τηλέφωνο, email,
+  ΑΜΚΑ, κωδικός), with phone, email and AMKA underneath (not for Guests).
+- **Filter chips**: Όλοι (both companies) · Ιατρείο · Spa · Με σήμανση. "Χειρουργείο" is
+  greyed out until surgeries exist (Phase 4; its exact meaning is still open in SPEC §13).
+- With an empty search: **Πρόσφατα ανοιγμένοι** (the patients you opened last) and
+  "Προτεινόμενοι σήμερα" (filled once the calendar exists).
+- **Νέος ασθενής** button (the form comes in the next part).
+
+**Check it:** Ασθενείς → type a name, a phone fragment, an email, "P-4218". Click
+"Με σήμανση". Open a patient, come back with an empty search: it is under "Πρόσφατα".
+
 ## 11 Oct 2026 — Phase 2, Step 3a: New look (DESIGN.md) and roles
 
 - The app now uses the **approved design**: teal colours, the Commissioner font (served

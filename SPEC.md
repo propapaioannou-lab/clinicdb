@@ -1,6 +1,7 @@
-# Clinic Database — Specification v1.7
+# Clinic Database — Specification v1.8
 
-(v1.6 from the surgeon + decisions made in Claude Code, merged 11 Oct 2026.)
+(v1.6 from the surgeon + decisions made in Claude Code, merged 11 Oct 2026; v1.8 adds
+what is actually built and every deviation. Status per phase: `STATE.md`.)
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -67,6 +68,17 @@ services and are NOT rebuilt here.
   public key, the private key kept off the server by the owner; keeps 14 daily, 8
   weekly, 12 monthly; patients' documents encrypted once each (incremental) and checked
   nightly; status page and warning bar in the app; every run in the audit log.
+- **Built and measured (11 Oct 2026, dev laptop):**
+  - Load test of the production build with 15,600 fake patients and 10 simultaneous
+    users searching and opening records: search ~10 ms, opening a record ~30 ms, no
+    errors even at 150 requests/s. Memory: app up to ~600 MB, database ~170 MB; CPU low.
+    Recommendation for the server: ≥ 4 GB RAM free for the app stack and
+    `NODE_OPTIONS=--max-old-space-size=384` on the app container.
+  - Image builds take only the app's own files (`.dockerignore` is an allowlist), so
+    personal or secret files left in the project folder can never enter an image.
+  - The audit log is append-only at database level (the database refuses changes and
+    deletions, even from the app). The hash chain and qualified timestamps (§3b) are 8c.
+  - Fonts (Commissioner) are served from our own server: no request to Google.
 - Development on the Linux laptop; deployment to the cloud server (and replica to the mini PC) with the same containers.
 - **Server setup checklist** (Claude Code walks the surgeon through it, copy-paste):
   1. Debian 13 server install on both machines; full-disk encryption (cloud: provider
@@ -668,6 +680,10 @@ reports will be designed later from what the surgeon actually wants to know.
 Bulk SMS/email move to GHL. Prescription statistics dropped.
 
 ## 4e. Home screen and front-desk workflow (from design review)
+- **Built so far:** the home page is a simple "Σήμερα" placeholder; the role home
+  screens (1a/1b/1c/1e), greeting, live clock, ready-in-room banner and chat come in
+  6a-4/6a-5 and 6e. The daily greetings file exists (`content/greetings.el.json`);
+  editing it in Settings is not built yet.
 - **Role-based home screens.** Physician sees only clinical flow (clock, ready-in-room
   banner, today's patients, chat, own tasks) plus a **"Για έλεγχο σήμερα" (today's
   review) list**: follow-up photos waiting for review, new-patient emails/messages asking
@@ -733,6 +749,18 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   "Ραντεβού 11:30", "Κλήση 14:00", "Φωτογραφίες για έλεγχο"). Until those phases exist
   the box says it will fill in; "Πρόσφατα ανοιγμένοι" stays below it.
 - Patient selector from the calendar (built-in or GHL — **decision pending**).
+- **Built (Phase 2, steps 2–3b):** search box in the header of every screen ("/" or
+  Ctrl K; Enter = full list, ↓ Enter = open one, Esc). Results as you type (~0.05 s with
+  15,600 patients), best first: exact patient number → surnames starting with the text →
+  the rest. Name search ignores accents, capitals, word order and Greek/Greeklish
+  ("papadopoulou maria" = "Μαρία Παπαδοπούλου") and forgives small spelling mistakes;
+  phone in any format or part of it; email; AMKA; patient number ("P-4218", also when
+  typed with a Greek Ρ). **Guests** search by name or number only (no phone search,
+  never see phones). Patients page: large search showing which field matched; chips
+  Όλοι · Ιατρείο · Spa · Με σήμανση ("Χειρουργείο" greyed until Phase 4); empty search
+  shows "Προτεινόμενοι σήμερα" (fills in with Phases 4–6) and "Πρόσφατα ανοιγμένοι";
+  buttons for the research export (Guests, Owner/Admin). Every opening is in the audit
+  log. Search and lists follow the **Ιατρείο | Spa switch** (remembered per computer).
 
 ## 6. New-patient intake (guest mode)
 
@@ -805,6 +833,13 @@ contact details change:
   "Not the same person" is remembered for that pair, so the warning doesn't repeat.
 - Shared phones/emails are normal (family members, parent's phone for a minor):
   warn, never block.
+- **Built (Phase 2, step 3c):** the live check runs before saving a new patient and
+  when contact details change: strong (same AMKA, phone or email), medium (same name +
+  birth date), weak (similar name, also in Greeklish, or same first name and birthday
+  under another surname). Buttons: **"Ίδιο πρόσωπο — ενημέρωση καρτέλας"** (choose field
+  by field; new phones/emails are added to the existing record) and **"Δεν είναι ο ίδιος
+  — δημιουργία νέου ασθενή"** (remembered for that pair). Logged. The batch tool and the
+  merge screen below are **not built yet** (needed before/after the my-medical import).
 
 **Batch tool** (later, essential after the my-medical import):
 - Scans the whole database and lists likely duplicate pairs/groups, scored by
@@ -972,6 +1007,13 @@ surgeon only; every action audited.
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
 ## 11. Users and permissions
+**Built (Phase 1, steps 2–7):** levels and roles, invitations (72 h single-use links),
+generated passwords, 2FA with recovery codes, trusted devices (90 days), weekly re-login
+(Monday 05:00), suspend / reactivate / delete with the "Deleted users" record, Owners
+permanent, devices screen, **audit-log screen** (Ρυθμίσεις → Αρχείο καταγραφής: filters by
+person, type and dates; opening it is itself logged), nightly backups with status page.
+Not built yet: auto-logout after 10 min with PIN (decided, comes with 8c).
+
 
 Each user has one **level** (what they may do), one **role** (their job) and **company
 access** (Surgery, Spa, or both); a user only sees records of the companies they have
@@ -1046,6 +1088,8 @@ Admin work (users, settings, backups) comes from the level, not the role.
   activity) and trusted devices; end any session or remove trust. All logged.
 
 ## 12. Build phases
+Status of every phase and step: see **`STATE.md`** (kept up to date with each commit).
+
 
 1. Foundation — login (with 2FA), user levels & roles, invitations, companies, devices, audit log, backups (built)
 2. Patients, visits & vitals, documents, global search, Settings lists (built)
@@ -1143,3 +1187,36 @@ secretary or PA; outcomes/complications record — yes.
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`
+
+## 14. Built vs DESIGN.md — deviations (11 Oct 2026)
+Decided while building; the mockups in `design/` are not changed.
+- **Drop-down lists**: the app's own rounded list everywhere (opens downwards, closes on
+  choice, ↑ ↓ Enter Esc) instead of the browser's list, which opened upwards and looked
+  different on every computer.
+- **Dates are typed as ηη/μμ/εεεε** everywhere (birth date, documents, blocked time,
+  calendar), never with the browser's date picker, which may show month/day on an
+  English-language computer.
+- **Back links** ("← Ρυθμίσεις", "← Καρτέλα ασθενή"…) on every sub-page and form.
+- **Patient record**: the patient card opens "Όλα τα στοιχεία ▾" in place (Επεξεργασία,
+  Σήμανση, Αρχειοθέτηση there); a red **"Ελλιπή στοιχεία: …"** badge when surname, first
+  name, birth date, phone or email is missing (tap = edit); medical history never saved →
+  red "Ελλιπές" on its card and a red dot on its tab; tab counts (Επισκέψεις · n, Έγγραφα ·
+  n); tabs of later phases greyed with "σύντομα".
+- **Visit form** (DESIGN 3 extended): "Κλινική εκτίμηση" with structured examination per
+  area (findings → automatic Greek text into "Επιπλέον ευρήματα"), breast measurement
+  table + front-view breast sketch, eyelid diagram, revision and difficulty 1–10;
+  "Προεγχειρητική εκτίμηση" (was "Επεμβάσεις που συζητήθηκαν") with areas opened like the
+  evaluation, procedures narrowed to the examined areas, implant/technique details and
+  Motiva size lists; newly added sections and detail cards open on top. Vitals: weight,
+  height, BMI only. No close button for the surgeon; the secretary/PA closes after
+  payment ("Αποθήκευση & κλείσιμο").
+- **Calendar day (6a-2)**: 96 px per hour (DESIGN §6) instead of the smaller 6a–6f scale,
+  so 15′ appointments stay readable; booking requests and the WhatsApp/reminder/intake/
+  deposit switches are shown but marked "με GHL (6d)".
+- **Menu**: Ημερολόγιο active; Χειρουργεία and Εργασίες greyed ("σύντομα"); Settings
+  holds Users, Devices, Audit log, Backups, Lists, Medical history, Procedures, Calendar
+  (and Visit fees for secretary / PA only).
+- **Not yet in the new design**: login / 2FA / invitation pages and the admin screens
+  (users, devices, audit log, backups) work but keep the earlier simple layout (in the
+  same colours and font).
+

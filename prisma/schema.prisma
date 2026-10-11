@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// What a user may do inside one company.
+enum Role {
+  SURGEON
+  SECRETARY
+  SPA_STAFF
+}
+
+// A legal/business unit that owns records: "surgery" or "spa".
+model Company {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  name        String
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+}
+
+model User {
+  id               String       @id @default(cuid())
+  email            String       @unique // stored lower-case
+  name             String
+  passwordHash     String
+  // Admin is separate from company roles: manages users, devices, settings, backups.
+  isAdmin          Boolean      @default(false)
+  isActive         Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  memberships      Membership[]
+}
+
+// Which companies a user can work in, and with which role.
+model Membership {
+  userId    String
+  companyId String
+  role      Role
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Restrict)
+
+  @@id([userId, companyId])
+  @@index([companyId])
+}

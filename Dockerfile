@@ -10,7 +10,7 @@ RUN npm ci --no-audit --no-fund
 # --- development (laptop): source is mounted from the host ---
 FROM ${NODE_IMAGE} AS dev
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 PRISMA_HIDE_UPDATE_MESSAGE=1
 COPY --from=deps /app/node_modules ./node_modules
 EXPOSE 3000
 CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
@@ -18,7 +18,7 @@ CMD ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
 # --- production build ---
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1 PRISMA_HIDE_UPDATE_MESSAGE=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

@@ -140,8 +140,14 @@ existing patient if one exists, then accept.
 - Spa staff: Spa company only
 - Admin: users, settings, backups
 
-Login: password + 2FA (authenticator app) with one-time recovery codes, required for
-all users. No automatic logout on inactivity (decided 11 Oct 2026).
+Login and sessions (decided 11 Oct 2026):
+- Password + 2FA (authenticator app) with one-time recovery codes.
+- **Trusted devices:** after a successful 2FA login the user may tick "Trust this
+  device". That device skips the 2FA code (password still required) for 90 days.
+- **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
+- No automatic logout on inactivity.
+- **Admin devices screen:** per user, see logged-in devices (browser, IP, last
+  activity) and trusted devices; end any session or remove trust. All logged.
 
 ## 12. Build phases
 

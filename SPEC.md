@@ -140,7 +140,7 @@ only sees records of the companies they have access to.
 
 | Level | Can do |
 |---|---|
-| **Owner** | Everything. Only an Owner can make someone Owner; nobody else can change or remove an Owner. |
+| **Owner** | Everything. Only an Owner can make someone Owner or edit an Owner. **An Owner can never be deleted, deactivated or demoted in the app — not even by another Owner** (only by a deliberate command on the server). |
 | **Admin** | Everything a User can, plus: invite users, set levels (up to Admin) and company access, manage devices, settings, backups. |
 | **User** | Day-to-day work: full patient records (including clinical notes) in their companies. Secretary and spa staff are Users. |
 | **Guest** | Research (e.g. a medical student). **Read-only.** Sees clinical data, patient name, age (not date of birth) and photos. **Never** sees contact details (phones, emails, address) or AMKA/ΑΦΜ. Account has a mandatory **end date**. Every view logged. |

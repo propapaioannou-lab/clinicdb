@@ -2,6 +2,12 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Owners are permanent
+
+- An Owner can never be deleted, deactivated or demoted from the app, not even by
+  another Owner. Removing an Owner will only be possible by a deliberate command on
+  the server. Rule built in and tested.
+
 ## 11 Oct 2026 — User levels: Owner, Admin, User, Guest
 
 - Each person now has one **level** (Owner, Admin, User, Guest) and **company access**

@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { canAssignLevel, canManageUser, canManageUsers, hasExpired, isReadOnly } from "./permissions";
+import {
+  canAssignLevel,
+  canChangeLevel,
+  canManageUser,
+  canManageUsers,
+  canRemoveUser,
+  hasExpired,
+  isReadOnly,
+} from "./permissions";
 
 describe("permissions", () => {
   it("lets only Owner and Admin manage users", () => {
@@ -22,6 +30,23 @@ describe("permissions", () => {
     expect(canManageUser("ADMIN", "ADMIN")).toBe(true);
     expect(canManageUser("OWNER", "OWNER")).toBe(true);
     expect(canManageUser("USER", "GUEST")).toBe(false);
+  });
+
+  it("never lets anyone remove or demote an Owner, not even an Owner", () => {
+    expect(canRemoveUser("OWNER", "OWNER")).toBe(false);
+    expect(canRemoveUser("ADMIN", "OWNER")).toBe(false);
+    expect(canChangeLevel("OWNER", "OWNER", "ADMIN")).toBe(false);
+    expect(canChangeLevel("OWNER", "OWNER", "GUEST")).toBe(false);
+  });
+
+  it("lets Owner and Admin remove and re-level everyone else", () => {
+    expect(canRemoveUser("OWNER", "ADMIN")).toBe(true);
+    expect(canRemoveUser("ADMIN", "ADMIN")).toBe(true);
+    expect(canRemoveUser("ADMIN", "GUEST")).toBe(true);
+    expect(canRemoveUser("USER", "GUEST")).toBe(false);
+    expect(canChangeLevel("OWNER", "ADMIN", "OWNER")).toBe(true);
+    expect(canChangeLevel("ADMIN", "USER", "ADMIN")).toBe(true);
+    expect(canChangeLevel("ADMIN", "USER", "OWNER")).toBe(false);
   });
 
   it("makes Guests read-only and expires them on their end date", () => {

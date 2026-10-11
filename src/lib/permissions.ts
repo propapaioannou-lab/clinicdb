@@ -15,10 +15,21 @@ export function canAssignLevel(actor: Level, level: Level): boolean {
   return false;
 }
 
-// Nobody below Owner may change or remove an Owner.
+// Editing details (name, company access). Nobody below Owner may edit an Owner.
 export function canManageUser(actor: Level, target: Level): boolean {
   if (!canManageUsers(actor)) return false;
   return target !== "OWNER" || actor === "OWNER";
+}
+
+// Deleting or deactivating. Owners can never be removed in the app, not even by an Owner.
+export function canRemoveUser(actor: Level, target: Level): boolean {
+  return canManageUsers(actor) && target !== "OWNER";
+}
+
+// Demoting an Owner counts as removing one, so it is not allowed either.
+export function canChangeLevel(actor: Level, target: Level, newLevel: Level): boolean {
+  if (target === "OWNER" && newLevel !== "OWNER") return false;
+  return canManageUser(actor, target) && canAssignLevel(actor, newLevel);
 }
 
 export function isReadOnly(level: Level): boolean {

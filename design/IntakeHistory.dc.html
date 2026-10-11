@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Φόρμα εισόδου – πλήρες ιστορικό</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+input::placeholder{color:#6B7178}
+</style>
+</helmet>
+<div style="width: 800px; min-height: 2600px; box-sizing: border-box; font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #FBFAF8; display: flex; flex-direction: column">
+  <header style="display: flex; align-items: center; gap: 14px; padding: 20px 36px; border-bottom: 1px solid #E4E2DC; background: #FFFFFF">
+    <div style="flex: 1; display: flex; flex-direction: column">
+      <span style="font-size: 13px; color: #5B636B">Βήμα 2 από 4 · Ιατρικό ιστορικό</span>
+      <span style="font-size: 22px; font-weight: 600">Ιστορικό υγείας</span>
+    </div>
+    <span style="font-size: 14px; font-weight: 600; color: #0E5E63; background: #E6F0EF; border-radius: 999px; padding: 6px 12px">{{progress}}</span>
+  </header>
+
+  <main style="flex: 1; padding: 22px 36px 28px; display: flex; flex-direction: column; gap: 18px">
+    <p style="margin: 0; font-size: 16px; color: #3B4249; line-height: 1.5">Απαντήστε σε κάθε ερώτηση με Ναι ή Όχι. Όταν απαντάτε Ναι, γράψτε λίγες λεπτομέρειες. Ο ιατρός ή η νοσηλεύτρια θα τις ελέγξει μαζί σας.</p>
+
+    <sc-for list="{{sections}}" as="s" hint-placeholder-count="6">
+      <fieldset style="border: 1px solid #E4E2DC; border-radius: 16px; background: #FFFFFF; margin: 0; padding: 14px 18px 8px">
+        <legend style="font-size: 18px; font-weight: 600; padding: 0 6px">{{s.title}}</legend>
+        <sc-for list="{{s.items}}" as="q" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0; border-bottom: 1px solid #F1F0EC">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="flex: 1; font-size: 16px">{{q.label}}</span>
+              <div role="radiogroup" aria-label="{{q.label}}" style="display: flex; gap: 8px">
+                <button role="radio" aria-checked="{{q.yesChecked}}" onClick="{{q.yes}}" style="width: 76px; height: 46px; border-radius: 11px; font: inherit; font-size: 16px; cursor: pointer; {{q.yesStyle}}">Ναι</button>
+                <button role="radio" aria-checked="{{q.noChecked}}" onClick="{{q.no}}" style="width: 76px; height: 46px; border-radius: 11px; font: inherit; font-size: 16px; cursor: pointer; {{q.noStyle}}">Όχι</button>
+              </div>
+            </div>
+            <sc-if value="{{q.isYes}}" hint-placeholder-val="{{false}}">
+              <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #3B4249">{{q.detail}}
+                <input placeholder="{{q.placeholder}}" style="height: 50px; border: 1px solid #DAD8D1; border-radius: 11px; padding: 0 14px; font: inherit; font-size: 16px; color: #1C2024">
+              </label>
+            </sc-if>
+          </div>
+        </sc-for>
+      </fieldset>
+    </sc-for>
+
+    <fieldset style="border: 1px solid #E4E2DC; border-radius: 16px; background: #FFFFFF; margin: 0; padding: 14px 18px 16px; display: flex; flex-direction: column; gap: 10px">
+      <legend style="font-size: 18px; font-weight: 600; padding: 0 6px">Προηγούμενα χειρουργεία</legend>
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; font-size: 13px; color: #5B636B"><span>Επέμβαση</span><span>Έτος</span><span>Επιπλοκές</span></div>
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px">
+        <input value="Καισαρική τομή" aria-label="Επέμβαση" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 15px">
+        <input value="2019" aria-label="Έτος" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 15px">
+        <input value="Όχι" aria-label="Επιπλοκές" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 15px">
+      </div>
+      <button style="align-self: flex-start; height: 44px; padding: 0 16px; border-radius: 10px; border: 1px dashed #9DBDBA; background: #F5F9F9; font: inherit; font-size: 15px; font-weight: 600; color: #0E5E63; cursor: pointer">+ Προσθήκη χειρουργείου</button>
+    </fieldset>
+  </main>
+
+  <footer style="display: flex; gap: 14px; padding: 20px 36px 28px; border-top: 1px solid #E4E2DC; background: #FFFFFF">
+    <button style="height: 60px; padding: 0 28px; border-radius: 14px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 17px; font-weight: 500; color: #2C3238; cursor: pointer">Πίσω</button>
+    <button style="flex: 1; height: 60px; border-radius: 14px; border: 0; background: #0E5E63; font: inherit; font-size: 18px; font-weight: 600; color: #FFFFFF; cursor: pointer">Συνέχεια στις συγκαταθέσεις</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":800,"height":2600}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ans: { hyper: 'yes', herpes: 'yes', alcohol: 'yes' } }; }
+  renderVals() {
+    var self = this;
+    var defs = [
+      ['Καρδιά και κυκλοφορικό', [['hyper', 'Υπέρταση', 'Φάρμακα και τιμές', 'π.χ. Amlodipine 5 mg'], ['heart', 'Καρδιοπάθεια, αρρυθμία, βαλβίδες, βηματοδότης', 'Ποια;', ''], ['clot', 'Θρόμβωση ή πνευμονική εμβολή (εσείς ή συγγενείς)', 'Πότε και ποιος;', ''], ['varic', 'Κιρσοί', 'Πού;', '']]],
+      ['Πνεύμονες', [['asthma', 'Άσθμα ή χρόνια βρογχίτιδα (ΧΑΠ)', 'Φάρμακα;', ''], ['apnea', 'Άπνοια ύπνου / ροχαλητό', 'Χρησιμοποιείτε CPAP;', '']]],
+      ['Αίμα και πήξη', [['bleed', 'Εύκολοι μώλωπες ή παρατεταμένη αιμορραγία', 'Περιγράψτε', ''], ['anticoag', 'Αντιπηκτικά ή ασπιρίνη', 'Ποιο και δόση', ''], ['anemia', 'Αναιμία ή μεσογειακή αναιμία (στίγμα)', 'Ποια;', '']]],
+      ['Στομάχι, ήπαρ, νεφροί', [['gi', 'Γαστρίτιδα, έλκος, παλινδρόμηση', 'Περιγράψτε', ''], ['liver', 'Παθήσεις ήπατος', 'Ποια;', ''], ['kidney', 'Παθήσεις νεφρών', 'Ποια;', '']]],
+      ['Νευρικό σύστημα και ψυχική υγεία', [['neuro', 'Επιληψία, εγκεφαλικό, ημικρανίες', 'Ποια;', ''], ['mental', 'Κατάθλιψη, άγχος ή άλλη ψυχική πάθηση (με ή χωρίς θεραπεία)', 'Θεραπεία;', '']]],
+      ['Ενδοκρινικό', [['diab', 'Σακχαρώδης διαβήτης', 'Τύπος και θεραπεία', ''], ['thyroid', 'Θυρεοειδής', 'Ποια πάθηση και θεραπεία', ''], ['hormone', 'Ορμονοθεραπεία ή αντισύλληψη', 'Ποια;', '']]],
+      ['Λοιμώξεις', [['hiv', 'HIV', 'Θεραπεία / ιικό φορτίο', ''], ['hepb', 'Ηπατίτιδα B', 'Λεπτομέρειες', ''], ['hepc', 'Ηπατίτιδα C', 'Λεπτομέρειες', ''], ['herpes', 'Έρπης (επιχείλιος ή άλλος)', 'Πόσο συχνά;', 'π.χ. 2 φορές τον χρόνο'], ['otherinf', 'Άλλη μεταδοτική λοίμωξη', 'Ποια;', '']]],
+      ['Συνήθειες', [['alcohol', 'Αλκοόλ', 'Πόσα ποτά την εβδομάδα;', 'π.χ. 4'], ['drugs', 'Χρήση ουσιών', 'Ποιες και πόσο συχνά; (εμπιστευτικό)', ''], ['glp', 'Φάρμακα αδυνατίσματος (π.χ. Ozempic, Mounjaro)', 'Ποιο και από πότε;', ''], ['iso', 'Ισοτρετινοΐνη (Roaccutane) τους τελευταίους 12 μήνες', 'Πότε σταμάτησε;', '']]],
+      ['Επούλωση και αναισθησία', [['keloid', 'Παχιές ή χηλοειδείς ουλές', 'Πού;', ''], ['anaest', 'Πρόβλημα με αναισθησία (εσείς ή συγγενείς)', 'Περιγράψτε', ''], ['latex', 'Αλλεργία σε λάτεξ, ταινίες ή αντισηπτικά', 'Σε τι;', '']]],
+      ['Γυναικολογικά', [['preg', 'Πιθανή εγκυμοσύνη ή θηλασμός', 'Λεπτομέρειες', ''], ['futurepreg', 'Σχέδια για εγκυμοσύνη στο μέλλον', 'Πότε περίπου;', '']]]
+    ];
+    var ans = this.state.ans;
+    var answered = 0, total = 0;
+    var yesOn = 'border:2px solid #0E5E63;background:#E6F0EF;color:#0E5E63;font-weight:600';
+    var noOn = 'border:2px solid #3B4249;background:#F1F0EC;color:#1C2024;font-weight:600';
+    var off = 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238;font-weight:400';
+    var sections = defs.map(function (d) {
+      return { title: d[0], items: d[1].map(function (q) {
+        total++;
+        var a = ans[q[0]];
+        if (a) answered++;
+        function set(v) { return function () { var n = Object.assign({}, self.state.ans); n[q[0]] = v; self.setState({ ans: n }); }; }
+        return { label: q[1], detail: q[2], placeholder: q[3], isYes: a === 'yes',
+          yesChecked: a === 'yes' ? 'true' : 'false', noChecked: a === 'no' ? 'true' : 'false',
+          yesStyle: a === 'yes' ? yesOn : off, noStyle: a === 'no' ? noOn : off,
+          yes: set('yes'), no: set('no') };
+      }) };
+    });
+    return { sections: sections, progress: answered + ' / ' + total + ' απαντήθηκαν' };
+  }
+}
+</script>
+</body>
+</html>

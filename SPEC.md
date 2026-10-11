@@ -1,7 +1,8 @@
-# Clinic Database — Specification v0.8
+# Clinic Database — Specification v0.9
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
+Screens and look: `DESIGN.md` + reference mockups in `design/` (approved 11 Oct 2026).
 
 ## 1. Goal
 
@@ -43,7 +44,7 @@ services and are NOT rebuilt here.
 - **Patient number** — primary identifier, unique within each company. Patients imported
   from my-medical keep their my-medical number; new patients get the next number after
   the highest. After the import, the duplicate batch tool (§6b) checks names.
-  (Decided 11 Oct 2026.)
+  (Decided 11 Oct 2026.) Shown as in the design: `P-004218` (Spa: `S-000123`).
 - Surname (required), name, father's name
 - Marital status (list), referral / "Σύσταση" (who referred)
   (my-medical's "Κατηγορία" dropped — never used)
@@ -63,7 +64,7 @@ services and are NOT rebuilt here.
 - Newsletter / marketing consent (checkbox → becomes part of §7 consents)
 - Infectious diseases (ΜΟΛΥΣΜΑΤΙΚΑ) — free text, shown as an alert on the patient header
 - Profile photo (upload or tablet camera)
-- Treating doctor — chosen from app users marked "Doctor"
+- Treating doctor — chosen from app users whose role is Surgeon (§11)
 - Comments
 - **Patient flag** (replaces my-medical "Κριτική"): none / 🟡 yellow / 🔴 red, with
   reason(s) from an editable list (bargained for discount, no-show, came late, …),
@@ -91,14 +92,60 @@ services and are NOT rebuilt here.
   children/breastfeeding, chronic medication, comments
 - Note: my-medical asks some things twice (smoking, children, breastfeeding,
   medication, previous surgeries) — merge into one question each.
+- Smoking: yes/no/former; if yes → per day (0–5 · 5–20 · >20) and product
+  (cigarette · e-cigarette · heated tobacco).
 - Same questions appear in the patient intake form (§6) so patients fill them in
   themselves; the surgeon reviews.
+- **Structured questionnaire** (gather as much as possible; reference
+  `design/IntakeHistory.dc.html`). Each question = Yes/No + detail text when Yes;
+  questions live in a list editable in Settings (key, label GR/EN, detail prompt,
+  section, order), so new ones need no code change. Seed sections and keys:
+  - Heart & circulation: `hyper` hypertension, `heart` heart disease/arrhythmia/
+    valves/pacemaker, `clot` thrombosis/PE (self or relatives), `varic` varicose veins
+  - Lungs: `asthma` asthma/COPD, `apnea` sleep apnoea/snoring (CPAP?)
+  - Blood & clotting: `bleed` easy bruising/prolonged bleeding, `anticoag`
+    anticoagulants/aspirin, `anemia` anaemia/thalassaemia trait
+  - Stomach, liver, kidneys: `gi`, `liver`, `kidney`
+  - Nervous system & mental health: `neuro` epilepsy/stroke/migraine, `mental`
+    depression/anxiety/other (treated or not)
+  - Endocrine: `diab` diabetes (type, treatment), `thyroid`, `hormone` hormone
+    therapy/contraception
+  - Infections: `hiv`, `hepb`, `hepc`, `herpes` (how often), `otherinf`
+  - Habits: `alcohol` (drinks/week), `drugs` substance use (marked confidential),
+    `glp` weight-loss drugs (Ozempic/Mounjaro…), `iso` isotretinoin in last 12 months
+  - Healing & anaesthesia: `keloid`, `anaest` anaesthesia problems (self/relatives),
+    `latex` latex/tape/antiseptic allergy
+  - Gynaecological: `preg` possible pregnancy/breastfeeding, `futurepreg` future plans
+  - Plus medication, allergies, smoking, weight/max weight/height (step 2a) and a
+    **previous surgeries table** (procedure, year, complications; add rows).
+- Any Yes in Infections also fills the "Infectious diseases" alert on the patient
+  header (§4) — after verification.
+- **Verification** (required): patient-entered history is marked "Pending
+  verification" until a physician or PA/nurse reviews it with the patient and presses
+  "Verify ✓". Stored: verified by (user + role), date/time, and a snapshot/version of
+  the answers verified. Staff may correct answers while verifying (each change
+  audited, original patient answer kept). Any later patient update (e.g. "update your
+  history" link) resets the status to pending. Shown on the medical-history widget of
+  the patient record.
 
 ### Visit
 - Date/time, type from an editable list (e.g. ΠΡΟΕΓΧΕΙΡΗΤΙΚΗ ΕΚΤΙΜΗΣΗ, consultation,
   follow-up, post-op…)
-- Diagnosis
-- **Free-text notes** (main content)
+- Diagnosis / comment (free text)
+- **Procedures discussed**: picker by area (Face · Breast · Body · Genital · Other),
+  multi-select across areas; list editable in Settings. Procedures can have
+  sub-options shown when selected, e.g. Facelift (deep plane, deep neck, temporal
+  MORE, nanofat, eyelids, mini lift, midface, endoscopic brow, forehead lift, SMG
+  reduction, platysmaplasty, fat); Rhinoplasty (open/closed/preservation, revision,
+  septoplasty, spreader, septal extension, columellar strut, alar rim, diced cartilage,
+  rib/ear cartilage, osteotomies, base reduction, turbinates) — also a checklist beside
+  the rhino sketch; upper/lower blepharoplasty variants; FFS and facial implant
+  components. Face list includes Bichat reduction and lip lift. Drives consent templates,
+  planning-sketch template and the AI consultation checklist.
+- **Clinical evaluation** (main content): "General / patient's request" free text +
+  one section per area of interest (Breast, Face, Body, Nose, Genital, Other), added
+  and removed as needed, several per visit. Each section: reminder chips of what to
+  examine (editable in Settings) + free text. AI transcript fills these sections.
 - Money per visit: fee, amount collected → patient totals: fees, collected, balance
   (as in my-medical)
 - **Vitals / measurements on every visit:** weight (required prompt), height,
@@ -124,13 +171,41 @@ New in our app:
 - Status: proposed → booked → done
 - Linked: specific consent (§7), surgical brief (§8), photos
 
+### Treatment (repeated, non-surgical) — kept separate from Surgery
+- Botox, fillers, lasers, skin treatments; Surgery and Spa both record them
+- Date, treatment type, product + lot number, areas, units/ml, performed by, company
+- Next-due date (e.g. botox ~3 months) → reminder to patient via GHL and on screen
+- Packages/courses: sessions used / remaining
+- Own tab "Θεραπείες" in the patient record; not mixed into the surgery timeline
+
 ### Receipts (view only in our app, issued through myDATA provider later)
 my-medical shows: series, number, created date, description, total amount,
 document type (e.g. ΑΠΥ). Imported history kept read-only.
 
-### Drawings (Σχέδιο)
-my-medical has a dated drawings tab. To keep: sketch on a body diagram (tablet/pen),
-saved by date, attachable to a visit or surgery.
+### Drawings / surgical planning (Σχέδιο)
+- On the visit screen: "Surgical planning" panel appears automatically only when a
+  surgical procedure is selected; templates follow the selected procedures (breast,
+  rhinoplasty, face; more later), one tab per relevant template.
+- **Body template**: full-body front + back sketch including head/face (submental
+  lipo), zones marked; for liposuction, lipoedema, abdominoplasty (full/mini/lipo-),
+  thigh, arm, back, buttock lift, BBL, body lift, gynaecomastia lipo, submental lipo.
+  Measurements: weight/max, waist/hip, rectus diastasis, pinch, laxity grades,
+  estimated lipo volume, hernia/scars.
+- **Unified breast worksheet** (sketch + form) for augmentation, lift, aug-mastopexy,
+  reduction, reconstruction, revision, top surgery, inverted nipple, tuberous breast,
+  deformities. Measurements R/L (SN–N, N–midline, N–IMF relaxed/stretched, base width,
+  pinch upper pole/IMF, skin stretch, areola); classification (Regnault, asymmetry,
+  tuberous type, nipple inversion grade, Baker, skin quality); conditional groups
+  (existing implants for revision; oncological history for reconstruction); plan
+  (incision, pocket, implant, resection pattern, pedicle, new NAC position/IMF, free
+  nipple graft). Values flow to surgery record, procedure consent and clinic brief.
+- Pen input (digitizer/tablet pen): pen, eraser, colours, undo, draw over a photo.
+  Saved with the visit and linked to the surgery (shown in surgery-day view).
+- Measurement fields per template, right/left (e.g. SN–nipple, nipple–IMF, base width;
+  nasal length, tip projection, nasolabial/nasofrontal angles).
+- Templates are our own generic outlines; society worksheets only if licence allows.
+- Virtual simulation button: from visit photos via an external simulation system
+  (Crisalix / Vectra / other) — **decision pending**; results saved to photos.
 
 ### Prescriptions & referrals (history only)
 my-medical is connected to ΗΔΙΚΑ (prescriptions, referrals/παραπεμπτικά). Our app
@@ -151,8 +226,12 @@ to the ΗΔΙΚΑ portal.
 ## 4b. Patient screen layout (inherited from my-medical, to modernize)
 Header: patient name, age (auto from birth date), AMKA, flag, infectious-disease alert.
 Quick actions: print, email, reminder/to-do, edit.
-Sections: Basic info · Medical history (Αναμνηστικό) · Visits · Files · Prescriptions
-(link out to ΗΔΙΚΑ) · Surgeries · Receipts · Drawings.
+Tabs (from design review), each with a count: Overview · Medical history · Visits ·
+Surgeries · Treatments · Photos (total count) · Financial · Documents.
+Financial tab: totals (charged / paid / pending + due date), every movement with
+payment method, receipt issued via **Epsilon Net** with myDATA ΜΑΡΚ shown; actions
+"New charge" and "Collect & issue receipt". (myDATA provider = Epsilon Net.)
+Prescriptions link out to ΗΔΙΚΑ; drawings live under Visits/Surgeries.
 (my-medical's "Σημειώσεις" tab dropped — never used.)
 Also from my-medical: a global To-Do list with reminders (bell with counter).
 
@@ -171,9 +250,44 @@ None of my-medical's statistics work in practice, so nothing is inherited. Our o
 reports will be designed later from what the surgeon actually wants to know.
 Bulk SMS/email move to GHL. Prescription statistics dropped.
 
+## 4e. Home screen and front-desk workflow (from design review)
+- **Role-based home screens.** Physician sees only clinical flow (clock, ready-in-room
+  banner, today's patients, chat, own tasks). PA/nurse home: room board (waiting /
+  room 1 / room 2) with "ready → notify doctor", today's schedule with confirmation,
+  form and payment status, to-dos (intake forms, duplicates, patient messages,
+  unconfirmed bookings), surgery checklists with send/remind actions, chat with doctor.
+- Physician switches via the left menu: "Ιατρείο" (appointments) and "Χειρουργεία"
+  (operations); both open on today with ‹ › day navigation. No separate toggle.
+  Office view: today's appointments.
+  Surgery mode: today's operations only, full width (no chat, tasks or upcoming list);
+  "ready in OR" still arrives as a banner. The "Surgeries" menu opens this same view:
+  starts on today, ‹ › for previous/next day, "Today" button to jump back.
+- Live clock (with seconds) + next-appointment countdown; amber ≤5 min, red "late X min".
+- Patient status flow: Αναμένεται → Στην αναμονή → Έτοιμος · Δωμάτιο X → Ολοκληρώθηκε.
+  The assistant marks "ready in room X" from her screen/phone → surgeon gets a banner,
+  sound and optional phone push. Same for "ready in operating room" in surgery mode.
+- Online video consultations: appointment type "Online"; "Start call" button in today's
+  list; link sent to the patient via GHL (WhatsApp/email); call opens beside the visit
+  notes (recording consent rules apply). Video service must be self-hosted (e.g. Jitsi)
+  or an EU provider with a DPA — **decision pending**.
+
+- Surgery mode card per operation: plan snippet, pre-op photo thumbnails, readiness
+  light — green = all done; orange = secondary item missing; red = crucial item missing.
+  Default crucial: consent, blood work, pre-op clearance. Secondary: deposit, photos,
+  brief sent to clinic. Configurable in Settings (deposit classification TBC).
+- Mobile-first: every screen usable on a phone (surgeon between operations). Phone
+  layout: bottom bar (Today, Search, Chat, Calendar), cards that expand on tap.
+- Internal staff chat on the home screen: live messages between surgeon, assistant and
+  front desk, with one-tap preset messages editable in Settings (e.g. "send next
+  patient", "running 10 min late", "come to room 1"). Runs on our own server only.
+
 ## 5. Finding a patient
 
 - Global search bar on every screen: name, surname, phone, email, AMKA, ID.
+- "Patients" menu page: large search (accent/space-insensitive, shows which field
+  matched); when empty, shows "Suggested today" (patients with appointments or
+  surgeries today) and "Recently opened"; filters: all, practice, spa, flagged,
+  surgery within 30 days.
 - Patient selector from the calendar (built-in or GHL — **decision pending**).
 
 ## 6. New-patient intake (guest mode)
@@ -199,7 +313,9 @@ existing patient if one exists, then accept.
 - Remote link: single-use, 72 h expiry, save-and-continue; written to the patient's
   GHL contact; a GHL workflow sends it (WhatsApp/email).
 - Form: personal details, reason for visit, how they heard about us, medical history
-  (patient-friendly, conditional detail boxes, current/max weight, height),
+  (patient-friendly, conditional detail boxes, current/max weight, height; step 2a =
+  medication/allergies/smoking/weight, step 2b = full questionnaire of §4 with
+  progress "x / y answered"),
   first-contact consents with finger signature. Greek/English.
 - Under-18 → parent/guardian details and signature required.
 - Returning patients: "update your history" link (same mechanism), e.g. before surgery.
@@ -377,8 +493,9 @@ surgeon only; every action audited.
 
 ## 11. Users and permissions
 
-Each user has one **level** and **company access** (Surgery, Spa, or both); a user
-only sees records of the companies they have access to.
+Each user has one **level** (what they may do), one **role** (their job) and **company
+access** (Surgery, Spa, or both); a user only sees records of the companies they have
+access to.
 
 | Level | Can do |
 |---|---|
@@ -393,8 +510,21 @@ contact details, address, AMKA/ΑΦΜ or date of birth (age only); patients appe
 research code, not their patient number. Every export logged. Free-text notes may still
 contain identifying details — the guest's confidentiality agreement (§13) covers this.
 
+### Roles (decided 11 Oct 2026: role is separate from level)
+The role decides the home screen (§4e, DESIGN.md), who may verify medical history,
+and who appears as treating doctor. It does not add permissions beyond the level.
+- **Surgeon**: physician home (Ιατρείο / Χειρουργεία); treating doctor; verifies history;
+  signs off operative notes.
+- **PA / nurse**: PA/nurse home (room board, checklists, intake review, chat); clinical
+  read and write; verifies medical history; not sign-off of operative notes.
+- **Secretary**: access to everything in their companies (decided Phase 1, confirmed
+  11 Oct 2026); own home screen designed later (uses PA/nurse home until then).
+- **Spa staff**: usually Spa company only.
+- **Other** (e.g. research guest, IT).
+Admin work (users, settings, backups) comes from the level, not the role.
+
 ### New users (invitation)
-- Only Owner and Admin create users: enter name, email, level, company access
+- Only Owner and Admin create users: enter name, email, level, role, company access
   (and end date for Guests). The app emails an **invitation link**.
 - The link is single-use, expires after **72 hours**, contains no personal data, and
   can be re-sent (the old link stops working). It opens only over Tailscale, so the
@@ -425,6 +555,10 @@ contain identifying details — the guest's confidentiality agreement (§13) cov
 
 1. Foundation — login (with 2FA), user levels & invitations, companies, devices, audit log, backups
 2. Patients, visits & vitals, documents, global search
+2b. **UI refit** — apply `DESIGN.md` to everything already built (app shell + left
+   menu, patients page, patient record, new visit) before starting Phase 3. Screens
+   whose features belong to later phases are built when their phase comes, already
+   in the new design (see DESIGN.md "Screen → phase").
 3. Intake: guest/tablet mode, QR, remote link, first-contact consents
 4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
 5. Photo browser (Synology folders)
@@ -435,15 +569,20 @@ contain identifying details — the guest's confidentiality agreement (§13) cov
 
 ## 13. Open decisions
 
-- Calendar: built-in vs GHL
+- Calendar: built-in vs GHL (calendar screen and secretary view to be designed later)
+- Is the deposit a crucial (red) or secondary (orange) readiness item?
+- Should "medical history verified" be a crucial readiness item for surgery?
+  (suggested: yes)
+- Patients-page filter "Surgery": surgery within 30 days, or any surgical patient?
+- Breast reconstruction consent: one form, or split by sub-type first?
 - AI: local vs API provider
 - Off-site backup destination (needed by deployment)
-- Exact patient fields (my-medical screenshots)
-- Photo folder structure on the Synology today
-- Legal check: e-signatures for surgical consent; consent wording
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
+- Exact patient fields (my-medical screenshots)
+- Photo folder structure on the Synology today
+- Legal check: e-signatures for surgical consent; consent wording
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry
 - Whether `neck_lift` becomes its own procedure or stays within `facelift`

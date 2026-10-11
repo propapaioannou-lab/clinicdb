@@ -10,11 +10,15 @@ must run something. Show him how to test each feature in the browser.
 `SPEC.md` in this folder. Read it before starting any work. Build in the phase order
 of SPEC §12; do not start a phase until the previous one works and he has tested it.
 If a request conflicts with SPEC, say so and ask whether to update SPEC.
+`DESIGN.md` + mockups in `design/` = how every screen looks (approved by him). Build
+UI to match them; follow its "Screen → phase" table. Use its colour/font tokens only —
+no other UI kit look.
 
 ## Stack
 - Next.js (App Router, TypeScript), PostgreSQL, Prisma, Tailwind
 - Docker + docker compose for everything (dev on Linux laptop, prod on Synology DS224+)
 - Keep dependencies few and well known.
+- UI: Tailwind with the tokens in DESIGN.md; small own components (no heavy UI kit).
 
 ## Non-negotiable rules
 - Health data is GDPR special-category data. Never send clinical data to GHL or any

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Χειρουργεία σήμερα – κινητό</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+</style>
+</helmet>
+<div style="width: 390px; height: 1180px; box-sizing: border-box; font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; display: flex; flex-direction: column">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E4E2DC; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 13px; color: #5B636B">{{dateLabel}}</span>
+        <span style="font-size: 20px; font-weight: 600">Χειρουργεία σήμερα</span>
+      </div>
+      <span role="timer" aria-label="Τρέχουσα ώρα" style="font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums">{{clock}}</span>
+    </div>
+    <div style="display: flex; gap: 8px; font-size: 13px">
+      <span style="flex: 1; text-align: center; padding: 6px 0; border-radius: 8px; background: #E3F1EA; color: #1E6B45; font-weight: 600">1 έτοιμο</span>
+      <span style="flex: 1; text-align: center; padding: 6px 0; border-radius: 8px; background: #FCF1E3; color: #8A4B08; font-weight: 600">1 δευτερεύον</span>
+      <span style="flex: 1; text-align: center; padding: 6px 0; border-radius: 8px; background: #FBE9E7; color: #8C1D18; font-weight: 600">1 κρίσιμο</span>
+    </div>
+  </header>
+
+  <main style="flex: 1; overflow: hidden; padding: 14px 12px; display: flex; flex-direction: column; gap: 12px">
+    <div role="status" style="display: flex; align-items: center; gap: 10px; background: #0E5E63; color: #FFFFFF; border-radius: 14px; padding: 12px 14px">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 003.4 0"></path></svg>
+      <span style="flex: 1; font-size: 14.5px; font-weight: 600">Κατερίνα Π. έτοιμη · Αίθουσα 2</span>
+    </div>
+
+    <sc-for list="{{ops}}" as="o" hint-placeholder-count="3">
+      <article style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden; box-shadow: inset 0 4px 0 {{o.color}}">
+        <button aria-expanded="{{o.expanded}}" onClick="{{o.toggle}}" style="width: 100%; display: flex; align-items: flex-start; gap: 12px; padding: 16px 14px 12px; border: 0; background: transparent; font: inherit; color: #1C2024; text-align: left; cursor: pointer">
+          <span role="img" aria-label="{{o.readyLabel}}" style="width: 40px; height: 40px; border-radius: 999px; flex: none; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 700; font-size: 18px; background: {{o.color}}">{{o.mark}}</span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+            <span style="display: flex; justify-content: space-between; gap: 8px">
+              <span style="font-size: 16px; font-weight: 600">{{o.name}}</span>
+              <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums">{{o.time}}</span>
+            </span>
+            <span style="font-size: 13.5px; color: #3B4249; line-height: 1.4">{{o.proc}}</span>
+            <span style="font-size: 13px; font-weight: 600; color: #8C1D18">{{o.alert}}</span>
+            <span style="font-size: 12.5px; {{o.missingStyle}}">{{o.missing}}</span>
+          </span>
+        </button>
+        <sc-if value="{{o.open}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 14px 14px">
+            <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #3B4249; background: #F8F7F4; border-radius: 10px; padding: 10px 12px"><span style="font-weight: 600; color: #1C2024">Πλάνο: </span>{{o.plan}}</p>
+            <div style="display: flex; gap: 8px">
+              <sc-for list="{{o.photos}}" as="ph" hint-placeholder-count="2">
+                <span style="flex: 1; height: 120px; border-radius: 10px; background: #E9E6DF; border: 1px solid #DDD9D0; display: flex; align-items: flex-end; justify-content: center; font-size: 12px; color: #5B636B; padding-bottom: 6px; box-sizing: border-box">{{ph}}</span>
+              </sc-for>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{o.checks}}" as="c" hint-placeholder-count="6">
+                <span style="font-size: 12.5px; font-weight: 600; border-radius: 8px; padding: 7px 9px; {{c.style}}">{{c.mark}} {{c.label}}</span>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <a href="Patient.dc.html" style="flex: 1; height: 46px; border-radius: 11px; border: 1px solid #DAD8D1; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #1C2024">Καρτέλα</a>
+              <button style="flex: 1; height: 46px; border-radius: 11px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Πρακτικό</button>
+            </div>
+          </div>
+        </sc-if>
+      </article>
+    </sc-for>
+  </main>
+
+  <nav aria-label="Κύριο μενού" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #E4E2DC; padding: 6px 4px 18px">
+    <a href="#" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11.5px; font-weight: 600; color: #0E5E63">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4l5.5 5.5-9 9H5.5V13z"></path><path d="M12.5 6l5.5 5.5"></path></svg>Χειρουργεία</a>
+    <a href="Patient.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11.5px; color: #3B4249">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>Αναζήτηση</a>
+    <a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11.5px; color: #3B4249">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>Συνομιλία</a>
+    <a href="Main.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11.5px; color: #3B4249">
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M9 21v-4h6v4M8 7h2M14 7h2M8 11h2M14 11h2"></path></svg>Ιατρείο</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { open: 0, now: new Date() }; }
+  componentDidMount() { var self = this; this.timer = setInterval(function () { self.setState({ now: new Date() }); }, 15000); }
+  componentWillUnmount() { clearInterval(this.timer); }
+  renderVals() {
+    var self = this;
+    var now = this.state.now;
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    var days = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+    var months = ['Ιαν', 'Φεβ', 'Μαρ', 'Απρ', 'Μαΐ', 'Ιουν', 'Ιουλ', 'Αυγ', 'Σεπ', 'Οκτ', 'Νοε', 'Δεκ'];
+    function build(o, s) {
+      var labels = [['consent', 'Συγκατάθεση', true], ['bloods', 'Αιματολογικές', true], ['preop', 'Προεγχ. έγκριση', true], ['deposit', 'Προκαταβολή', false], ['photos', 'Φωτογραφίες', false], ['brief', 'Brief κλινικής', false]];
+      var crit = false, minor = false, miss = [];
+      o.checks = labels.map(function (l) {
+        var ok = s[l[0]];
+        if (!ok) { miss.push(l[1]); if (l[2]) crit = true; else minor = true; }
+        return { label: l[1], mark: ok ? '✓' : (l[2] ? '✕' : '!'),
+          style: ok ? 'background:#E3F1EA;color:#1E6B45' : (l[2] ? 'background:#FBE9E7;color:#8C1D18' : 'background:#FCF1E3;color:#8A4B08') };
+      });
+      o.color = crit ? '#C8312A' : (minor ? '#D98A1C' : '#2E9E63');
+      o.mark = crit ? '✕' : (minor ? '!' : '✓');
+      o.readyLabel = crit ? 'Λείπει κρίσιμο' : (minor ? 'Λείπει δευτερεύον' : 'Έτοιμο');
+      o.missing = miss.length ? 'Λείπει: ' + miss.join(', ') : 'Όλα έτοιμα';
+      o.missingStyle = crit ? 'color:#8C1D18;font-weight:600' : (minor ? 'color:#8A4B08;font-weight:600' : 'color:#1E6B45;font-weight:600');
+      return o;
+    }
+    var ops = [
+      build({ time: '08:00', name: 'Κατερίνα Π.', proc: 'Lifting προσώπου (deep plane) + βλεφαροπλαστική άνω', alert: 'Υπέρταση — έλεγχος πίεσης', plan: 'Deep plane + platysmaplasty, άνω βλέφαρα 8 mm αμφ. Λίπος ζυγωματικά 3 cc/πλευρά.', photos: ['Μπροστά', 'Προφίλ'] },
+        { consent: true, bloods: true, preop: true, deposit: true, photos: true, brief: true }),
+      build({ time: '11:30', name: 'Άννα Β.', proc: 'Κοιλιοπλαστική + λιποαναρρόφηση λαγόνων', alert: 'Αλλεργία: λάτεξ', plan: 'Πλήρης κοιλιοπλαστική, σύγκλιση ορθών, μεταφορά ομφαλού. Λιπο λαγόνων.', photos: ['Μπροστά', 'Πλάγια'] },
+        { consent: true, bloods: true, preop: true, deposit: false, photos: true, brief: true }),
+      build({ time: '15:00', name: 'Ελένη Μ.', proc: 'Αυξητική μαστού · dual plane', alert: 'Αλλεργία: πενικιλίνη', plan: 'Motiva Round 275 cc αμφ., υπομαστική τομή.', photos: ['—', '—'] },
+        { consent: false, bloods: true, preop: false, deposit: true, photos: false, brief: false })
+    ].map(function (o, i) {
+      var open = self.state.open === i;
+      o.open = open; o.expanded = open ? 'true' : 'false';
+      o.toggle = function () { self.setState({ open: self.state.open === i ? -1 : i }); };
+      return o;
+    });
+    return {
+      ops: ops,
+      clock: pad(now.getHours()) + ':' + pad(now.getMinutes()),
+      dateLabel: days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()] + ' · Διαβαλκανικό'
+    };
+  }
+}
+</script>
+</body>
+</html>

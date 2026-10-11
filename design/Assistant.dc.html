@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Σήμερα – βοηθός</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3EF}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+input::placeholder{color:#6B7178}
+</style>
+</helmet>
+<div style="font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="Κύριο μενού" style="flex: 1 1 232px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #E4E2DC; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #0E5E63; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">Π</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-weight: 600; font-size: 15px">Παπαϊωάννου</span>
+        <span style="font-size: 12px; color: #5B636B">Πλαστική Χειρουργική</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Assistant.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; background: #E6F0EF; color: #0E5E63; font-weight: 600; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
+        Σήμερα
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Ημερολόγιο
+      </a>
+      <a href="Patients.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path></svg>
+        Ασθενείς
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12H8l-4 4z"></path><path d="M8 9h8M8 12h5"></path></svg>
+        <span style="flex: 1">Νέες φόρμες</span>
+        <span style="background: #0E5E63; color: #FFFFFF; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">3</span>
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>
+        <span style="flex: 1">Μηνύματα ασθενών</span>
+        <span style="background: #0E5E63; color: #FFFFFF; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">4</span>
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L16 9"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg>
+        <span style="flex: 1">Έλεγχοι χειρουργείων</span>
+        <span style="background: #FBE9E7; color: #8C1D18; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">2</span>
+      </a>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid #ECEAE5">
+      <div style="width: 30px; height: 30px; border-radius: 999px; background: #F3EAF6; color: #6B3E7D; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">ΜΚ</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 13.5px; font-weight: 600">Μαρία Κ.</span>
+        <span style="font-size: 12px; color: #5B636B">Βοηθός ιατρού</span>
+      </div>
+    </div>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 18px 32px; border-bottom: 1px solid #E4E2DC; background: #FBFAF8">
+      <label style="flex: 1 1 300px; display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #DAD8D1; border-radius: 11px; padding: 0 14px; height: 46px; box-sizing: border-box">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B636B" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Αναζήτηση ασθενή</span>
+        <input type="search" placeholder="Αναζήτηση ασθενή — όνομα, τηλέφωνο, email, ΑΜΚΑ" style="flex: 1; border: 0; outline: 0; font: inherit; font-size: 15px; background: transparent; min-width: 0">
+      </label>
+      <button style="height: 46px; padding: 0 16px; border-radius: 11px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer">Φόρμα εισόδου (QR)</button>
+      <button style="height: 46px; padding: 0 16px; border-radius: 11px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer">Νέο ραντεβού</button>
+      <button style="height: 46px; padding: 0 18px; border-radius: 11px; border: 0; background: #0E5E63; font: inherit; font-size: 14.5px; font-weight: 600; color: #FFFFFF; cursor: pointer">Νέος ασθενής</button>
+    </header>
+
+    <main style="padding: 24px 32px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1280px; width: 100%; box-sizing: border-box">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 14px; color: #5B636B">Ιατρείο Αθήνας · 8 ραντεβού</span>
+          <h1 style="margin: 0; font-size: 26px; font-weight: 600">Ροή ημέρας</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 12px; padding: 8px 14px; font-size: 14px">
+          <span style="width: 9px; height: 9px; border-radius: 999px; background: #2E9E63"></span>
+          Γιατρός: Δωμάτιο 1 με Κατερίνα Π. · από 11:06 · <span style="font-weight: 600; color: #8A4B08">+4′ από πρόγραμμα</span>
+        </div>
+      </div>
+
+      <section aria-label="Δωμάτια" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+        <div style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 600; color: #5B636B; letter-spacing: 0.02em">ΑΝΑΜΟΝΗ</span>
+          <span style="font-size: 16px; font-weight: 600">Νίκος Χ. <span style="width: 9px; height: 9px; border-radius: 999px; background: #D69E2E; display: inline-block"></span></span>
+          <span style="font-size: 13.5px; color: #5B636B">Ήρθε 11:38 · ραντεβού 11:45 · φόρμα στο tablet (2/4)</span>
+          <button onClick="{{markReady}}" style="height: 44px; border-radius: 10px; border: 0; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; {{readyBtnStyle}}">{{readyBtnLabel}}</button>
+        </div>
+        <div style="background: #FFFFFF; border: 2px solid #0E5E63; border-radius: 16px; padding: 15px 17px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 600; color: #0E5E63; letter-spacing: 0.02em">ΔΩΜΑΤΙΟ 1 · ΜΕ ΤΟΝ ΓΙΑΤΡΟ</span>
+          <span style="font-size: 16px; font-weight: 600">Κατερίνα Π.</span>
+          <span style="font-size: 13.5px; color: #5B636B">Προεγχειρητική εκτίμηση · 18 λεπτά</span>
+          <button style="height: 44px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Ολοκλήρωση &amp; πληρωμή</button>
+        </div>
+        <div style="background: #FFFFFF; border: 1px dashed #CFCBC2; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 600; color: #5B636B; letter-spacing: 0.02em">ΔΩΜΑΤΙΟ 2</span>
+          <span style="font-size: 16px; font-weight: 600">{{room2Name}}</span>
+          <span style="font-size: 13.5px; color: #5B636B">{{room2Note}}</span>
+        </div>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+        <section aria-labelledby="sched" style="flex: 999 1 560px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #ECEAE5">
+            <h2 id="sched" style="margin: 0; font-size: 17px; font-weight: 600">Ραντεβού σήμερα</h2>
+            <a href="#" style="font-size: 13.5px; font-weight: 600">Ημερολόγιο εβδομάδας</a>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 680px">
+              <thead>
+                <tr style="text-align: left; color: #5B636B; font-size: 12.5px">
+                  <th style="padding: 10px 20px; font-weight: 600">Ώρα</th>
+                  <th style="padding: 10px 8px; font-weight: 600">Ασθενής</th>
+                  <th style="padding: 10px 8px; font-weight: 600">Επιβεβαίωση</th>
+                  <th style="padding: 10px 8px; font-weight: 600">Φόρμα</th>
+                  <th style="padding: 10px 8px; font-weight: 600">Πληρωμή</th>
+                  <th style="padding: 10px 20px 10px 8px; font-weight: 600">Κατάσταση</th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+                  <tr style="border-top: 1px solid #F1F0EC">
+                    <td style="padding: 12px 20px; font-weight: 600; font-variant-numeric: tabular-nums">{{r.time}}</td>
+                    <td style="padding: 12px 8px"><a href="Patient.dc.html" style="color: #1C2024; font-weight: 600">{{r.name}}</a><div style="font-size: 12.5px; color: #5B636B">{{r.type}}</div></td>
+                    <td style="padding: 12px 8px; {{r.confStyle}}">{{r.conf}}</td>
+                    <td style="padding: 12px 8px; {{r.formStyle}}">{{r.form}}</td>
+                    <td style="padding: 12px 8px; {{r.payStyle}}">{{r.pay}}</td>
+                    <td style="padding: 12px 20px 12px 8px"><span style="font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 10px; white-space: nowrap; {{r.statusStyle}}">{{r.status}}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+          <section aria-labelledby="todo" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+            <h2 id="todo" style="margin: 0; font-size: 17px; font-weight: 600">Προς διεκπεραίωση</h2>
+            <sc-for list="{{todos}}" as="g" hint-placeholder-count="3">
+              <div style="border-radius: 10px; background: #F5F9F9; overflow: hidden">
+                <button aria-expanded="{{g.expanded}}" onClick="{{g.toggle}}" style="width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 0; background: transparent; font: inherit; font-size: 14px; color: #1C2024; text-align: left; cursor: pointer">
+                  <span style="min-width: 26px; height: 26px; border-radius: 8px; background: #DCEBEA; color: #0E5E63; font-weight: 700; display: flex; align-items: center; justify-content: center">{{g.count}}</span>
+                  <span style="flex: 1">{{g.title}}</span>
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E5E63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="{{g.chevron}}"><path d="M6 9l6 6 6-6"></path></svg>
+                </button>
+                <sc-if value="{{g.open}}" hint-placeholder-val="{{false}}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 10px 10px">
+                    <sc-for list="{{g.items}}" as="it" hint-placeholder-count="3">
+                      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 9px; padding: 8px 10px">
+                        <span style="flex: 1 1 160px; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                          <span style="font-size: 13.5px; font-weight: 600">{{it.name}}</span>
+                          <span style="font-size: 12.5px; {{it.noteStyle}}">{{it.note}}</span>
+                        </span>
+                        <button style="height: 32px; padding: 0 10px; border-radius: 8px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">{{it.primary}}</button>
+                        <sc-if value="{{it.hasSecondary}}" hint-placeholder-val="{{false}}">
+                          <button style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">{{it.secondary}}</button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+
+          <section aria-labelledby="orchk" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 4px">
+            <h2 id="orchk" style="margin: 0 0 8px; font-size: 17px; font-weight: 600">Έλεγχοι χειρουργείων · 7 ημέρες</h2>
+            <sc-for list="{{checks}}" as="c" hint-placeholder-count="3">
+              <div style="border-top: 1px solid #F1F0EC">
+                <button aria-expanded="{{c.expanded}}" onClick="{{c.toggle}}" style="width: 100%; display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border: 0; background: transparent; font: inherit; color: #1C2024; text-align: left; cursor: pointer">
+                  <span role="img" aria-label="{{c.label}}" style="width: 26px; height: 26px; border-radius: 999px; flex: none; color: #FFFFFF; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; background: {{c.color}}">{{c.mark}}</span>
+                  <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                    <span style="font-size: 14.5px; font-weight: 600">{{c.name}} · {{c.date}}</span>
+                    <span style="font-size: 13px; color: #5B636B">{{c.missing}}</span>
+                  </span>
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B636B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-top: 4px; {{c.chevron}}"><path d="M6 9l6 6 6-6"></path></svg>
+                </button>
+                <sc-if value="{{c.open}}" hint-placeholder-val="{{false}}">
+                  <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 0 12px 38px">
+                    <span style="font-size: 13px; color: #3B4249">{{c.proc}}</span>
+                    <sc-for list="{{c.items}}" as="it" hint-placeholder-count="6">
+                      <div style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; padding: 6px 10px; border-radius: 8px; {{it.rowStyle}}">
+                        <span style="width: 18px; font-weight: 700">{{it.mark}}</span>
+                        <span style="flex: 1; min-width: 0">{{it.label}} <span style="color: #5B636B; font-size: 12.5px">{{it.detail}}</span></span>
+                        <sc-if value="{{it.hasAction}}" hint-placeholder-val="{{false}}">
+                          <button style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">{{it.action}}</button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+
+          <section aria-labelledby="dchat" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+            <h2 id="dchat" style="margin: 0; font-size: 17px; font-weight: 600">Συνομιλία με γιατρό</h2>
+            <span style="align-self: flex-start; font-size: 14px; background: #F1F0EC; border-radius: 12px; padding: 8px 12px">Φέρε τον επόμενο <span style="font-size: 11.5px; color: #5B636B">· 11:24</span></span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <button style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #CFE0DE; background: #F5F9F9; font: inherit; font-size: 13.5px; color: #0E5E63; cursor: pointer">Έτοιμος σε δωμάτιο</button>
+              <button style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #CFE0DE; background: #F5F9F9; font: inherit; font-size: 13.5px; color: #0E5E63; cursor: pointer">Ο επόμενος άργησε</button>
+              <button style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #CFE0DE; background: #F5F9F9; font: inherit; font-size: 13.5px; color: #0E5E63; cursor: pointer">Τηλέφωνο για εσάς</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1160}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { ready: false, openCheck: 0, openTodo: 0 }; }
+  renderVals() {
+    var self = this;
+    var ok = 'color:#1E6B45;font-weight:600';
+    var warn = 'color:#8A4B08;font-weight:600';
+    var muted = 'color:#5B636B';
+    var st = {
+      done: 'background:#ECEFF1;color:#5B636B', room: 'background:#0E5E63;color:#FFFFFF',
+      wait: 'background:#EEF2F7;color:#2F4B6E', due: 'background:#F1F0EC;color:#3B4249'
+    };
+    var rows = [
+      { time: '09:30', name: 'Ελένη Μ.', type: 'Πρώτη επίσκεψη', conf: '✓ WhatsApp', confStyle: ok, form: '✓', formStyle: ok, pay: '✓ Εξοφλήθηκε', payStyle: ok, status: 'Ολοκληρώθηκε', statusStyle: st.done },
+      { time: '10:15', name: 'Δέσποινα Κ.', type: 'Επανέλεγχος', conf: '✓ SMS', confStyle: ok, form: '—', formStyle: muted, pay: '— Δωρεάν', payStyle: muted, status: 'Ολοκληρώθηκε', statusStyle: st.done },
+      { time: '11:00', name: 'Κατερίνα Π.', type: 'Προεγχειρητική', conf: '✓ WhatsApp', confStyle: ok, form: '✓', formStyle: ok, pay: 'Εκκρεμεί', payStyle: warn, status: 'Δωμάτιο 1', statusStyle: st.room },
+      { time: '11:45', name: 'Νίκος Χ.', type: 'Πρώτη επίσκεψη', conf: '✓ Τηλέφωνο', confStyle: ok, form: 'Συμπληρώνει', formStyle: warn, pay: '—', payStyle: muted, status: self.state.ready ? 'Δωμάτιο 2' : 'Αναμονή', statusStyle: self.state.ready ? st.room : st.wait },
+      { time: '12:30', name: 'Μαρία Λ.', type: 'Online · Κύπρος', conf: '✓ Email', confStyle: ok, form: '✓', formStyle: ok, pay: 'Προπληρωμή ✓', payStyle: ok, status: 'Στις 12:30', statusStyle: st.due },
+      { time: '16:30', name: 'Σοφία Δ.', type: 'Αλλαντική τοξίνη', conf: 'Δεν απάντησε', confStyle: warn, form: '✓', formStyle: ok, pay: '—', payStyle: muted, status: 'Στις 16:30', statusStyle: st.due },
+      { time: '17:15', name: 'Ιωάννα Ρ.', type: 'Πρώτη επίσκεψη', conf: '✓ WhatsApp', confStyle: ok, form: 'Στάλθηκε', formStyle: warn, pay: '—', payStyle: muted, status: 'Στις 17:15', statusStyle: st.due },
+      { time: '18:00', name: 'Γιώργος Τ.', type: 'Επανέλεγχος', conf: '✓ SMS', confStyle: ok, form: '—', formStyle: muted, pay: '—', payStyle: muted, status: 'Στις 18:00', statusStyle: st.due }
+    ];
+    function item(label, ok, crucial, detail, action) {
+      return { label: label, detail: detail || '', mark: ok ? '✓' : (crucial ? '✕' : '!'),
+        rowStyle: ok ? 'background:#F3F8F5;color:#1E6B45' : (crucial ? 'background:#FBE9E7;color:#8C1D18' : 'background:#FCF1E3;color:#8A4B08'),
+        hasAction: !ok && !!action, action: action || '' };
+    }
+    var base = [
+      { name: 'Ελένη Μ.', date: '20/10', color: '#C8312A', mark: '✕', label: 'Λείπει κρίσιμο', missing: 'Λείπουν: συγκατάθεση, προεγχειρητική έγκριση',
+        proc: 'Αυξητική μαστού · Διαβαλκανικό · 15:00',
+        items: [item('Συγκατάθεση επέμβασης', false, true, 'δεν έχει ανοιχτεί', 'Αποστολή'), item('Αιματολογικές', true, true, '08/10'), item('Προεγχειρητική έγκριση', false, true, 'ΗΚΓ εκκρεμεί', 'Κλείσε ΗΚΓ'), item('Προκαταβολή', true, false, '500 € · 01/10'), item('Φωτογραφίες', false, false, '', 'Κλείσε ραντεβού'), item('Brief στην κλινική', false, false, 'αυτόματα την ημέρα', '')] },
+      { name: 'Άννα Β.', date: '24/10', color: '#D98A1C', mark: '!', label: 'Λείπει δευτερεύον', missing: 'Λείπει: προκαταβολή',
+        proc: 'Κοιλιοπλαστική + λιποαναρρόφηση · Διαβαλκανικό',
+        items: [item('Συγκατάθεση επέμβασης', true, true, '12/10'), item('Αιματολογικές', true, true, '10/10'), item('Προεγχειρητική έγκριση', true, true, 'καρδιολόγος 11/10'), item('Προκαταβολή', false, false, '', 'Υπενθύμιση'), item('Φωτογραφίες', true, false, '12/10'), item('Brief στην κλινική', true, false, 'έτοιμο')] },
+      { name: 'Κατερίνα Π.', date: '22/10', color: '#2E9E63', mark: '✓', label: 'Έτοιμο', missing: 'Όλα έτοιμα',
+        proc: 'Lifting προσώπου + βλεφαροπλαστική · Διαβαλκανικό',
+        items: [item('Συγκατάθεση επέμβασης', true, true, '05/10'), item('Αιματολογικές', true, true, '03/10'), item('Προεγχειρητική έγκριση', true, true, '06/10'), item('Προκαταβολή', true, false, '05/10'), item('Φωτογραφίες', true, false, '05/10'), item('Brief στην κλινική', true, false, 'έτοιμο')] }
+    ];
+    var checks = base.map(function (c, i) {
+      var open = self.state.openCheck === i;
+      c.open = open; c.expanded = open ? 'true' : 'false';
+      c.chevron = open ? 'transform:rotate(180deg)' : '';
+      c.toggle = function () { self.setState({ openCheck: self.state.openCheck === i ? -1 : i }); };
+      return c;
+    });
+    var normal = 'color:#5B636B';
+    var alertS = 'color:#8A4B08;font-weight:600';
+    var groups = [
+      { title: 'Νέες φόρμες εισόδου · 1 πιθανό διπλότυπο', items: [
+        { name: 'Ιωάννα Ρ.', note: 'Πιθανό διπλότυπο: ίδιο κινητό με «Ιωάννα Ραφαηλίδου» (2019)', noteStyle: alertS, primary: 'Σύγκριση', hasSecondary: true, secondary: 'Νέος ασθενής' },
+        { name: 'Νίκος Χ.', note: 'Tablet · 11:40 · ιστορικό + συγκαταθέσεις', noteStyle: normal, primary: 'Αποδοχή', hasSecondary: false, secondary: '' },
+        { name: 'Λίνα Σ.', note: 'Σύνδεσμος WhatsApp · χθες 22:14', noteStyle: normal, primary: 'Αποδοχή', hasSecondary: false, secondary: '' } ] },
+      { title: 'Αναπάντητα μηνύματα WhatsApp', items: [
+        { name: 'Άννα Β.', note: '«Μπορώ να πληρώσω την προκαταβολή με κάρτα;» · 09:12', noteStyle: normal, primary: 'Απάντηση', hasSecondary: false, secondary: '' },
+        { name: 'Σοφία Δ.', note: '«Μπορούμε να το κάνουμε 17:00;» · 08:50', noteStyle: normal, primary: 'Απάντηση', hasSecondary: true, secondary: 'Αλλαγή ώρας' },
+        { name: 'Άγνωστος αριθμός', note: '«Τιμή για ρινοπλαστική;» · χθες', noteStyle: normal, primary: 'Απάντηση', hasSecondary: true, secondary: 'Στείλε φόρμα' },
+        { name: 'Δέσποινα Κ.', note: '«Είναι φυσιολογικό το πρήξιμο;» · χθες · ιατρικό', noteStyle: alertS, primary: 'Προώθηση στον γιατρό', hasSecondary: false, secondary: '' } ] },
+      { title: 'Ραντεβού αύριο χωρίς επιβεβαίωση', items: [
+        { name: 'Πέτρος Α. · 10:00', note: 'Υπενθύμιση στάλθηκε χθες, χωρίς απάντηση', noteStyle: alertS, primary: 'Κλήση', hasSecondary: true, secondary: 'Νέα υπενθύμιση' },
+        { name: 'Ρένα Μ. · 17:30', note: 'Δεν έχει σταλεί υπενθύμιση', noteStyle: normal, primary: 'Υπενθύμιση', hasSecondary: false, secondary: '' } ] }
+    ];
+    var todos = groups.map(function (g, i) {
+      var open = self.state.openTodo === i;
+      return { title: g.title, count: g.items.length, items: g.items, open: open, expanded: open ? 'true' : 'false',
+        chevron: open ? 'transform:rotate(180deg)' : '',
+        toggle: function () { self.setState({ openTodo: self.state.openTodo === i ? -1 : i }); } };
+    });
+    var r = this.state.ready;
+    return {
+      rows: rows, checks: checks, todos: todos,
+      markReady: function () { self.setState({ ready: !self.state.ready }); },
+      readyBtnLabel: r ? '✓ Ο γιατρός ειδοποιήθηκε · Δωμάτιο 2' : 'Έτοιμος → Δωμάτιο 2 (ειδοποίηση γιατρού)',
+      readyBtnStyle: r ? 'background:#E3F1EA;color:#1E6B45' : 'background:#0E5E63;color:#FFFFFF',
+      room2Name: r ? 'Νίκος Χ.' : 'Ελεύθερο',
+      room2Note: r ? 'Έτοιμος · αναμένει τον γιατρό' : 'Καθαρίστηκε 11:20'
+    };
+  }
+}
+</script>
+</body>
+</html>

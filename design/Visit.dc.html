@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Νέα επίσκεψη</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3EF}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+input::placeholder,textarea::placeholder{color:#6B7178}
+</style>
+</helmet>
+<div style="font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; min-height: 100vh; display: flex; flex-direction: column">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px 32px; background: #FFFFFF; border-bottom: 1px solid #E4E2DC">
+    <a href="Patient.dc.html" aria-label="Πίσω στην καρτέλα" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #DAD8D1; display: flex; align-items: center; justify-content: center; color: #1C2024">
+      <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <div style="width: 40px; height: 40px; border-radius: 999px; background: #DCE7E6; color: #0E5E63; display: flex; align-items: center; justify-content: center; font-weight: 600">ΕΜ</div>
+    <div style="flex: 1 1 260px; display: flex; flex-direction: column">
+      <span style="font-size: 16px; font-weight: 600">Ελένη Μαρκοπούλου · νέα επίσκεψη</span>
+      <span style="font-size: 13px; color: #5B636B">38 ετών · <span style="color: #8C1D18; font-weight: 600">Αλλεργία: Πενικιλίνη</span> · Δευτέρα 12/10/26, 11:02</span>
+    </div>
+    <span style="font-size: 13px; color: #1E6B45; display: flex; align-items: center; gap: 6px">
+      <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg>
+      Αποθηκεύτηκε αυτόματα
+    </span>
+    <a href="Patient.dc.html" style="height: 44px; padding: 0 20px; border-radius: 11px; background: #0E5E63; color: #FFFFFF; font-size: 14.5px; font-weight: 600; display: flex; align-items: center">Ολοκλήρωση επίσκεψης</a>
+  </header>
+
+  <main style="padding: 24px 32px 48px; display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; max-width: 1320px; width: 100%; box-sizing: border-box; margin: 0 auto">
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+      <div role="radiogroup" aria-label="Είδος επίσκεψης" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{types}}" as="t" hint-placeholder-count="5">
+          <button role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="height: 40px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 14px; cursor: pointer; {{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </div>
+
+      <section aria-labelledby="rec" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+        <button onClick="{{toggleRec}}" style="height: 46px; padding: 0 18px; border-radius: 999px; border: 0; font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; {{recStyle}}">
+          <span style="width: 12px; height: 12px; border-radius: 999px; background: currentColor"></span>
+          {{recLabel}}
+        </button>
+        <div style="flex: 1 1 240px; display: flex; flex-direction: column; gap: 2px">
+          <span id="rec" style="font-size: 14.5px; font-weight: 600">{{recTitle}}</span>
+          <span style="font-size: 13px; color: #5B636B">Η ασθενής έχει δώσει συγκατάθεση για ηχογράφηση (28/09/26). Μετά το τέλος, το AI συμπληρώνει τις σημειώσεις και ελέγχει αν καλύφθηκαν όλα τα θέματα.</span>
+        </div>
+      </section>
+
+      <section style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Κλινική εκτίμηση</h2>
+          <div role="group" aria-label="Προσθήκη περιοχής" style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{addAreas}}" as="a" hint-placeholder-count="4">
+              <button onClick="{{a.add}}" style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px dashed #9DBDBA; background: #F5F9F9; font: inherit; font-size: 13.5px; font-weight: 600; color: #0E5E63; cursor: pointer">+ {{a.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <label for="general" style="font-size: 13px; color: #3B4249; font-weight: 500">Γενικά · αίτημα ασθενούς
+          <textarea id="general" style="display: block; width: 100%; box-sizing: border-box; margin-top: 6px; min-height: 70px; resize: vertical; border: 1px solid #DAD8D1; border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 15px; line-height: 1.5; color: #1C2024">Επανεκτίμηση για αυξητική μαστού. Επιθυμεί φυσικό αποτέλεσμα, Β→C.</textarea>
+        </label>
+        <sc-for list="{{areaBlocks}}" as="b" hint-placeholder-count="1">
+          <div style="border: 1px solid #E4E2DC; border-radius: 12px; overflow: hidden">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; background: #F8F7F4; border-bottom: 1px solid #ECEAE5">
+              <span style="font-size: 15px; font-weight: 600">{{b.label}}</span>
+              <button aria-label="Αφαίρεση περιοχής" onClick="{{b.remove}}" style="width: 32px; height: 32px; border-radius: 8px; border: 1px solid #DAD8D1; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3B4249" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0">
+              <sc-for list="{{b.prompts}}" as="pp" hint-placeholder-count="4">
+                <span style="font-size: 12.5px; color: #3B4249; background: #F1F0EC; border-radius: 999px; padding: 4px 10px">{{pp}}</span>
+              </sc-for>
+            </div>
+            <textarea aria-label="{{b.label}} κλινική εκτίμηση" style="display: block; width: 100%; box-sizing: border-box; min-height: 120px; resize: vertical; border: 0; padding: 10px 14px 14px; font: inherit; font-size: 15px; line-height: 1.6; color: #1C2024; outline-color: #0E5E63">{{b.text}}</textarea>
+          </div>
+        </sc-for>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px; border-top: 1px solid #ECEAE5; padding-top: 14px">
+          <span id="procs" style="font-size: 15px; font-weight: 600">Επεμβάσεις που συζητήθηκαν</span>
+          <div role="tablist" aria-labelledby="procs" style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="5">
+              <button role="tab" aria-selected="{{c.selected}}" onClick="{{c.pick}}" style="height: 38px; padding: 0 14px; border-radius: 10px; font: inherit; font-size: 14px; cursor: pointer; {{c.style}}">{{c.label}}</button>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{procList}}" as="pr" hint-placeholder-count="8">
+              <button aria-pressed="{{pr.pressed}}" onClick="{{pr.toggle}}" style="height: 36px; padding: 0 12px; border-radius: 999px; font: inherit; font-size: 13.5px; cursor: pointer; {{pr.style}}">{{pr.mark}}{{pr.label}}</button>
+            </sc-for>
+          </div>
+          <sc-for list="{{subRows}}" as="sr" hint-placeholder-count="1">
+            <div style="display: flex; flex-direction: column; gap: 6px; border-left: 3px solid #0E5E63; padding: 4px 0 4px 12px">
+              <span style="font-size: 13.5px; font-weight: 600; color: #0E5E63">{{sr.name}} · επιλογές</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{sr.opts}}" as="o" hint-placeholder-count="6">
+                  <button aria-pressed="{{o.pressed}}" onClick="{{o.toggle}}" style="height: 32px; padding: 0 11px; border-radius: 8px; font: inherit; font-size: 13px; cursor: pointer; {{o.style}}">{{o.mark}}{{o.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: #F5F9F9; border-radius: 10px; padding: 10px 12px">
+            <span style="font-size: 13px; color: #3B4249; font-weight: 600">Επιλεγμένες:</span>
+            <sc-for list="{{chosenLabels}}" as="ch" hint-placeholder-count="2">
+              <span style="font-size: 13.5px; font-weight: 600; color: #FFFFFF; background: #0E5E63; border-radius: 999px; padding: 5px 12px">{{ch}}</span>
+            </sc-for>
+            <sc-if value="{{noneChosen}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; color: #5B636B">καμία ακόμη</span></sc-if>
+          </div>
+          <label for="dx" style="font-size: 13px; color: #3B4249; font-weight: 500">Διάγνωση / σχόλιο
+            <input id="dx" value="Υποπλασία μαστών, ήπια ασυμμετρία" style="display: block; width: 100%; box-sizing: border-box; margin-top: 6px; height: 44px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 14px; font: inherit; font-size: 15px">
+          </label>
+        </div>
+      </section>
+
+      <sc-if value="{{showPlanning}}" hint-placeholder-val="{{true}}">
+      <section aria-labelledby="plan" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="plan" style="margin: 0; font-size: 17px; font-weight: 600">Χειρουργικός σχεδιασμός</h2>
+            <span style="font-size: 13px; color: #5B636B">Σχεδιάστε με γραφίδα (digitizer) πάνω στο πρότυπο · αποθηκεύεται στην επίσκεψη και στο χειρουργείο</span>
+          </div>
+          <div role="tablist" aria-label="Πρότυπο" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px">
+            <sc-for list="{{templates}}" as="tp" hint-placeholder-count="3">
+              <button role="tab" aria-selected="{{tp.selected}}" onClick="{{tp.pick}}" style="height: 38px; padding: 0 12px; border: 0; border-radius: 8px; font: inherit; font-size: 13.5px; cursor: pointer; {{tp.style}}">{{tp.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 14px">
+          <div style="flex: 999 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+            <div role="toolbar" aria-label="Εργαλεία σχεδίασης" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+              <button aria-label="Γραφίδα" style="width: 40px; height: 40px; border-radius: 9px; border: 2px solid #0E5E63; background: #E6F0EF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E5E63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"></path></svg></button>
+              <button aria-label="Γόμα" style="width: 40px; height: 40px; border-radius: 9px; border: 1px solid #DAD8D1; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B4249" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H8l-5-5 10-10 8 8-6 6"></path></svg></button>
+              <button aria-label="Κόκκινο" style="width: 32px; height: 32px; border-radius: 999px; border: 2px solid #FFFFFF; box-shadow: 0 0 0 1px #DAD8D1; background: #C8312A; cursor: pointer"></button>
+              <button aria-label="Μπλε" style="width: 32px; height: 32px; border-radius: 999px; border: 2px solid #FFFFFF; box-shadow: 0 0 0 1px #DAD8D1; background: #2F4B6E; cursor: pointer"></button>
+              <button aria-label="Μαύρο" style="width: 32px; height: 32px; border-radius: 999px; border: 2px solid #FFFFFF; box-shadow: 0 0 0 2px #1C2024; background: #1C2024; cursor: pointer"></button>
+              <span style="flex: 1"></span>
+              <button style="height: 40px; padding: 0 12px; border-radius: 9px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 13.5px; cursor: pointer">Αναίρεση</button>
+              <button style="height: 40px; padding: 0 12px; border-radius: 9px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 13.5px; cursor: pointer">Πάνω σε φωτογραφία</button>
+            </div>
+            <div style="border: 1px dashed #CFCBC2; border-radius: 12px; background: #FDFCFA; padding: 10px">
+              <sc-if value="{{tplBreast}}" hint-placeholder-val="{{true}}">
+                <svg role="img" aria-label="Πρότυπο μαστών, πρόσθια όψη, με σημεία αναφοράς" viewBox="0 0 520 320" style="width: 100%; height: auto; display: block">
+                  <path d="M120 20 C150 60 170 70 260 70 C350 70 370 60 400 20" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                  <path d="M90 60 C70 140 80 230 150 262 C200 284 240 262 252 220" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                  <path d="M430 60 C450 140 440 230 370 262 C320 284 280 262 268 220" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                  <line x1="260" y1="40" x2="260" y2="300" stroke="#C9C4BA" stroke-dasharray="5 5"></line>
+                  <circle cx="260" cy="40" r="4" fill="#5B636B"></circle><text x="270" y="44" font-size="12" fill="#5B636B">ΣΣ</text>
+                  <circle cx="175" cy="190" r="10" fill="none" stroke="#9A958B" stroke-width="2"></circle>
+                  <circle cx="345" cy="190" r="10" fill="none" stroke="#9A958B" stroke-width="2"></circle>
+                  <path d="M120 250 C160 278 200 278 240 250" fill="none" stroke="#9A958B" stroke-width="1.5" stroke-dasharray="4 4"></path>
+                  <path d="M280 250 C320 278 360 278 400 250" fill="none" stroke="#9A958B" stroke-width="1.5" stroke-dasharray="4 4"></path>
+                  <text x="140" y="300" font-size="12" fill="#5B636B">Υπομαστική πτυχή</text>
+                  <path d="M178 182 C200 150 230 120 258 100" fill="none" stroke="#C8312A" stroke-width="2.5" stroke-linecap="round"></path>
+                  <path d="M128 252 C150 300 210 300 236 252" fill="none" stroke="#2F4B6E" stroke-width="2.5" stroke-linecap="round"></path>
+                  <text x="300" y="300" font-size="12" fill="#2F4B6E">νέα πτυχή −1 cm</text>
+                </svg>
+              </sc-if>
+              <sc-if value="{{tplRhino}}" hint-placeholder-val="{{false}}">
+                <svg role="img" aria-label="Πρότυπο ρινοπλαστικής, πλάγια όψη και βάση" viewBox="0 0 520 320" style="width: 100%; height: auto; display: block">
+                  <path d="M150 30 C155 70 160 95 175 130 C190 165 215 190 228 205 C236 214 232 224 220 226 C205 228 192 226 182 232 C176 236 178 246 172 256" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                  <path d="M150 30 C140 60 150 80 158 100" fill="none" stroke="#C9C4BA" stroke-width="1.5"></path>
+                  <path d="M152 92 C165 100 172 112 175 128" fill="none" stroke="#C8312A" stroke-width="2.5" stroke-linecap="round"></path>
+                  <text x="60" y="300" font-size="12" fill="#5B636B">Πλάγια όψη</text>
+                  <path d="M360 230 C330 230 320 200 335 180 C350 160 370 150 390 150 C410 150 430 160 445 180 C460 200 450 230 420 230 C410 230 400 222 390 222 C380 222 370 230 360 230 Z" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                  <ellipse cx="365" cy="205" rx="14" ry="9" fill="none" stroke="#9A958B" stroke-width="1.5"></ellipse>
+                  <ellipse cx="415" cy="205" rx="14" ry="9" fill="none" stroke="#9A958B" stroke-width="1.5"></ellipse>
+                  <text x="350" y="300" font-size="12" fill="#5B636B">Βάση</text>
+                </svg>
+              </sc-if>
+              <sc-if value="{{tplBody}}" hint-placeholder-val="{{false}}">
+                <svg role="img" aria-label="Πρότυπο σώματος, πρόσθια και οπίσθια όψη, με πρόσωπο" viewBox="0 0 520 330" style="width: 100%; height: auto; display: block">
+                  <g transform="translate(150 14)">
+                    <circle cx="0" cy="28" r="18" fill="none" stroke="#9A958B" stroke-width="2"></circle>
+                    <path d="M0 50 C -6 50 -10 52 -12 60 C -30 64 -48 68 -54 84 L -66 168 C -68 178 -58 180 -56 170 L -44 104 C -44 130 -48 150 -46 168 C -48 186 -44 200 -42 210 L -34 292 C -33 300 -22 300 -22 292 L -6 214 L 6 214 L 22 292 C 22 300 33 300 34 292 L 42 210 C 44 200 48 186 46 168 C 48 150 44 130 44 104 L 56 170 C 58 180 68 178 66 168 L 54 84 C 48 68 30 64 12 60 C 10 52 6 50 0 50 Z" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                    <ellipse cx="0" cy="47" rx="9" ry="4" fill="none" stroke="#C8312A" stroke-width="1.8" stroke-dasharray="3 3"></ellipse>
+                    <ellipse cx="0" cy="140" rx="24" ry="17" fill="none" stroke="#C8312A" stroke-width="2" stroke-dasharray="4 3"></ellipse>
+                    <ellipse cx="-40" cy="132" rx="7" ry="16" fill="none" stroke="#C8312A" stroke-width="2" stroke-dasharray="4 3"></ellipse>
+                    <ellipse cx="40" cy="132" rx="7" ry="16" fill="none" stroke="#C8312A" stroke-width="2" stroke-dasharray="4 3"></ellipse>
+                    <path d="M-30 168 C -15 176 15 176 30 168" fill="none" stroke="#2F4B6E" stroke-width="2.5" stroke-linecap="round"></path>
+                    <text x="-30" y="322" font-size="12" fill="#5B636B">Πρόσθια</text>
+                  </g>
+                  <g transform="translate(370 14)">
+                    <circle cx="0" cy="28" r="18" fill="none" stroke="#9A958B" stroke-width="2"></circle>
+                    <path d="M0 50 C -6 50 -10 52 -12 60 C -30 64 -48 68 -54 84 L -66 168 C -68 178 -58 180 -56 170 L -44 104 C -44 130 -48 150 -46 168 C -48 186 -44 200 -42 210 L -34 292 C -33 300 -22 300 -22 292 L -6 214 L 6 214 L 22 292 C 22 300 33 300 34 292 L 42 210 C 44 200 48 186 46 168 C 48 150 44 130 44 104 L 56 170 C 58 180 68 178 66 168 L 54 84 C 48 68 30 64 12 60 C 10 52 6 50 0 50 Z" fill="none" stroke="#9A958B" stroke-width="2"></path>
+                    <line x1="0" y1="62" x2="0" y2="190" stroke="#C9C4BA" stroke-dasharray="4 4"></line>
+                    <ellipse cx="-38" cy="140" rx="9" ry="14" fill="none" stroke="#C8312A" stroke-width="2" stroke-dasharray="4 3"></ellipse>
+                    <ellipse cx="38" cy="140" rx="9" ry="14" fill="none" stroke="#C8312A" stroke-width="2" stroke-dasharray="4 3"></ellipse>
+                    <path d="M-40 196 C -30 214 -10 214 -2 200 M 2 200 C 10 214 30 214 40 196" fill="none" stroke="#9A958B" stroke-width="1.5"></path>
+                    <text x="-30" y="322" font-size="12" fill="#5B636B">Οπίσθια</text>
+                  </g>
+                </svg>
+              </sc-if>
+              <sc-if value="{{tplFace}}" hint-placeholder-val="{{false}}">
+                <svg role="img" aria-label="Πρότυπο προσώπου, πρόσθια όψη, με τρίτα" viewBox="0 0 520 320" style="width: 100%; height: auto; display: block">
+                  <ellipse cx="260" cy="160" rx="110" ry="145" fill="none" stroke="#9A958B" stroke-width="2"></ellipse>
+                  <line x1="140" y1="110" x2="380" y2="110" stroke="#C9C4BA" stroke-dasharray="5 5"></line>
+                  <line x1="140" y1="200" x2="380" y2="200" stroke="#C9C4BA" stroke-dasharray="5 5"></line>
+                  <path d="M205 135 C215 128 230 128 240 135" fill="none" stroke="#9A958B" stroke-width="1.5"></path>
+                  <path d="M280 135 C290 128 305 128 315 135" fill="none" stroke="#9A958B" stroke-width="1.5"></path>
+                  <path d="M230 245 C250 255 270 255 290 245" fill="none" stroke="#9A958B" stroke-width="1.5"></path>
+                </svg>
+              </sc-if>
+            </div>
+          </div>
+          <div style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+            <sc-if value="{{notBreast}}" hint-placeholder-val="{{false}}">
+            <span style="font-size: 14px; font-weight: 600">Μετρήσεις (cm)</span>
+            <sc-for list="{{measures}}" as="m" hint-placeholder-count="5">
+              <label style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; color: #3B4249">{{m.label}}
+                <span style="display: flex; gap: 6px">
+                  <input value="{{m.r}}" aria-label="{{m.label}} δεξιά" style="width: 52px; height: 36px; border: 1px solid #DAD8D1; border-radius: 8px; text-align: center; font: inherit; font-size: 14px">
+                  <input value="{{m.l}}" aria-label="{{m.label}} αριστερά" style="width: 52px; height: 36px; border: 1px solid #DAD8D1; border-radius: 8px; text-align: center; font: inherit; font-size: 14px">
+                </span>
+              </label>
+            </sc-for>
+            <span style="font-size: 12px; color: #5B636B; text-align: right">Δεξιά · Αριστερά</span>
+            </sc-if>
+            <sc-if value="{{tplRhino}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 14px; font-weight: 600; margin-top: 6px">Λίστα ελέγχου ρινοπλαστικής</span>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{rhinoChecks}}" as="rc" hint-placeholder-count="8">
+                  <button aria-pressed="{{rc.pressed}}" onClick="{{rc.toggle}}" style="display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 4px 8px; border-radius: 8px; border: 1px solid #E4E2DC; background: #FFFFFF; font: inherit; font-size: 13px; color: #1C2024; text-align: left; cursor: pointer">
+                    <span style="width: 18px; height: 18px; border-radius: 5px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; {{rc.boxStyle}}">{{rc.mark}}</span>{{rc.label}}
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{tplBreast}}" hint-placeholder-val="{{true}}">
+              <span style="font-size: 14px; font-weight: 600">Ενιαίο φύλλο μαστού</span>
+              <span style="font-size: 13px; color: #3B4249; line-height: 1.5">Ίδιο σχέδιο και φόρμα για αυξητική, ανόρθωση, αυξητική-ανορθωτική, μειωτική, αποκατάσταση, αναθεώρηση, top surgery, εισολκή θηλής, σωληνοειδείς μαστούς και παραμορφώσεις. Εμφανίζονται μόνο τα πεδία που αφορούν τις επιλεγμένες επεμβάσεις.</span>
+              <span style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{breastProcs}}" as="bp" hint-placeholder-count="1">
+                  <span style="font-size: 12.5px; font-weight: 600; color: #0E5E63; background: #E6F0EF; border-radius: 999px; padding: 4px 10px">{{bp}}</span>
+                </sc-for>
+              </span>
+            </sc-if>
+            <button style="margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 11px; border: 0; background: #2F4B6E; color: #FFFFFF; font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l9 5v10l-9 5-9-5V7z"></path><path d="M12 22V12M21 7l-9 5-9-5"></path></svg>
+              Εικονική προσομοίωση
+            </button>
+            <span style="font-size: 12px; color: #5B636B">Από τις φωτογραφίες της επίσκεψης · αποτέλεσμα αποθηκεύεται στις φωτογραφίες</span>
+          </div>
+        </div>
+
+        <sc-if value="{{tplBreast}}" hint-placeholder-val="{{true}}">
+        <div style="display: flex; flex-direction: column; gap: 14px; border-top: 1px solid #ECEAE5; padding-top: 14px">
+          <sc-for list="{{breastGroups}}" as="g" hint-placeholder-count="3">
+            <fieldset style="border: 1px solid #E4E2DC; border-radius: 12px; margin: 0; padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px">
+              <legend style="font-size: 14.5px; font-weight: 600; padding: 0 6px">{{g.title}} <span style="font-weight: 400; font-size: 12.5px; color: #5B636B">{{g.note}}</span></legend>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px">
+                <sc-for list="{{g.fields}}" as="f" hint-placeholder-count="4">
+                  <label style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13.5px; color: #3B4249">{{f.label}}
+                    <span style="display: flex; gap: 6px">
+                      <input value="{{f.r}}" aria-label="{{f.label}} δεξιά" style="width: {{f.w}}; height: 36px; border: 1px solid #DAD8D1; border-radius: 8px; text-align: center; font: inherit; font-size: 14px">
+                      <sc-if value="{{f.lr}}" hint-placeholder-val="{{true}}">
+                        <input value="{{f.l}}" aria-label="{{f.label}} αριστερά" style="width: {{f.w}}; height: 36px; border: 1px solid #DAD8D1; border-radius: 8px; text-align: center; font: inherit; font-size: 14px">
+                      </sc-if>
+                    </span>
+                  </label>
+                </sc-for>
+              </div>
+            </fieldset>
+          </sc-for>
+          <span style="font-size: 12px; color: #5B636B">Δύο τιμές = Δεξιά · Αριστερά. Οι τιμές περνούν αυτόματα στο χειρουργείο, στη συγκατάθεση (ένθεμα) και στο brief της κλινικής.</span>
+        </div>
+        </sc-if>
+      </section>
+      </sc-if>
+      <sc-if value="{{noPlanning}}" hint-placeholder-val="{{false}}">
+        <p style="margin: 0; padding: 16px 20px; border: 1px dashed #CFCBC2; border-radius: 16px; font-size: 14px; color: #5B636B">Ο χειρουργικός σχεδιασμός εμφανίζεται αυτόματα όταν επιλέξετε χειρουργική επέμβαση.</p>
+      </sc-if>
+    </div>
+
+    <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+      <section aria-labelledby="vit" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+        <h2 id="vit" style="margin: 0; font-size: 17px; font-weight: 600">Μετρήσεις</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Βάρος (kg)
+            <input value="64" inputmode="decimal" style="height: 48px; border: 2px solid #0E5E63; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 18px; font-weight: 600; color: #1C2024">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Ύψος (cm)
+            <input value="165" inputmode="decimal" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 18px; color: #1C2024">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Πίεση
+            <input value="118/76" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 18px; color: #1C2024">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Σφύξεις
+            <input value="72" inputmode="numeric" style="height: 48px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 18px; color: #1C2024">
+          </label>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #F5F9F9; border-radius: 10px; padding: 10px 14px">
+          <span style="font-size: 14px; color: #3B4249">BMI (αυτόματα)</span>
+          <span style="font-size: 18px; font-weight: 600">23,5</span>
+        </div>
+        <span style="font-size: 13px; color: #5B636B">Προηγούμενο βάρος: 65 kg στις 28/09 (−1 kg)</span>
+      </section>
+
+      <section aria-labelledby="fee" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px">
+        <h2 id="fee" style="margin: 0; font-size: 17px; font-weight: 600">Αμοιβή</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Αμοιβή (€)
+            <input value="[ΠΟΣΟ]" style="height: 44px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 16px">
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249; font-weight: 500">Εισπράχθηκε (€)
+            <input value="[ΠΟΣΟ]" style="height: 44px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 16px">
+          </label>
+        </div>
+        <button style="height: 42px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Έκδοση απόδειξης</button>
+      </section>
+
+      <section aria-labelledby="prev" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px">
+        <h2 id="prev" style="margin: 0; font-size: 17px; font-weight: 600">Προηγούμενη επίσκεψη</h2>
+        <span style="font-size: 13px; color: #5B636B">28/09/26 · Πρώτη επίσκεψη</span>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: #3B4249">Επιθυμεί φυσικό αποτέλεσμα, μέγεθος Β→C. Ήπια ασυμμετρία δεξιά. Προσφορά δόθηκε.</p>
+      </section>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { type: 1, rec: false, tpl: 0, cat: 1, chosen: ['Αυξητική μαστού'], areas: ['breast'], subs: {} }; }
+  renderVals() {
+    var self = this;
+    var labels = ['Πρώτη επίσκεψη', 'Προεγχειρητική εκτίμηση', 'Επανέλεγχος', 'Μετεγχειρητικός', 'Άλλο'];
+    var types = labels.map(function (l, i) {
+      var on = self.state.type === i;
+      return {
+        label: l, checked: on ? 'true' : 'false',
+        style: on ? 'border:1px solid #0E5E63;background:#0E5E63;color:#FFFFFF;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238;font-weight:500',
+        pick: function () { self.setState({ type: i }); }
+      };
+    });
+    var catalog = [
+      ['Πρόσωπο', ['Lifting προσώπου', 'Βλεφαροπλαστική άνω', 'Βλεφαροπλαστική κάτω', 'Ρινοπλαστική', 'Ενδοσκοπική ανόρθωση φρυδιών', 'Lifting μετώπου', 'Lifting μέσου τρίτου', 'Κροταφικό lifting', 'Αφαίρεση λίπους Bichat', 'Εμφυτεύματα προσώπου', 'Μεταμόσχευση λίπους προσώπου', 'Λιποαναρρόφηση υπογενείου', 'Lip lift', 'FFS', 'Tracheal shave', 'Ωτοπλαστική']],
+      ['Μαστός', ['Αυξητική μαστού', 'Ανόρθωση μαστού', 'Αυξητική-ανορθωτική', 'Μειωτική μαστού', 'Αποκατάσταση μαστού', 'Αφαίρεση/αλλαγή ενθεμάτων', 'Εισολκή θηλής', 'Σωληνοειδείς μαστοί', 'Παραμόρφωση μαστού', 'Γυναικομαστία', 'Top surgery', 'Λίπος στους μαστούς']],
+      ['Σώμα', ['Λιποαναρρόφηση', 'Λιποαναρρόφηση λιποιδήματος', 'Κοιλιοπλαστική', 'Mini κοιλιοπλαστική', 'Λιπο-κοιλιοπλαστική', 'Ανόρθωση μηρών', 'Ανόρθωση βραχιόνων', 'Ανόρθωση πλάτης', 'Ανόρθωση γλουτών', 'Μεταμόσχευση λίπους γλουτών', 'Body lift', 'Γυναικομαστία (λιπο)']],
+      ['Γεννητικά', ['Κολποπλαστική MtF', 'Χειλεοπλαστική', 'Λιποαναρρόφηση εφηβαίου']],
+      ['Άλλο', ['Αφαίρεση βλάβης δέρματος', 'Διόρθωση ουλής', 'Αλλαντική τοξίνη', 'Υαλουρονικό', 'Laser']]
+    ];
+    var cats = catalog.map(function (c, i) {
+      var on = self.state.cat === i;
+      return { label: c[0], selected: on ? 'true' : 'false', pick: function () { self.setState({ cat: i }); },
+        style: on ? 'border:1px solid #0E5E63;background:#E6F0EF;color:#0E5E63;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238;font-weight:500' };
+    });
+    var chosenArr = this.state.chosen;
+    var procList = catalog[this.state.cat][1].map(function (name) {
+      var on = chosenArr.indexOf(name) !== -1;
+      return { label: name, mark: on ? '✓ ' : '+ ', pressed: on ? 'true' : 'false',
+        style: on ? 'border:1px solid #0E5E63;background:#0E5E63;color:#FFFFFF;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238;font-weight:500',
+        toggle: function () {
+          var cur = self.state.chosen.slice();
+          var k = cur.indexOf(name);
+          if (k === -1) cur.push(name); else cur.splice(k, 1);
+          self.setState({ chosen: cur });
+        } };
+    });
+    var areaDefs = {
+      breast: { label: 'Μαστός', prompts: ['Μέγεθος / όγκος', 'Πτώση (Regnault)', 'Ασυμμετρία', 'Ποιότητα δέρματος', 'Πάχος ιστού', 'Θηλή-άλως', 'Υπομαστική πτυχή'], text: 'Ήπια ασυμμετρία δεξιά. Πτώση βαθμού I. Πάχος άνω πόλου 2,5 cm. Δοκιμή sizers 255 και 275 cc, προτιμά 275. Dual plane, υπομαστική τομή.' },
+      face: { label: 'Πρόσωπο', prompts: ['Μέτωπο / φρύδια', 'Βλέφαρα', 'Μέσο τρίτο', 'Γνάθος / jowls', 'Λαιμός', 'Δέρμα'], text: '' },
+      body: { label: 'Σώμα', prompts: ['Κοιλιά', 'Διάσταση ορθών', 'Λαγόνια', 'Μηροί', 'Βραχίονες', 'Ποιότητα δέρματος'], text: '' },
+      nose: { label: 'Μύτη', prompts: ['Ράχη', 'Άκρο', 'Διάφραγμα', 'Αναπνοή', 'Δέρμα'], text: '' },
+      genital: { label: 'Γεννητικά', prompts: ['Εξέταση', 'Λειτουργικά', 'Ορμονοθεραπεία'], text: '' },
+      other: { label: 'Άλλο', prompts: [], text: '' }
+    };
+    var areasNow = this.state.areas;
+    var addAreas = Object.keys(areaDefs).filter(function (k) { return areasNow.indexOf(k) === -1; }).map(function (k) {
+      return { label: areaDefs[k].label, add: function () { self.setState({ areas: self.state.areas.concat([k]) }); } };
+    });
+    var areaBlocks = areasNow.map(function (k) {
+      var d = areaDefs[k];
+      return { label: d.label, prompts: d.prompts, text: d.text,
+        remove: function () { self.setState({ areas: self.state.areas.filter(function (x) { return x !== k; }) }); } };
+    });
+    var breastAll = catalog[1][1];
+    var faceAll = catalog[0][1].filter(function (n) { return n !== 'Ρινοπλαστική'; });
+    var nonSurgical = ['Αλλαντική τοξίνη', 'Υαλουρονικό', 'Laser'];
+    var ch = this.state.chosen;
+    var breastProcs = ch.filter(function (n) { return breastAll.indexOf(n) !== -1; });
+    var avail = [];
+    if (breastProcs.length) avail.push(0);
+    if (ch.indexOf('Ρινοπλαστική') !== -1) avail.push(1);
+    if (ch.some(function (n) { return faceAll.indexOf(n) !== -1 && n !== 'Λιποαναρρόφηση υπογενείου'; })) avail.push(2);
+    var bodyAll = catalog[2][1].concat(['Λιποαναρρόφηση υπογενείου', 'Λιποαναρρόφηση εφηβαίου']);
+    if (ch.some(function (n) { return bodyAll.indexOf(n) !== -1; })) avail.push(3);
+    var surgical = ch.some(function (n) { return nonSurgical.indexOf(n) === -1; });
+    var tplNames = ['Μαστός', 'Ρινοπλαστική', 'Πρόσωπο', 'Σώμα'];
+    var tplActive = avail.indexOf(this.state.tpl) !== -1 ? this.state.tpl : (avail.length ? avail[0] : -1);
+    var templates = avail.map(function (i) {
+      var on = tplActive === i;
+      return { label: tplNames[i], selected: on ? 'true' : 'false', pick: function () { self.setState({ tpl: i }); },
+        style: on ? 'background:#FFFFFF;color:#0E5E63;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.1)' : 'background:transparent;color:#3B4249;font-weight:500' };
+    });
+    var mset = { 1: [['Ρινικό μήκος', '4,8', ''], ['Προβολή άκρου', '2,9', ''], ['Ρινοχειλική γωνία (°)', '92', ''], ['Ρινομετωπιαία γωνία (°)', '128', '']],
+      2: [['Άνω τρίτο', '6,2', ''], ['Μέσο τρίτο', '6,5', ''], ['Κάτω τρίτο', '6,9', '']],
+      3: [['Βάρος / μέγιστο (kg)', '64', '71'], ['Περίμετρος μέσης / γοφών', '74', '98'], ['Διάσταση ορθών (cm)', '3', ''], ['Pinch κοιλιάς / λαγόνων', '4', '3'], ['Χαλαρότητα μηρών Δ/Α', '1', '1'], ['Χαλαρότητα βραχιόνων Δ/Α', '1', '1'], ['Λιπο: εκτιμ. όγκος (ml)', '2500', ''], ['Κήλη / ουλές', 'όχι', '']] };
+    var measures = (mset[tplActive] || []).map(function (m) { return { label: m[0], r: m[1], l: m[2] }; });
+    function F(label, r, l, lr, w) { return { label: label, r: r, l: l, lr: lr !== false, w: w || '52px' }; }
+    function has(n) { return ch.indexOf(n) !== -1; }
+    var groups = [
+      { title: 'Μετρήσεις (cm)', note: '', fields: [F('ΣΣ – θηλή', '21', '22'), F('Θηλή – μέση γραμμή', '10', '10,5'), F('Θηλή – πτυχή (χαλαρό)', '6,5', '7'), F('Θηλή – πτυχή (τάση)', '8', '8,5'), F('Πλάτος βάσης', '12', '12,5'), F('Pinch άνω πόλου', '2,5', '2,5'), F('Pinch πτυχής', '1', '1'), F('Διάταση δέρματος', '2,5', '3'), F('Διάμετρος άλω', '4', '4')] },
+      { title: 'Ταξινόμηση', note: '', fields: [F('Πτώση (Regnault)', 'I', 'I'), F('Ασυμμετρία όγκου (cc)', '+20 Δ', '', false, '70px'), F('Σωληνοειδής (τύπος)', '—', '—'), F('Εισολκή θηλής (βαθμός)', '—', '—'), F('Καψική σύσπαση (Baker)', '—', '—'), F('Ποιότητα δέρματος', 'καλή', '', false, '70px')] }
+    ];
+    if (has('Αφαίρεση/αλλαγή ενθεμάτων')) groups.push({ title: 'Υπάρχοντα ενθέματα', note: '· αναθεώρηση', fields: [F('Κατασκευαστής', '', '', false, '110px'), F('Μέγεθος (cc)', '', ''), F('Θύλακας', '', '', false, '90px'), F('Έτος', '', '', false, '70px')] });
+    if (has('Αποκατάσταση μαστού')) groups.push({ title: 'Ογκολογικό ιστορικό', note: '· αποκατάσταση', fields: [F('Πλευρά', '', '', false, '70px'), F('Τύπος μαστεκτομής', '', '', false, '110px'), F('Ακτινοθεραπεία', '', '', false, '70px'), F('Χρονισμός (άμεση/όψιμη)', '', '', false, '90px')] });
+    groups.push({ title: 'Πλάνο', note: '', fields: [F('Τομή', 'υπομαστική', '', false, '110px'), F('Θύλακας', 'dual plane', '', false, '110px'), F('Ένθεμα (cc)', '275', '275'), F('Σχέδιο εκτομής', '—', '', false, '90px'), F('Μίσχος', '—', '', false, '90px'), F('Νέα θέση θηλής (cm από ΣΣ)', '—', '—'), F('Νέα πτυχή (cm)', '−1', '−1'), F('Ελεύθερο μόσχευμα θηλής', 'όχι', '', false, '70px')] });
+    var subDefs = {
+      'Lifting προσώπου': ['Deep plane', 'Deep neck', 'Temporal MORE', 'Nanofat', 'Βλέφαρα', 'Mini lift', 'Μέσο τρίτο', 'Ενδοσκοπικό φρυδιών', 'Lifting μετώπου', 'Μείωση υπογνάθιων αδένων (SMG)', 'Πλατυσματοπλαστική', 'Λίπος'],
+      'Ρινοπλαστική': ['Ανοιχτή', 'Κλειστή', 'Preservation', 'Αναθεώρηση', 'Διαφραγματοπλαστική', 'Spreader grafts', 'Septal extension graft', 'Columellar strut', 'Alar rim grafts (articulated)', 'Free / diced cartilage', 'Πλευρικός χόνδρος', 'Χόνδρος αυτιού', 'Οστεοτομίες', 'Μείωση βάσης', 'Κόγχες'],
+      'Βλεφαροπλαστική κάτω': ['Διεπιπεφυκοτική', 'Διαδερμική', 'Επανατοποθέτηση λίπους', 'Κανθοπηξία'],
+      'Βλεφαροπλαστική άνω': ['Μόνο δέρμα', 'Μυς', 'Λίπος', 'Διόρθωση βλεφαρόπτωσης'],
+      'FFS': ['Μέτωπο / κόλπος', 'Γραμμή μαλλιών', 'Φρύδια', 'Ρινοπλαστική', 'Ζυγωματικά', 'Lip lift', 'Γωνία γνάθου', 'Πηγούνι', 'Tracheal shave'],
+      'Εμφυτεύματα προσώπου': ['Πηγούνι', 'Γωνία γνάθου', 'Ζυγωματικά']
+    };
+    var subsSt = this.state.subs || {};
+    var subRows = this.state.chosen.filter(function (n) { return subDefs[n]; }).map(function (n) {
+      var sel = subsSt[n] || [];
+      return { name: n, opts: subDefs[n].map(function (o) {
+        var on = sel.indexOf(o) !== -1;
+        return { label: o, mark: on ? '✓ ' : '', pressed: on ? 'true' : 'false',
+          style: on ? 'border:1px solid #0E5E63;background:#E6F0EF;color:#0E5E63;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#3B4249;font-weight:500',
+          toggle: function () {
+            var all = Object.assign({}, self.state.subs || {});
+            var cur = (all[n] || []).slice();
+            var k = cur.indexOf(o);
+            if (k === -1) cur.push(o); else cur.splice(k, 1);
+            all[n] = cur;
+            self.setState({ subs: all });
+          } };
+      }) };
+    });
+    var chosenLabels = this.state.chosen.map(function (n) { var s = subsSt[n] || []; return s.length ? n + ' (' + s.join(', ') + ')' : n; });
+    var rhinoChecks = (subRows.filter(function (r) { return r.name === 'Ρινοπλαστική'; })[0] || { opts: [] }).opts.map(function (o) {
+      return { label: o.label, pressed: o.pressed, toggle: o.toggle, mark: o.pressed === 'true' ? '✓' : '',
+        boxStyle: o.pressed === 'true' ? 'background:#0E5E63;color:#FFFFFF;border:1px solid #0E5E63' : 'background:#FFFFFF;border:1px solid #9A958B' };
+    });
+    var rec = this.state.rec;
+    return {
+      types: types, templates: templates, measures: measures,
+      addAreas: addAreas, areaBlocks: areaBlocks,
+      cats: cats, procList: procList, chosen: chosenArr, subRows: subRows, chosenLabels: chosenLabels, rhinoChecks: rhinoChecks, noneChosen: chosenArr.length === 0,
+      tplBreast: tplActive === 0, tplRhino: tplActive === 1, tplFace: tplActive === 2, tplBody: tplActive === 3, notBreast: tplActive !== 0,
+      showPlanning: surgical && avail.length > 0, noPlanning: !(surgical && avail.length > 0), breastProcs: breastProcs, breastGroups: groups,
+      toggleRec: function () { self.setState({ rec: !self.state.rec }); },
+      recLabel: rec ? 'Διακοπή 03:42' : 'Έναρξη ηχογράφησης',
+      recTitle: rec ? 'Ηχογράφηση σε εξέλιξη' : 'Ηχογράφηση συνεδρίας',
+      recStyle: rec ? 'background:#FBE9E7;color:#B42318' : 'background:#F1F0EC;color:#B42318'
+    };
+  }
+}
+</script>
+</body>
+</html>

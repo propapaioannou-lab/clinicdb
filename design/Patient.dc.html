@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Καρτέλα ασθενή</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3EF}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+input::placeholder{color:#6B7178}
+</style>
+</helmet>
+<div style="font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="Κύριο μενού" style="flex: 1 1 232px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #E4E2DC; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #0E5E63; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">Π</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-weight: 600; font-size: 15px">Παπαϊωάννου</span>
+        <span style="font-size: 12px; color: #5B636B">Πλαστική Χειρουργική</span>
+      </div>
+    </div>
+    <div role="group" aria-label="Επιχείρηση" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px">
+      <button style="flex: 1; border: 0; border-radius: 8px; padding: 8px 6px; font: inherit; font-size: 13px; font-weight: 600; background: #FFFFFF; color: #0E5E63; box-shadow: 0 1px 2px rgba(0,0,0,0.08); cursor: pointer">Ιατρείο</button>
+      <button style="flex: 1; border: 0; border-radius: 8px; padding: 8px 6px; font: inherit; font-size: 13px; font-weight: 500; background: transparent; color: #5B636B; cursor: pointer">Spa</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
+        Ιατρείο
+      </a>
+      <a href="Patients.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; background: #E6F0EF; color: #0E5E63; font-weight: 600; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path><path d="M16 4.5a3.5 3.5 0 010 7"></path><path d="M18 14.2c2.1.7 3.5 2.8 3.5 5.8"></path></svg>
+        Ασθενείς
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Ημερολόγιο
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4l5.5 5.5-9 9H5.5V13z"></path><path d="M12.5 6l5.5 5.5"></path></svg>
+        Χειρουργεία
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l2.5 2.5L16 9"></path><rect x="3" y="3" width="18" height="18" rx="3"></rect></svg>
+        <span style="flex: 1">Εργασίες</span>
+        <span style="background: #F1F0EC; color: #2C3238; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">5</span>
+      </a>
+    </div>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #ECEAE5; padding-top: 14px">
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path></svg>
+        Ρυθμίσεις
+      </a>
+    </div>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 18px 32px; border-bottom: 1px solid #E4E2DC; background: #FBFAF8">
+      <label style="flex: 1 1 320px; display: flex; align-items: center; gap: 10px; background: #FFFFFF; border: 1px solid #DAD8D1; border-radius: 11px; padding: 0 14px; height: 46px; box-sizing: border-box">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B636B" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Αναζήτηση ασθενή</span>
+        <input type="search" placeholder="Αναζήτηση ασθενή — όνομα, τηλέφωνο, email, ΑΜΚΑ" style="flex: 1; border: 0; outline: 0; font: inherit; font-size: 15px; background: transparent; color: #1C2024; min-width: 0">
+        <span style="font-size: 12px; color: #5B636B; border: 1px solid #DAD8D1; border-radius: 6px; padding: 2px 6px">Ctrl K</span>
+      </label>
+    </header>
+
+    <main style="padding: 24px 32px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px; width: 100%; box-sizing: border-box">
+
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: stretch">
+      <section aria-label="Στοιχεία ασθενή" style="flex: 999 1 520px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 22px 24px; display: flex; flex-wrap: wrap; gap: 20px; align-items: center">
+        <div style="width: 64px; height: 64px; border-radius: 999px; background: #DCE7E6; color: #0E5E63; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600">ΕΜ</div>
+        <div style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.01em">Ελένη Μαρκοπούλου</h1>
+            <span style="font-size: 12.5px; font-weight: 600; color: #8A4B08; background: #FCF1E3; border-radius: 999px; padding: 4px 10px; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 999px; background: #D69E2E"></span>Κίτρινη σήμανση · αργοπορίες</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: #3B4249">
+            <span>P-004218</span>
+            <span>38 ετών · Γυναίκα</span>
+            <span>ΑΜΚΑ 1234 5678 901</span>
+            <a href="#">69X XXX XXXX</a>
+            <a href="#">eleni.m@example.com</a>
+            <span>Επικοινωνία: Ελληνικά</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px">
+            <span style="font-size: 13px; font-weight: 600; color: #8C1D18; background: #FBE9E7; border-radius: 8px; padding: 5px 10px">Αλλεργία: Πενικιλίνη</span>
+            <span style="font-size: 13px; color: #3B4249; background: #F1F0EC; border-radius: 8px; padding: 5px 10px">Καπνίστρια · διακοπή 4 εβδ. πριν</span>
+          </div>
+        </div>
+      </section>
+      <section aria-labelledby="wt" style="flex: 1 1 260px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <h2 id="wt" style="margin: 0; font-size: 17px; font-weight: 600">Βάρος</h2>
+              <span style="font-size: 22px; font-weight: 600">64 kg <span style="font-size: 13px; color: #5B636B; font-weight: 500">BMI 23,5</span></span>
+            </div>
+            <svg role="img" aria-label="Βάρος: 68, 67, 66, 65, 64 kg στις τελευταίες πέντε επισκέψεις" viewBox="0 0 300 90" style="width: 100%; height: 90px">
+              <line x1="0" y1="80" x2="300" y2="80" stroke="#ECEAE5"></line>
+              <polyline points="10,20 80,32 150,44 220,56 290,66" fill="none" stroke="#0E5E63" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+              <circle cx="10" cy="20" r="3.5" fill="#0E5E63"></circle><circle cx="80" cy="32" r="3.5" fill="#0E5E63"></circle><circle cx="150" cy="44" r="3.5" fill="#0E5E63"></circle><circle cx="220" cy="56" r="3.5" fill="#0E5E63"></circle><circle cx="290" cy="66" r="4.5" fill="#0E5E63"></circle>
+            </svg>
+            <span style="font-size: 13px; color: #5B636B">−4 kg από τον Μάιο · μέγιστο βάρος 71 kg</span>
+          </section>
+      <section aria-labelledby="hx" style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <h2 id="hx" style="margin: 0; font-size: 17px; font-weight: 600">Ιατρικό ιστορικό</h2>
+              <a href="#" style="font-size: 13.5px; font-weight: 600">Επεξεργασία</a>
+            </div>
+            <dl style="margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; font-size: 14px">
+              <div><dt style="color: #5B636B; font-size: 12.5px">Φάρμακα</dt><dd style="margin: 0">Αντισυλληπτικό</dd></div>
+              <div><dt style="color: #5B636B; font-size: 12.5px">Χειρουργεία</dt><dd style="margin: 0">Καισαρική 2019</dd></div>
+              <div><dt style="color: #5B636B; font-size: 12.5px">Θηλασμός</dt><dd style="margin: 0">Όχι</dd></div>
+              <div><dt style="color: #5B636B; font-size: 12.5px">Οικ. ιστορικό</dt><dd style="margin: 0">Ca μαστού (μητέρα)</dd></div>
+            </dl>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid #F1F0EC; padding-top: 8px">
+              <span style="flex: 1; font-size: 12.5px; color: #5B636B">Συμπλήρωσε η ασθενής στο tablet · 12/10</span>
+              <sc-if value="{{notVerified}}" hint-placeholder-val="{{true}}">
+                <span style="font-size: 12px; font-weight: 600; color: #8A4B08; background: #FCF1E3; border-radius: 999px; padding: 3px 9px">Εκκρεμεί επιβεβαίωση</span>
+                <button onClick="{{verify}}" style="height: 30px; padding: 0 12px; border-radius: 8px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">Επιβεβαίωση ✓</button>
+              </sc-if>
+              <sc-if value="{{verified}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 12px; font-weight: 600; color: #1E6B45; background: #E3F1EA; border-radius: 999px; padding: 3px 9px">✓ Επιβεβαιώθηκε · Μαρία Κ. (νοσηλεύτρια) · 11/10 10:42</span>
+                <button onClick="{{unverify}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DAD8D1; background: #FFFFFF; color: #3B4249; font: inherit; font-size: 12.5px; cursor: pointer">Αναίρεση</button>
+              </sc-if>
+            </div>
+          </section>
+      </div>
+
+      <div role="tablist" aria-label="Ενότητες καρτέλας" style="display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid #E4E2DC">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+          <button role="tab" aria-selected="{{t.selected}}" onClick="{{t.pick}}" style="border: 0; background: transparent; font: inherit; font-size: 14.5px; padding: 12px 14px; white-space: nowrap; cursor: pointer; {{t.style}}">{{t.label}}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{showOverview}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+        <section aria-labelledby="tl" style="flex: 999 1 480px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
+            <h2 id="tl" style="margin: 0; font-size: 17px; font-weight: 600">Επισκέψεις και χειρουργεία</h2>
+            <span style="font-size: 13.5px; color: #5B636B">Νεότερα πρώτα</span>
+          </div>
+          <sc-for list="{{timeline}}" as="e" hint-placeholder-count="4">
+            <div style="display: flex; gap: 16px; padding: 14px 0; border-top: 1px solid #F1F0EC">
+              <span style="width: 70px; flex: none; font-size: 13.5px; color: #5B636B; font-variant-numeric: tabular-nums">{{e.date}}</span>
+              <span style="width: 10px; height: 10px; border-radius: 999px; margin-top: 5px; flex: none; background: {{e.dot}}"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+                <span style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+                  <span style="font-size: 15px; font-weight: 600">{{e.title}}</span>
+                  <sc-if value="{{e.hasBadge}}" hint-placeholder-val="{{false}}">
+                    <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 9px; {{e.badgeStyle}}">{{e.badge}}</span>
+                  </sc-if>
+                </span>
+                <span style="font-size: 14px; color: #3B4249; line-height: 1.5">{{e.text}}</span>
+              </span>
+            </div>
+          </sc-for>
+        </section>
+
+        <aside style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+          <section aria-labelledby="cs" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px">
+            <h2 id="cs" style="margin: 0; font-size: 17px; font-weight: 600">Συγκαταθέσεις</h2>
+            <sc-for list="{{consents}}" as="c" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; gap: 10px; font-size: 14px">
+                <span style="width: 22px; height: 22px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex: none; {{c.iconStyle}}">
+                  <sc-if value="{{c.ok}}" hint-placeholder-val="{{true}}">
+                    <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 7"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{c.pending}}" hint-placeholder-val="{{false}}">
+                    <span style="font-weight: 700; font-size: 13px">!</span>
+                  </sc-if>
+                </span>
+                <span style="flex: 1">{{c.label}}</span>
+                <span style="font-size: 12.5px; color: #5B636B">{{c.note}}</span>
+              </div>
+            </sc-for>
+            <button style="margin-top: 4px; height: 42px; border-radius: 10px; border: 1px solid #E8C9A0; background: #FDF6EC; font: inherit; font-size: 14px; font-weight: 600; color: #8A4B08; cursor: pointer">Αποστολή συγκατάθεσης αυξητικής για υπογραφή</button>
+          </section>
+        </aside>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{showTx}}" hint-placeholder-val="{{true}}">
+      <section aria-labelledby="tx" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 18px 22px; border-bottom: 1px solid #ECEAE5">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="tx" style="margin: 0; font-size: 17px; font-weight: 600">Επαναλαμβανόμενες θεραπείες</h2>
+            <span style="font-size: 13px; color: #5B636B">Ενέσιμα και μη χειρουργικές θεραπείες · χωριστά από τα χειρουργεία</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+            <span style="font-size: 13.5px; font-weight: 600; color: #8A4B08; background: #FCF1E3; border-radius: 999px; padding: 5px 12px">Επόμενη αλλαντική τοξίνη: από 14/11</span>
+            <button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ Νέα θεραπεία</button>
+          </div>
+        </div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px">
+            <thead>
+              <tr style="text-align: left; color: #5B636B; font-size: 12.5px">
+                <th style="padding: 10px 22px; font-weight: 600">Ημερομηνία</th>
+                <th style="padding: 10px 8px; font-weight: 600">Θεραπεία</th>
+                <th style="padding: 10px 8px; font-weight: 600">Προϊόν · παρτίδα</th>
+                <th style="padding: 10px 8px; font-weight: 600">Περιοχές · ποσότητα</th>
+                <th style="padding: 10px 8px; font-weight: 600">Από</th>
+                <th style="padding: 10px 22px 10px 8px; font-weight: 600">Επόμενη</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{treatments}}" as="t" hint-placeholder-count="4">
+                <tr style="border-top: 1px solid #F1F0EC">
+                  <td style="padding: 12px 22px; font-variant-numeric: tabular-nums; color: #3B4249">{{t.date}}</td>
+                  <td style="padding: 12px 8px; font-weight: 600">{{t.kind}}</td>
+                  <td style="padding: 12px 8px">{{t.product}}</td>
+                  <td style="padding: 12px 8px">{{t.areas}}</td>
+                  <td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 9px; {{t.whereStyle}}">{{t.where}}</span></td>
+                  <td style="padding: 12px 22px 12px 8px; color: #3B4249">{{t.next}}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{showVisits}}" hint-placeholder-val="{{false}}">
+      <section aria-labelledby="vis" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #ECEAE5">
+          <h2 id="vis" style="margin: 0; font-size: 17px; font-weight: 600">Επισκέψεις · 3</h2>
+          <a href="Visit.dc.html" style="display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 11px; background: #0E5E63; color: #FFFFFF; font-size: 15px; font-weight: 600">
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Νέα επίσκεψη
+          </a>
+        </div>
+        <sc-for list="{{visits}}" as="v" hint-placeholder-count="3">
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 16px 20px; border-bottom: 1px solid #F1F0EC">
+            <span style="width: 90px; flex: none; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums">{{v.date}}</span>
+              <span style="font-size: 12.5px; color: #5B636B">{{v.time}}</span>
+            </span>
+            <span style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+              <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+                <span style="font-size: 15px; font-weight: 600">{{v.type}}</span>
+                <sc-if value="{{v.ai}}" hint-placeholder-val="{{false}}">
+                  <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 9px; background: #EEF2F7; color: #2F4B6E">Ηχογράφηση + ανασκόπηση AI</span>
+                </sc-if>
+              </span>
+              <span style="font-size: 14px; color: #3B4249; line-height: 1.5">{{v.notes}}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: #3B4249; min-width: 120px">
+              <span>Βάρος <b>{{v.weight}}</b></span>
+              <span>{{v.fee}}</span>
+            </span>
+          </div>
+        </sc-for>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{showFin}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 16px">
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+          <div style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5B636B">Σύνολο χρεώσεων</span><span style="font-size: 26px; font-weight: 600">5.920 €</span></div>
+          <div style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #5B636B">Εξοφλημένα</span><span style="font-size: 26px; font-weight: 600; color: #1E6B45">1.420 €</span></div>
+          <div style="background: #FDF6EC; border: 1px solid #E8C9A0; border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 13px; color: #8A4B08">Εκκρεμεί</span><span style="font-size: 26px; font-weight: 600; color: #8A4B08">4.500 €</span><span style="font-size: 12.5px; color: #8A4B08">Υπόλοιπο αυξητικής · έως 13/10</span></div>
+        </div>
+        <section aria-labelledby="fin" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid #ECEAE5">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <h2 id="fin" style="margin: 0; font-size: 17px; font-weight: 600">Κινήσεις και αποδείξεις</h2>
+              <span style="font-size: 13px; color: #5B636B; display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 999px; background: #2E9E63"></span>Συνδεδεμένο με Epsilon Net · διαβίβαση στο myDATA</span>
+            </div>
+            <div style="display: flex; gap: 8px">
+              <button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Νέα χρέωση</button>
+              <button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Είσπραξη &amp; απόδειξη</button>
+            </div>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 760px">
+              <thead><tr style="text-align: left; color: #5B636B; font-size: 12.5px">
+                <th style="padding: 10px 20px; font-weight: 600">Ημερομηνία</th><th style="padding: 10px 8px; font-weight: 600">Περιγραφή</th><th style="padding: 10px 8px; font-weight: 600; text-align: right">Ποσό</th><th style="padding: 10px 8px; font-weight: 600">Κατάσταση</th><th style="padding: 10px 20px 10px 8px; font-weight: 600">Παραστατικό (Epsilon Net)</th>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{finance}}" as="f" hint-placeholder-count="5">
+                  <tr style="border-top: 1px solid #F1F0EC">
+                    <td style="padding: 12px 20px; color: #3B4249; font-variant-numeric: tabular-nums">{{f.date}}</td>
+                    <td style="padding: 12px 8px; font-weight: 600">{{f.desc}}</td>
+                    <td style="padding: 12px 8px; text-align: right; font-variant-numeric: tabular-nums">{{f.amount}}</td>
+                    <td style="padding: 12px 8px"><span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 3px 9px; {{f.statusStyle}}">{{f.status}}</span></td>
+                    <td style="padding: 12px 20px 12px 8px; font-size: 13px; {{f.docStyle}}">{{f.doc}}</td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{showPhotos}}" hint-placeholder-val="{{false}}">
+      <section aria-labelledby="ph" style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <h2 id="ph" style="margin: 0; font-size: 17px; font-weight: 600">Φωτογραφίες · 86 συνολικά</h2>
+            <span style="font-size: 13px; color: #5B636B">Από τον φάκελο του Synology · δημοσίευση: μόνο φάκελος (βάσει συγκατάθεσης)</span>
+          </div>
+          <button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Σύγκριση πριν / μετά</button>
+        </div>
+        <sc-for list="{{photoSessions}}" as="s" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 14px; font-weight: 600">{{s.title}} <span style="font-weight: 400; color: #5B636B">· {{s.count}} φωτογραφίες</span></span>
+            <div style="display: flex; gap: 8px; overflow-x: auto">
+              <sc-for list="{{s.thumbs}}" as="th" hint-placeholder-count="5">
+                <span style="flex: none; width: 110px; height: 136px; border-radius: 10px; background: #E9E6DF; border: 1px solid #DDD9D0; display: flex; align-items: flex-end; justify-content: center; font-size: 11.5px; color: #5B636B; padding-bottom: 6px; box-sizing: border-box">{{th}}</span>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+      </sc-if>
+
+      <sc-if value="{{showOther}}" hint-placeholder-val="{{false}}">
+      <section style="background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 28px 24px; display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">{{otherTitle}}</h2>
+        <p style="margin: 0; font-size: 14px; color: #3B4249; line-height: 1.6">{{otherText}}</p>
+      </section>
+      </sc-if>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 0, verified: false }; }
+  renderVals() {
+    var self = this;
+    var labels = ['Επισκόπηση', 'Ιατρικό ιστορικό', 'Επισκέψεις · 3', 'Χειρουργεία · 1', 'Θεραπείες · 4', 'Φωτογραφίες · 86', 'Οικονομικά · 4.500 € εκκρεμεί', 'Έγγραφα · 7'];
+    var tabs = labels.map(function (l, i) {
+      var on = self.state.tab === i;
+      return {
+        label: l, selected: on ? 'true' : 'false',
+        style: on ? 'color:#0E5E63;font-weight:600;box-shadow:inset 0 -2px 0 #0E5E63' : 'color:#3B4249;font-weight:500',
+        pick: function () { self.setState({ tab: i }); }
+      };
+    });
+    var timeline = [
+      { date: '20/10/26', dot: '#C27A1A', title: 'Χειρουργείο · Αυξητική μαστού', hasBadge: true, badge: 'Προγραμματισμένο', badgeStyle: 'background:#FCF1E3;color:#8A4B08', text: 'Διαβαλκανικό · Γενική αναισθησία · Motiva Round 275 cc, dual plane. Η ειδική συγκατάθεση δεν έχει υπογραφεί.' },
+      { date: '12/10/26', dot: '#0E5E63', title: 'Προεγχειρητική εκτίμηση', hasBadge: true, badge: 'Ηχογράφηση + ανασκόπηση AI', badgeStyle: 'background:#EEF2F7;color:#2F4B6E', text: 'Συζήτηση μεγέθους και θέσης ενθέματος, κίνδυνοι (καψικό, BIA-ALCL), ανάρρωση. Βάρος 64 kg.' },
+      { date: '28/09/26', dot: '#0E5E63', title: 'Πρώτη επίσκεψη · Αυξητική μαστού', hasBadge: false, badge: '', badgeStyle: '', text: 'Επιθυμεί φυσικό αποτέλεσμα, μέγεθος Β→C. Ήπια ασυμμετρία δεξιά. Προσφορά δόθηκε.' }
+    ];
+    var spa = 'background:#F3EAF6;color:#6B3E7D';
+    var clinic = 'background:#E6F0EF;color:#0E5E63';
+    var treatments = [
+      { date: '14/08/26', kind: 'Αλλαντική τοξίνη', product: 'Botox® 100U · C1234AB', areas: 'Μέτωπο, μεσόφρυο, πόδι χήνας · 44 U', where: 'Ιατρείο', whereStyle: clinic, next: 'από 14/11/26' },
+      { date: '02/06/26', kind: 'Υαλουρονικό', product: 'Juvéderm Volift · L9876', areas: 'Ρινοπαρειακές · 1 ml', where: 'Ιατρείο', whereStyle: clinic, next: '—' },
+      { date: '14/05/25', kind: 'Αλλαντική τοξίνη', product: 'Botox® 100U · B5521ZX', areas: 'Μέτωπο · 20 U', where: 'Spa', whereStyle: spa, next: '—' },
+      { date: '10/03/25', kind: 'Laser CO₂ fractional', product: '—', areas: 'Ολικό πρόσωπο · 1/3 συνεδρίες', where: 'Spa', whereStyle: spa, next: 'Πακέτο: 2 υπόλοιπες' }
+    ];
+    var consents = [
+      { label: 'Ενημέρωση GDPR', note: '28/09/26', ok: true, pending: false, iconStyle: 'background:#E3F1EA;color:#1E6B45' },
+      { label: 'Φωτογραφίες · μόνο φάκελος', note: '28/09/26', ok: true, pending: false, iconStyle: 'background:#E3F1EA;color:#1E6B45' },
+      { label: 'Ηχογράφηση επίσκεψης', note: '28/09/26', ok: true, pending: false, iconStyle: 'background:#E3F1EA;color:#1E6B45' },
+      { label: 'Αυξητική μαστού', note: 'Εκκρεμεί', ok: false, pending: true, iconStyle: 'background:#FCF1E3;color:#8A4B08' }
+    ];
+    var tab = this.state.tab;
+    var paid = 'background:#E3F1EA;color:#1E6B45', pend = 'background:#FCF1E3;color:#8A4B08', free = 'background:#F1F0EC;color:#3B4249';
+    var finance = [
+      { date: '20/10/26', desc: 'Αυξητική μαστού · υπόλοιπο', amount: '4.500 €', status: 'Εκκρεμεί', statusStyle: pend, doc: 'Θα εκδοθεί με την είσπραξη', docStyle: 'color:#5B636B' },
+      { date: '01/10/26', desc: 'Αυξητική μαστού · προκαταβολή', amount: '500 €', status: 'Εξοφλήθηκε · κάρτα', statusStyle: paid, doc: 'ΑΠΥ Γ-318 · ΜΑΡΚ 400001234567 ✓', docStyle: 'color:#1E6B45' },
+      { date: '28/09/26', desc: 'Ιατρική εξέταση', amount: '70 €', status: 'Εξοφλήθηκε · μετρητά', statusStyle: paid, doc: 'ΑΠΥ Γ-301 · ΜΑΡΚ 400001229871 ✓', docStyle: 'color:#1E6B45' },
+      { date: '14/08/26', desc: 'Αλλαντική τοξίνη', amount: '350 €', status: 'Εξοφλήθηκε · κάρτα', statusStyle: paid, doc: 'ΑΠΥ Γ-244 · ΜΑΡΚ 400001101155 ✓', docStyle: 'color:#1E6B45' },
+      { date: '02/06/26', desc: 'Υαλουρονικό · ρινοπαρειακές', amount: '500 €', status: 'Εξοφλήθηκε · μετρητά', statusStyle: paid, doc: 'ΑΠΥ Γ-187 · ΜΑΡΚ 400000987322 ✓', docStyle: 'color:#1E6B45' },
+      { date: '12/10/26', desc: 'Προεγχειρητική εκτίμηση', amount: '0 €', status: 'Χωρίς χρέωση', statusStyle: free, doc: '—', docStyle: 'color:#5B636B' }
+    ];
+    var photoSessions = [
+      { title: 'Προεγχειρητικές · αυξητική · 12/10/26', count: 12, thumbs: ['Μπροστά', 'Δεξί πλάγιο', 'Αριστ. πλάγιο', 'Δεξί ¾', 'Αριστ. ¾'] },
+      { title: 'Πρώτη επίσκεψη · 28/09/26', count: 8, thumbs: ['Μπροστά', 'Δεξί πλάγιο', 'Αριστ. πλάγιο', 'Δεξί ¾'] },
+      { title: 'Υαλουρονικό · πριν / μετά · 02/06/26', count: 6, thumbs: ['Πριν', 'Μετά', 'Πριν ¾', 'Μετά ¾'] }
+    ];
+    var others = {
+      1: ['Ιατρικό ιστορικό', 'Το πλήρες ιστορικό σε ενότητες (νοσήματα, φάρμακα, αλλεργίες, οικογενειακό, κάπνισμα, προηγούμενα χειρουργεία, βάρος), με ένδειξη τι συμπλήρωσε η ασθενής στο tablet και τι επιβεβαίωσε ο ιατρός, και ιστορικό αλλαγών.'],
+      3: ['Χειρουργεία · 1', 'Κάθε χειρουργείο: επεμβάσεις, κλινική, αναισθησία, εμφυτεύματα με παρτίδα, πρακτικό, επιπλοκές, έλεγχος ετοιμότητας και φωτογραφίες.'],
+      7: ['Έγγραφα · 7', 'Υπογεγραμμένες συγκαταθέσεις (με έκδοση και ανάκληση ανά δήλωση), εξετάσεις, παραπεμπτικά, brief χειρουργείου και αρχεία από my-medical.']
+    };
+    var o = others[tab] || ['', ''];
+    var visits = [
+      { date: '12/10/26', time: '11:00 · 32′', type: 'Προεγχειρητική εκτίμηση', ai: true, notes: 'Επανεκτίμηση για αυξητική. Δοκιμή sizers 255/275 cc, προτιμά 275. Dual plane, υπομαστική τομή. Κίνδυνοι και ανάρρωση συζητήθηκαν.', weight: '64 kg', fee: 'Χωρίς χρέωση' },
+      { date: '28/09/26', time: '17:15 · 40′', type: 'Πρώτη επίσκεψη', ai: false, notes: 'Επιθυμεί φυσικό αποτέλεσμα, Β→C. Ήπια ασυμμετρία δεξιά. Προσφορά δόθηκε.', weight: '65 kg', fee: '70 € · εξοφλήθηκε' },
+      { date: '03/04/25', time: '18:00 · 20′', type: 'Επανέλεγχος', ai: false, notes: 'Έλεγχος μετά από υαλουρονικό. Ικανοποιημένη.', weight: '68 kg', fee: 'Χωρίς χρέωση' }
+    ];
+    return {
+      tabs: tabs, timeline: timeline, consents: consents, treatments: treatments, finance: finance, photoSessions: photoSessions,
+      visits: visits, showVisits: tab === 2,
+      showOverview: tab === 0, showTx: tab === 0 || tab === 4, showFin: tab === 6, showPhotos: tab === 5,
+      showOther: !!others[tab], otherTitle: o[0], otherText: o[1],
+      verified: this.state.verified, notVerified: !this.state.verified,
+      verify: function () { self.setState({ verified: true }); }, unverify: function () { self.setState({ verified: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

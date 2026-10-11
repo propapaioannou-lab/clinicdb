@@ -1,0 +1,164 @@
+# DESIGN.md — Interface (approved 11 Oct 2026)
+
+The surgeon reviewed and approved these screens on a design canvas. This file plus
+the mockups in `design/` describe **how the app looks and behaves**. `SPEC.md`
+describes **what it does**. If they disagree, ask the surgeon.
+
+## How to use the mockups in `design/`
+- They are reference drawings in HTML with inline styles. They do **not** run on
+  their own. Read them as source code. Do not copy them into the app.
+- Rebuild each screen as React components with Tailwind, using the tokens below.
+- Ignore the mockup machinery: `<x-dc>`, `<helmet>`, `{{holes}}`, `<sc-for>`,
+  `<sc-if>` and the `class Component extends DCLogic` script. The script only shows
+  which states exist (e.g. tab selected, Yes/No answered, history verified).
+- The arrays inside the scripts are useful seed data, for example the procedure
+  catalogue with sub-options in `Visit.dc.html`, the history questions in
+  `IntakeHistory.dc.html`, and the patient-page tabs. All names and figures are fake.
+
+| File | Screen |
+|---|---|
+| `Main.dc.html` | 1a · Home — physician, office day ("Ιατρείο") |
+| `Assistant.dc.html` | 1b · Home — PA / nurse |
+| `Surgery.dc.html` | 1c · Physician, surgery day ("Χειρουργεία") |
+| `SurgeryMobile.dc.html` | 1d · Surgery day on a phone |
+| `Patients.dc.html` | 2a · Patients — search page |
+| `Patient.dc.html` | 2b · Patient record |
+| `Visit.dc.html` | 3 · New visit |
+| `Intake.dc.html` | 4 · Intake form on tablet, step 2a (medication, allergies, smoking, weight) |
+| `IntakeHistory.dc.html` | 4b · Intake form, step 2b (full history questionnaire) |
+
+## Design tokens (put them in `tailwind.config` as named colours)
+- Font: **Commissioner** (Google Fonts, has Greek), weights 400/500/600/700; fallback
+  system-ui. Self-host the font files, so no request goes to Google from the server.
+- Colours:
+  - `primary` #0E5E63 (teal), hover #0A4549, tint #E6F0EF, light tint #F5F9F9
+  - `ground` #F4F3EF (app background), `surface` #FFFFFF, `surface-2` #FBFAF8
+  - `ink` #1C2024 (text), `ink-2` #2C3238, `ink-3` #3B4249, `muted` #5B636B,
+    placeholder #6B7178
+  - `line` #E4E2DC (borders), `line-strong` #DAD8D1 (input borders), `line-soft`
+    #ECEAE5 / #F1F0EC (dividers, segmented-control background)
+  - Status: green #2E9E63 (text #1E6B45 on #E3F1EA); orange #D98A1C (text #8A4B08 on
+    #FCF1E3); red #C8312A (text #8C1D18 on #FBE9E7); info navy #2F4B6E on #EEF2F7
+- Radius: inputs/buttons 9–12px, cards 14–16px, pills 999px.
+- Sizes: staff screens min 44px touch targets and 14.5–15px body text. **Patient
+  tablet form**: 56–60px buttons and inputs, 16–18px text, one column.
+- Cards: white, 1px `line` border, no heavy shadows.
+
+## Layout rules
+- **App shell**: left menu (≈232px) + top bar with global patient search
+  (placeholder "Αναζήτηση ασθενή — όνομα, τηλέφωνο, email, ΑΜΚΑ", shortcut Ctrl K).
+- **Left menu**, in order: Ιατρείο · Ασθενείς · Ημερολόγιο · Χειρουργεία · Εργασίες
+  (with counter). Ρυθμίσεις and the user card sit at the bottom. Above the menu is a
+  company switch **Ιατρείο | Spa**. Keep the menu short. Everything else goes inside
+  pages, not in the menu.
+- **No mode toggles.** Office day and surgery day are two menu items. Each opens on
+  today with ‹ › day navigation and a "Σήμερα" button.
+- **Mobile-first**: every screen works on a phone. On a phone the left menu becomes a
+  bottom bar (Σήμερα, Αναζήτηση, Chat, Ημερολόγιο), and cards expand on tap. See
+  `SurgeryMobile.dc.html`.
+- **Role-based home**: physician → 1a; PA/nurse → 1b; secretary → designed later
+  (use 1b for now).
+- **Expand in place**: long lists (to-dos, surgery checklists) are grouped and
+  collapsed. Click a group to expand it. Avoid modal pop-ups where possible.
+- All text in translation files (Greek first, English later), as CLAUDE.md requires.
+
+## Screens
+
+### 1a · Physician — Ιατρείο (office day)
+- Live clock with seconds and a countdown to the next appointment (amber ≤5 min,
+  red "late X min").
+- A **"ready in room" banner** appears when the assistant marks a patient ready,
+  with a sound and an optional phone push.
+- Today's appointments, with status Αναμένεται → Στην αναμονή → Έτοιμος · Δωμάτιο X →
+  Ολοκληρώθηκε. Online appointments show "Έναρξη κλήσης".
+- Side column: staff chat with one-tap presets, and the physician's own tasks.
+
+### 1b · PA / nurse home
+- Room board (waiting / room 1 / room 2). "Ready → notify doctor" sets the status
+  and triggers the banner on 1a/1c.
+- Today's schedule table, with confirmation, form and payment status.
+- "Προς διεκπεραίωση": collapsible groups (intake forms to review and duplicates,
+  WhatsApp messages, unconfirmed bookings).
+- Surgery checklists: collapsible per patient, with action buttons (send consent
+  link, remind about bloods, send brief).
+- Chat with the doctor.
+
+### 1c · Physician — Χειρουργεία (surgery day)
+- Full width, with **no** chat, tasks or upcoming list. The "ready in OR" banner still
+  shows.
+- One card per operation: time, patient, procedures, plan snippet (from the
+  planning sketch), pre-op photo thumbnails, and a **readiness light**:
+  - green = all items done
+  - orange = a secondary item is missing (deposit, photos, brief sent)
+  - red = a crucial item is missing (consent, bloods, pre-op clearance)
+  - which items are crucial is set in Settings
+- Each card has an expandable checklist.
+
+### 2a · Patients
+- A large search box with accent-, case- and space-insensitive search as you type.
+  Each result shows **which field matched**.
+- When the search box is empty, the page shows "Προτεινόμενοι σήμερα" (patients
+  with an appointment or surgery today) and "Πρόσφατα".
+- Filter chips: Όλοι · Ιατρείο · Χειρουργείο · Spa · Με σήμανση.
+- Yellow and red flags show as small markers.
+
+### 2b · Patient record
+- The header row holds three cards side by side:
+  - **Patient card**: name, age, ID, AMKA, phone, flag, infectious-disease alert.
+  - **Weight widget**: current weight, maximum weight, BMI, and a small trend.
+  - **Medical history widget**: key answers, with the footer "Συμπλήρωσε η ασθενής ·
+    date". When the history is unverified, the footer shows a "Εκκρεμεί επιβεβαίωση"
+    pill and an "Επιβεβαίωση ✓" button. When verified, it shows "✓ Επιβεβαιώθηκε ·
+    name (role) · date time".
+- The header has no back link and no row of action buttons.
+- Tabs with counts: Επισκόπηση · Ιατρικό ιστορικό · Επισκέψεις · Χειρουργεία ·
+  Θεραπείες · Φωτογραφίες · Οικονομικά · Έγγραφα.
+  - The Visits tab has a "Νέα επίσκεψη" button.
+  - The Financial tab shows charged / paid / pending, each movement, and the Epsilon
+    Net receipt with its ΜΑΡΚ.
+  - The Photos tab shows sessions with thumbnails.
+  - Treatments is its own table, separate from surgeries.
+
+### 3 · New visit
+- Visit type and an optional recording control (Phase 7).
+- **Clinical evaluation**: a "General / patient's request" text box, plus one
+  section per area (Μαστός, Πρόσωπο, Σώμα, Μύτη, Γεννητικά, Άλλο). Sections
+  are added and removed as needed. Each section has reminder chips and free text.
+- **Procedures discussed**: a picker by area. Some procedures open sub-options when
+  chosen (facelift, rhinoplasty, eyelids, FFS, facial implants). The chosen items
+  show as chips.
+- **Surgical planning panel** appears only when a surgical procedure is chosen. It
+  has one tab per needed template:
+  - breast: unified worksheet with R/L measurements, classification, conditional
+    revision and reconstruction groups, and plan
+  - rhinoplasty: sketch plus checklist
+  - face
+  - body: full-body front and back including the face, plus measurements
+  - each tab has pen input
+- Vitals (weight prompt, height, BMI, BP, pulse), fee and amount collected. The
+  previous visit is shown for reference.
+
+### 4 / 4b · Intake form (tablet, QR, remote link)
+- Steps: 1 Στοιχεία · 2 Ιστορικό · 3 Συγκαταθέσεις · 4 Υπογραφή.
+- A Greek/English switch is at the top. A lock icon exits guest mode and asks for the
+  staff PIN.
+- Step 2a: medication, allergies, smoking (with per-day amount and product
+  follow-ups), and weight / maximum weight / height.
+- Step 2b: the full questionnaire by body system (see SPEC §4 Medical history), with
+  Ναι/Όχι buttons, a detail box that opens on Ναι, a progress counter "x / y
+  απαντήθηκαν", and a previous-surgeries table with "+ Προσθήκη".
+- Large targets, one column, and no free-form layout.
+
+## Screen → phase (build each piece when its phase comes, already in this design)
+| Phase | Build now from the design |
+|---|---|
+| **2b UI refit** (now) | App shell and left menu, company switch, global search, 2a Patients, 2b patient record (header widgets; Overview, Medical history, Visits, Documents tabs), 3 New visit (without planning sketches and recording), phone layout. Tabs for later phases are shown greyed out with "σύντομα". |
+| 3 Intake | 4 / 4b intake form; history verification in 2b; intake and duplicate items in 1b "Προς διεκπεραίωση" |
+| 4 Surgeries | Surgeries and Treatments tabs; planning panel with sketches and pen; 1c and 1d surgery day with readiness lights and checklists |
+| 5 Photos | Photos tab; photo thumbnails on surgery cards |
+| 6 Calendar + GHL | 1a and 1b home screens with live appointments, room board, ready-in-room banner, staff chat with presets, online-call button |
+| 7 AI | Recording control in New visit |
+| 8 Receipts / Spa | Financial tab (Epsilon Net, ΜΑΡΚ) |
+
+Until Phase 6, the home page can show a simple placeholder ("Σήμερα" with links to
+Ασθενείς and Νέα επίσκεψη).

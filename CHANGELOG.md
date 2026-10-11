@@ -2,6 +2,28 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 1, Step 4: Two-step verification (2FA)
+
+- **Everyone now needs a 6-digit code** from an authenticator app (Google
+  Authenticator, Microsoft Authenticator, …) after the password.
+- **First login:** the app shows a QR code to scan, asks for one code to confirm, then
+  shows **10 recovery codes once**. Print them or keep them in a password manager.
+- **Lost phone:** type a recovery code instead of the 6-digit code. Each works once;
+  the app says how many are left.
+- **"Trust this device for 90 days"** tick box: that browser skips the code (the
+  password is still always required). Only on your own devices.
+- Wrong codes count toward the same lock as wrong passwords (5 tries → 15 minutes).
+- Each 6-digit code works only once. 2FA secrets are stored encrypted; recovery codes
+  and device keys only as fingerprints.
+- **Emergency reset** (lost phone AND recovery codes): a command on the server, see
+  README. Admins will get a button for this in Step 5.
+- Everything is in the audit log: setup, codes used, trusted devices, resets.
+- Your current login was ended so that 2FA applies to you right away.
+- New secret key `APP_SECRET` in `.env` encrypts the 2FA data. **It must be kept and
+  copied to the Synology unchanged**; if lost, everyone sets up 2FA again.
+
+**Check it:** see README, "Test 2FA".
+
 ## 11 Oct 2026 — Phase 1, Step 3: Login, sessions, audit log
 
 - **Login page** in Greek. Without logging in, every page sends you to it.

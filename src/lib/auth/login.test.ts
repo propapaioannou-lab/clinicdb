@@ -1,23 +1,30 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { ctx, makeUser } from "../../../test/factories";
+import { fullLogin } from "../../../test/login-helpers";
 import { login, MAX_FAILED_LOGINS } from "./login";
-import { revokeSession, validateSession } from "./sessions";
+import { revokeSession, validatePendingSession, validateSession } from "./sessions";
 
 const actions = async (userId: string) =>
   (await db.auditLog.findMany({ where: { actorUserId: userId }, orderBy: { id: "asc" } })).map((a) => a.action);
 
 describe("login", () => {
-  it("logs in with the right password, creates a session and audits it", async () => {
+  it("right password gives only a short pending session that needs the 2FA code", async () => {
     const { user, password } = await makeUser();
     const r = await login(user.email.toUpperCase(), password, ctx);
-    expect(r.ok).toBe(true);
+    expect(r).toMatchObject({ ok: true, next: "/login/2fa" });
     if (!r.ok) return;
-    const v = await validateSession(r.token);
-    expect(v?.user.id).toBe(user.id);
-    expect(await actions(user.id)).toEqual(["auth.login.success"]);
+    expect(await validateSession(r.token)).toBeNull();
+    expect((await validatePendingSession(r.token))?.user.id).toBe(user.id);
+    expect(r.expiresAt.getTime() - Date.now()).toBeLessThanOrEqual(10 * 60 * 1000);
+    expect(await actions(user.id)).toEqual(["auth.login.password_ok"]);
     // Only the hash of the token is stored.
     expect(await db.session.count({ where: { tokenHash: r.token } })).toBe(0);
+  });
+
+  it("sends users without 2FA to the setup page", async () => {
+    const { user, password } = await makeUser({ totp: false });
+    expect(await login(user.email, password, ctx)).toMatchObject({ ok: true, next: "/login/setup-2fa" });
   });
 
   it("rejects a wrong password and audits it", async () => {
@@ -43,9 +50,9 @@ describe("login", () => {
   });
 
   it("unlocks after the lock time and resets the counter on success", async () => {
-    const { user, password } = await makeUser();
+    const { user, password, totpSecret } = await makeUser();
     await db.user.update({ where: { id: user.id }, data: { lockedUntil: new Date(Date.now() - 1000), failedLogins: 3 } });
-    expect((await login(user.email, password, ctx)).ok).toBe(true);
+    await fullLogin(user.email, password, totpSecret!);
     const after = await db.user.findUniqueOrThrow({ where: { id: user.id } });
     expect(after.failedLogins).toBe(0);
     expect(after.lockedUntil).toBeNull();
@@ -62,38 +69,35 @@ describe("login", () => {
 
 describe("sessions", () => {
   it("expire on Monday 05:00 Athens", async () => {
-    const { user, password } = await makeUser();
+    const { user, password, totpSecret } = await makeUser();
     const sunday = new Date("2026-10-11T07:00:00Z");
-    const r = await login(user.email, password, ctx, sunday);
-    if (!r.ok) throw new Error("login failed");
-    expect(r.expiresAt.toISOString()).toBe("2026-10-12T02:00:00.000Z");
-    expect(await validateSession(r.token, new Date("2026-10-12T01:59:00Z"))).not.toBeNull();
-    expect(await validateSession(r.token, new Date("2026-10-12T02:00:00Z"))).toBeNull();
+    const token = await fullLogin(user.email, password, totpSecret!, sunday);
+    const v = await validateSession(token, sunday);
+    expect(v?.expiresAt.toISOString()).toBe("2026-10-12T02:00:00.000Z");
+    expect(await validateSession(token, new Date("2026-10-12T01:59:00Z"))).not.toBeNull();
+    expect(await validateSession(token, new Date("2026-10-12T02:00:00Z"))).toBeNull();
   });
 
   it("stop working when revoked (logout), and the revoke is audited", async () => {
-    const { user, password } = await makeUser();
-    const r = await login(user.email, password, ctx);
-    if (!r.ok) throw new Error("login failed");
-    const v = await validateSession(r.token);
+    const { user, password, totpSecret } = await makeUser();
+    const token = await fullLogin(user.email, password, totpSecret!);
+    const v = await validateSession(token);
     await revokeSession(v!.sessionId, v!.user, "logout", ctx);
-    expect(await validateSession(r.token)).toBeNull();
+    expect(await validateSession(token)).toBeNull();
     expect(await actions(user.id)).toContain("auth.session.revoked");
   });
 
   it("stop working when the user is deactivated or a Guest's end date passes", async () => {
     const a = await makeUser();
-    const ra = await login(a.user.email, a.password, ctx);
-    if (!ra.ok) throw new Error("login failed");
+    const ta = await fullLogin(a.user.email, a.password, a.totpSecret!);
     await db.user.update({ where: { id: a.user.id }, data: { isActive: false } });
-    expect(await validateSession(ra.token)).toBeNull();
+    expect(await validateSession(ta)).toBeNull();
 
     const end = new Date(Date.now() + 60 * 60 * 1000);
     const g = await makeUser({ level: "GUEST", accessExpiresAt: end });
-    const rg = await login(g.user.email, g.password, ctx);
-    if (!rg.ok) throw new Error("login failed");
-    expect(await validateSession(rg.token)).not.toBeNull();
-    expect(await validateSession(rg.token, new Date(end.getTime() + 1))).toBeNull();
+    const tg = await fullLogin(g.user.email, g.password, g.totpSecret!);
+    expect(await validateSession(tg)).not.toBeNull();
+    expect(await validateSession(tg, new Date(end.getTime() + 1))).toBeNull();
   });
 
   it("reject made-up tokens", async () => {

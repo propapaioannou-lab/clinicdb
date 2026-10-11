@@ -52,6 +52,21 @@ See the audit log so far:
 
     podman compose exec db psql -U clinicdb -d clinicdb -c 'select at, "actorEmail", action, ip, details from "AuditLog" order by id desc limit 20;'
 
+## Test 2FA
+
+1. Install Google Authenticator or Microsoft Authenticator on your phone.
+2. Log in at http://localhost:3000 → you are asked to set up 2FA.
+3. Scan the QR code, type the 6-digit code → your 10 recovery codes appear. Save them.
+4. Αποσύνδεση, log in again → you are asked for the 6-digit code.
+5. Tick "Εμπιστεύομαι αυτή τη συσκευή", log out, log in again → no code asked.
+6. Try one recovery code in a private browser window → "Σας έμειναν 9 κωδικοί".
+
+## Lost phone and recovery codes (emergency)
+
+Removes the person's 2FA, trusted devices and logins; they set up 2FA again at next login:
+
+    podman compose exec app npx tsx scripts/reset-2fa.ts name@example.com
+
 Unlock an account that hit 5 wrong passwords (otherwise it unlocks after 15 minutes):
 
     podman compose exec db psql -U clinicdb -d clinicdb -c "update \"User\" set \"lockedUntil\" = null, \"failedLogins\" = 0 where email = 'name@example.com';"
@@ -59,3 +74,4 @@ Unlock an account that hit 5 wrong passwords (otherwise it unlocks after 15 minu
 ## After changing the database schema (developer)
 
     podman compose exec app npm run db:migrate -- --name what_changed
+    podman compose restart app

@@ -5,7 +5,7 @@
   },
   "home": {
     "title": "Welcome, {name}",
-    "subtitle": "Login works. The 2FA code is added in the next step."
+    "subtitle": "You are logged in with password and 2FA."
   },
   "login": {
     "title": "Log in",
@@ -30,5 +30,41 @@
     "ADMIN": "Admin",
     "USER": "User",
     "GUEST": "Guest"
+  },
+  "twoFactor": {
+    "title": "Verification code",
+    "intro": "Open the authenticator app on your phone and enter the 6-digit code.",
+    "code": "Code",
+    "recoveryHint": "Lost your phone? Enter one of your recovery codes instead.",
+    "trust": "Trust this device for {days} days (no verification code)",
+    "trustWarning": "Only on your own device, never on a shared computer.",
+    "submit": "Verify",
+    "submitting": "Checking…",
+    "cancel": "Cancel",
+    "recoveryUsed": "You used a recovery code. {left, plural, =0 {You have none left — ask the administrator for new codes.} one {# code left.} other {# codes left.}}",
+    "continue": "Continue",
+    "errors": {
+      "invalid": "Wrong code.",
+      "locked": "Too many wrong attempts. Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+      "expired": "The login expired. Please start again.",
+      "missing": "Enter the code."
+    }
+  },
+  "setup2fa": {
+    "title": "Set up two-step verification",
+    "step1": "Install an authenticator app on your phone (e.g. Google Authenticator, Microsoft Authenticator).",
+    "step2": "In the app, add an account and scan this QR code:",
+    "manual": "Can't scan? Type this key instead:",
+    "step3": "Enter the 6-digit code shown in the app:",
+    "submit": "Turn on",
+    "submitting": "Checking…",
+    "codesTitle": "Recovery codes",
+    "codesIntro": "If you lose your phone, each code logs you in once. Save them now (print or password manager). They will not be shown again.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "print": "Print",
+    "saved": "I saved them — continue",
+    "alreadyShown": "The codes are shown only once and have already been shown.",
+    "continueHome": "Continue"
   }
 }

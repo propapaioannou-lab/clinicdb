@@ -3,12 +3,13 @@ import { audit, type RequestContext } from "@/lib/audit";
 import { hasExpired } from "@/lib/permissions";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { createSession } from "./sessions";
+import { findTrustedDevice } from "./two-factor";
 
 export const MAX_FAILED_LOGINS = 5;
 export const LOCK_MINUTES = 15;
 
 export type LoginResult =
-  | { ok: true; user: { id: string; email: string } }
+  | { ok: true; user: { id: string; email: string; totpEnabled: boolean } }
   | { ok: false; reason: "invalid" | "locked" | "inactive" | "expired"; lockedUntil?: Date };
 
 // Compared against when the email is unknown, so the response takes the same time
@@ -38,18 +39,7 @@ export async function checkPassword(
   }
 
   if (!(await verifyPassword(password, user.passwordHash))) {
-    const { failedLogins } = await db.user.update({
-      where: { id: user.id },
-      data: { failedLogins: { increment: 1 } },
-    });
-    if (failedLogins >= MAX_FAILED_LOGINS) {
-      const lockedUntil = new Date(now.getTime() + LOCK_MINUTES * 60 * 1000);
-      await db.user.update({ where: { id: user.id }, data: { failedLogins: 0, lockedUntil } });
-      await audit({ action: "auth.login.locked", actor, details: { lockedUntil: lockedUntil.toISOString() } }, ctx);
-      return { ok: false, reason: "locked", lockedUntil };
-    }
-    await audit({ action: "auth.login.failure", actor, details: { reason: "wrong_password", failedLogins } }, ctx);
-    return { ok: false, reason: "invalid" };
+    return recordFailedAttempt(actor, "wrong_password", ctx, now);
   }
 
   if (!user.isActive) {
@@ -65,17 +55,68 @@ export async function checkPassword(
     where: { id: user.id },
     data: { failedLogins: 0, lockedUntil: null, lastLoginAt: now },
   });
-  return { ok: true, user: actor };
+  return { ok: true, user: { ...actor, totpEnabled: user.totpEnabledAt !== null } };
 }
 
-// Password check + new session. (Step 4 adds the 2FA code between the two.)
-export async function login(email: string, password: string, ctx: RequestContext, now = new Date()) {
+// Wrong password or wrong 2FA code: both count toward the same lockout.
+export async function recordFailedAttempt(
+  actor: { id: string; email: string },
+  reason: string,
+  ctx: RequestContext,
+  now = new Date(),
+): Promise<{ ok: false; reason: "invalid" | "locked"; lockedUntil?: Date }> {
+  const { failedLogins } = await db.user.update({
+    where: { id: actor.id },
+    data: { failedLogins: { increment: 1 } },
+  });
+  if (failedLogins >= MAX_FAILED_LOGINS) {
+    const lockedUntil = new Date(now.getTime() + LOCK_MINUTES * 60 * 1000);
+    await db.user.update({ where: { id: actor.id }, data: { failedLogins: 0, lockedUntil } });
+    // Half-finished logins of a locked account are ended too.
+    await db.session.updateMany({
+      where: { userId: actor.id, stage: { not: "ACTIVE" }, revokedAt: null },
+      data: { revokedAt: now, revokeReason: "locked" },
+    });
+    await audit({ action: "auth.login.locked", actor, details: { reason, lockedUntil: lockedUntil.toISOString() } }, ctx);
+    return { ok: false, reason: "locked", lockedUntil };
+  }
+  await audit({ action: "auth.login.failure", actor, details: { reason, failedLogins } }, ctx);
+  return { ok: false, reason: "invalid" };
+}
+
+export type LoginOutcome =
+  | (LoginResult & { ok: false })
+  | { ok: true; token: string; expiresAt: Date; next: "/" | "/login/2fa" | "/login/setup-2fa" };
+
+// Password check, then: trusted device -> straight in; otherwise a short pending
+// session that can only reach the 2FA page (or 2FA setup the first time).
+export async function login(
+  email: string,
+  password: string,
+  ctx: RequestContext,
+  now = new Date(),
+  trustedToken?: string,
+): Promise<LoginOutcome> {
   const result = await checkPassword(email, password, ctx, now);
   if (!result.ok) return result;
-  const { token, session } = await createSession(result.user.id, ctx, now);
-  await audit(
-    { action: "auth.login.success", actor: result.user, entityType: "Session", entityId: session.id },
-    ctx,
-  );
-  return { ok: true as const, token, expiresAt: session.expiresAt };
+  const { user } = result;
+  const actor = { id: user.id, email: user.email };
+
+  if (user.totpEnabled) {
+    const device = await findTrustedDevice(user.id, trustedToken, now);
+    if (device) {
+      const { token, session } = await createSession(user.id, ctx, now, { trustedDeviceId: device.id });
+      await db.trustedDevice.update({ where: { id: device.id }, data: { lastUsedAt: now } });
+      await audit(
+        { action: "auth.login.success", actor, entityType: "Session", entityId: session.id, details: { method: "trusted_device" } },
+        ctx,
+      );
+      return { ok: true, token, expiresAt: session.expiresAt, next: "/" };
+    }
+  }
+
+  const stage = user.totpEnabled ? "PENDING_2FA" : "PENDING_ENROLL";
+  const { token, session } = await createSession(user.id, ctx, now, { stage });
+  await audit({ action: "auth.login.password_ok", actor, entityType: "Session", entityId: session.id, details: { stage } }, ctx);
+  return { ok: true, token, expiresAt: session.expiresAt, next: user.totpEnabled ? "/login/2fa" : "/login/setup-2fa" };
 }

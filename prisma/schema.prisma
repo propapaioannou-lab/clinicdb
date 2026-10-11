@@ -25,22 +25,29 @@ model Company {
 }
 
 model User {
-  id              String       @id @default(cuid())
-  email           String       @unique // stored lower-case
+  id              String          @id @default(cuid())
+  email           String          @unique // stored lower-case
   name            String
   passwordHash    String
-  level           Level        @default(USER)
-  isActive        Boolean      @default(true)
+  level           Level           @default(USER)
+  isActive        Boolean         @default(true)
   // Required for Guests: access stops after this moment.
   accessExpiresAt DateTime?
   // Lockout after repeated wrong passwords.
-  failedLogins    Int          @default(0)
+  failedLogins    Int             @default(0)
   lockedUntil     DateTime?
   lastLoginAt     DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  // 2FA: secret encrypted with APP_SECRET; enabled once the first code is confirmed.
+  totpSecretEnc   String?
+  totpEnabledAt   DateTime?
+  // Last accepted 30 s step, so a code can never be used twice.
+  totpLastStep    Int?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   memberships     Membership[]
   sessions        Session[]
+  recoveryCodes   RecoveryCode[]
+  trustedDevices  TrustedDevice[]
 }
 
 // Which companies a user can see and work in.
@@ -55,22 +62,34 @@ model Membership {
   @@index([companyId])
 }
 
+// PENDING_*: password was right, 2FA still to do (short-lived, reaches only the 2FA pages).
+enum SessionStage {
+  PENDING_2FA
+  PENDING_ENROLL
+  ACTIVE
+}
+
 // One logged-in browser/device. The cookie holds a random token; only its hash is stored.
 model Session {
-  id           String    @id @default(cuid())
-  tokenHash    String    @unique
-  userId       String
-  createdAt    DateTime  @default(now())
-  lastSeenAt   DateTime  @default(now())
+  id               String       @id @default(cuid())
+  tokenHash        String       @unique
+  userId           String
+  createdAt        DateTime     @default(now())
+  lastSeenAt       DateTime     @default(now())
   // Next Monday 05:00 Athens time (SPEC §11).
-  expiresAt    DateTime
-  ip           String?
-  userAgent    String?
-  revokedAt    DateTime?
-  revokedById  String?
+  expiresAt        DateTime
+  ip               String?
+  userAgent        String?
+  revokedAt        DateTime?
+  revokedById      String?
   // "logout", "admin", ...
-  revokeReason String?
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revokeReason     String?
+  stage            SessionStage @default(ACTIVE)
+  // Set when the login skipped 2FA because of a trusted device.
+  trustedDeviceId  String?
+  // New recovery codes, encrypted, kept only until shown once right after 2FA setup.
+  recoveryCodesEnc String?
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
 }
@@ -95,4 +114,33 @@ model AuditLog {
   @@index([actorUserId, at])
   @@index([entityType, entityId, at])
   @@index([action, at])
+}
+
+// One-time codes for when the phone is lost. Only keyed fingerprints are stored.
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// A browser where the user ticked "Trust this device": no 2FA code for 90 days.
+model TrustedDevice {
+  id          String    @id @default(cuid())
+  userId      String
+  tokenHash   String    @unique
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  expiresAt   DateTime
+  ip          String?
+  userAgent   String?
+  revokedAt   DateTime?
+  revokedById String?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
 }

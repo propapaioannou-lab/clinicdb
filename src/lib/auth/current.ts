@@ -3,9 +3,12 @@ import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { RequestContext } from "@/lib/audit";
-import { validateSession } from "./sessions";
+import { validatePendingSession, validateSession } from "./sessions";
 
 export const SESSION_COOKIE = "clinic_session";
+export const TRUSTED_COOKIE = "clinic_trusted";
+
+const secure = process.env.COOKIE_SECURE !== "false";
 
 export async function requestContext(): Promise<RequestContext> {
   const h = await headers();
@@ -17,7 +20,7 @@ export async function setSessionCookie(token: string, expiresAt: Date) {
   (await cookies()).set(SESSION_COOKIE, token, {
     httpOnly: true,
     // Browsers accept secure cookies on http://localhost; production runs on HTTPS.
-    secure: process.env.COOKIE_SECURE !== "false",
+    secure,
     sameSite: "lax",
     path: "/",
     expires: expiresAt,
@@ -27,6 +30,20 @@ export async function setSessionCookie(token: string, expiresAt: Date) {
 export async function clearSessionCookie() {
   (await cookies()).delete(SESSION_COOKIE);
 }
+
+export async function setTrustedCookie(token: string, expiresAt: Date) {
+  (await cookies()).set(TRUSTED_COOKIE, token, { httpOnly: true, secure, sameSite: "lax", path: "/", expires: expiresAt });
+}
+
+export async function getTrustedToken() {
+  return (await cookies()).get(TRUSTED_COOKIE)?.value;
+}
+
+// Password done, 2FA still to do.
+export const getPendingSession = cache(async () => {
+  const token = (await cookies()).get(SESSION_COOKIE)?.value;
+  return validatePendingSession(token);
+});
 
 // One database check per request, shared by layout, page and actions.
 export const getCurrentSession = cache(async () => {

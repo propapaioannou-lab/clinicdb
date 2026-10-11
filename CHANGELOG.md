@@ -2,6 +2,17 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Phase 2, Step 7a: Settings → Λίστες and visit fees
+
+- Ρυθμίσεις → **Λίστες** (you and Admins): Τύποι επισκέψεων, Αιτίες σήμανσης, Πηγές
+  σύστασης, Οικογενειακή κατάσταση, ΔΟΥ. Rename a choice in place (it changes everywhere
+  it was used), move it with ↑ ↓, hide it from new choices, or add a new one. Nothing is
+  ever deleted. Each company (Ιατρείο / Spa) has its own lists. Every change is logged.
+- Ρυθμίσεις → **Χρεώσεις επισκέψεων** (Secretary and PA/nurse only): tick which visit
+  types are charged and the amount. You never see this page, as decided.
+- Check: Ρυθμίσεις → Λίστες → Τύποι επισκέψεων → add "Τηλεφωνική συνεδρία" and move it up;
+  start a new visit: it is in "Είδος επίσκεψης".
+
 ## 11 Oct 2026 — Phase 2, Step 6: Documents
 
 - New **Έγγραφα** tab on the patient record (with the count on the tab).

@@ -537,7 +537,9 @@
     "auditText": "Who saw or changed what, and when.",
     "backupsText": "Nightly encrypted backups and restore checks.",
     "lists": "Lists",
-    "listsText": "Visit types, conditions, tax offices, flag reasons and other lists."
+    "listsText": "Visit types, flag reasons, referral sources, marital status, tax offices.",
+    "fees": "Visit fees",
+    "feesText": "Which visit types are charged and how much."
   },
   "patientForm": {
     "newTitle": "New patient",
@@ -949,6 +951,54 @@
       "too_big": "“{file}” is larger than 25 MB.",
       "bad_type": "“{file}” is not a PDF, image, Word or Excel file.",
       "invalid_value": "Check the date and the visit."
+    }
+  },
+  "settingsLists": {
+    "title": "Lists",
+    "forCompany": "For: {company}. Each company has its own lists.",
+    "name": "Name",
+    "up": "Up: {label}",
+    "down": "Down: {label}",
+    "hide": "Hide",
+    "show": "Show",
+    "hidden": "Hidden",
+    "add": "Add",
+    "newPlaceholder": "New choice…",
+    "note": "Choices are never deleted because records use them. Hiding removes them from new choices only; renaming also changes existing records.",
+    "kinds": {
+      "VISIT_TYPE": "Visit types",
+      "FLAG_REASON": "Flag reasons",
+      "REFERRAL_SOURCE": "Referral sources",
+      "MARITAL_STATUS": "Marital status",
+      "TAX_OFFICE": "Tax offices"
+    },
+    "help": {
+      "VISIT_TYPE": "The \"Visit type\" list. Fees are set by the front desk under \"Visit fees\".",
+      "FLAG_REASON": "Reasons in a patient's flag (yellow / red).",
+      "REFERRAL_SOURCE": "How the patient found us.",
+      "MARITAL_STATUS": "Choices in the patient details.",
+      "TAX_OFFICE": "Tax offices for receipts."
+    },
+    "errors": {
+      "forbidden": "Not allowed.",
+      "not_found": "Not found.",
+      "duplicate": "A choice with this name already exists.",
+      "invalid_value": "Type a name."
+    }
+  },
+  "settingsFees": {
+    "title": "Visit fees",
+    "intro": "For: {company}. Which visit types are charged and how much. The amount fills in on a new visit and can be changed per visit.",
+    "chargeable": "Charged",
+    "fee": "Amount for {label}",
+    "save": "Save",
+    "saved": "Saved: {label}",
+    "note": "Amounts are never shown to the surgeon.",
+    "errors": {
+      "forbidden": "Not allowed.",
+      "not_found": "Not found.",
+      "duplicate": "—",
+      "invalid_value": "Enter an amount in euros (e.g. 100) for charged types."
     }
   }
 }

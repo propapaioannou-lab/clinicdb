@@ -185,7 +185,11 @@ services and are NOT rebuilt here.
   the patient record.
 
 ### Visit
-- Date/time, type from an editable list. **Clean list of our own** (decided 11 Oct 2026):
+- Date/time, type from an editable list (Settings → Λίστες, Admin/Owner; built Phase 2
+  step 7a). Which types are charged and the default amount: Settings → Χρεώσεις
+  επισκέψεων, **Secretary / PA-nurse only** (the surgeon never sees fees, not even as
+  Owner). Lists are per company; items are hidden, never deleted; renames, moves and
+  hides are logged. **Clean list of our own** (decided 11 Oct 2026):
   Πρώτη επίσκεψη · Προεγχειρητική εκτίμηση · Επανέλεγχος · Μετεγχειρητικός · Άλλο. The old
   my-medical visit types are messy and are **not copied**; how they map onto ours is
   decided at import time, once the export is in hand (§10).

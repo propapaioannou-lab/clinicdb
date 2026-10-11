@@ -3,7 +3,7 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { Avatar, card, secondaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { activeCompany, userCompanies } from "@/lib/company";
-import { canManageUsers } from "@/lib/permissions";
+import { canHandleMoney, canManageUsers } from "@/lib/permissions";
 import { loadActor } from "@/lib/users/manage";
 import { logoutAction, switchCompanyAction } from "../actions";
 
@@ -21,7 +21,10 @@ export default async function SettingsPage() {
     { href: "/admin/devices", title: t("nav.devices"), text: t("settings.devicesText") },
     { href: "/admin/audit", title: t("nav.audit"), text: t("settings.auditText") },
     { href: "/admin/backups", title: t("nav.backups"), text: t("settings.backupsText") },
+    { href: "/settings/lists", title: t("settings.lists"), text: t("settings.listsText") },
   ];
+  // Fees are money: the Secretary / PA-nurse set them, never the surgeon.
+  const money = canHandleMoney(actor);
 
   return (
     <main className="mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-4 py-6 md:px-8">
@@ -68,10 +71,14 @@ export default async function SettingsPage() {
               <span className="text-sm text-ink-3">{a.text}</span>
             </Link>
           ))}
-          <div className={`${card} flex flex-col gap-1 p-5 opacity-60`}>
-            <span className="text-[17px] font-semibold">{t("settings.lists")} <span className="text-xs font-medium text-muted">· {t("nav.soon")}</span></span>
-            <span className="text-sm text-ink-3">{t("settings.listsText")}</span>
-          </div>
+        </section>
+      )}
+      {money && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          <Link href="/settings/fees" className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
+            <span className="text-[17px] font-semibold text-primary">{t("settings.fees")}</span>
+            <span className="text-sm text-ink-3">{t("settings.feesText")}</span>
+          </Link>
         </section>
       )}
     </main>

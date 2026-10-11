@@ -341,17 +341,44 @@ surgeon only; every action audited.
   Import scripts run locally; real data never leaves our machines.
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
-## 11. Users and roles (draft)
+## 11. Users and permissions
 
-- Surgeon: everything
-- Secretary: patients' contact details, appointments, intake review, documents;
-  clinical notes read-only or hidden (to decide)
-- Spa staff: Spa company only
-- Admin: users, settings, backups
+Each user has one **level** and **company access** (Surgery, Spa, or both); a user
+only sees records of the companies they have access to.
+
+| Level | Can do |
+|---|---|
+| **Owner** | Everything. Only an Owner can make someone Owner or edit an Owner. **An Owner can never be deleted, deactivated or demoted in the app — not even by another Owner** (only by a deliberate command on the server). |
+| **Admin** | Everything a User can, plus: invite users, set levels (up to Admin) and company access, manage devices, settings, backups. |
+| **User** | Day-to-day work: full patient records (including clinical notes) in their companies. Secretary and spa staff are Users. |
+| **Guest** | Research (e.g. a medical student). **Read-only.** Sees clinical data, patient name, age (not date of birth) and photos. **Never** sees contact details (phones, emails, address) or AMKA/ΑΦΜ. Account has a mandatory **end date**. Every view logged. |
+
+Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
+
+### New users (invitation)
+- Only Owner and Admin create users: enter name, email, level, company access
+  (and end date for Guests). The app emails an **invitation link**.
+- The link is single-use, expires after **72 hours**, contains no personal data, and
+  can be re-sent (the old link stops working). It opens only over Tailscale, so the
+  person must be added to Tailscale first.
+- On the setup page the person chooses a password (or clicks "generate a strong
+  password") and sets up 2FA.
+- Alternatively an Owner/Admin can **generate a password** for a user and hand it over
+  in person. Generated passwords are permanent (16 characters, no look-alike letters).
+  Passwords are never sent by email.
+
+### Login and sessions
+- Password + 2FA (authenticator app) with one-time recovery codes.
+- **Trusted devices:** after a successful 2FA login the user may tick "Trust this
+  device". That device skips the 2FA code (password still required) for 90 days.
+- **Weekly re-login:** all sessions end every Monday at 05:00 Athens time.
+- No automatic logout on inactivity.
+- **Devices screen (Owner/Admin):** per user, see logged-in devices (browser, IP, last
+  activity) and trusted devices; end any session or remove trust. All logged.
 
 ## 12. Build phases
 
-1. Foundation — login (with 2FA), roles, companies, audit log, backups
+1. Foundation — login (with 2FA), user levels & invitations, companies, devices, audit log, backups
 2. Patients, visits & vitals, documents, global search
 3. Intake: guest/tablet mode, QR, remote link, first-contact consents
 4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
@@ -365,7 +392,10 @@ surgeon only; every action audited.
 
 - Calendar: built-in vs GHL
 - AI: local vs API provider
-- Secretary's access to clinical notes
+- Off-site backup destination (needed by deployment)
 - Exact patient fields (my-medical screenshots)
 - Photo folder structure on the Synology today
 - Legal check: e-signatures for surgical consent; consent wording
+- Legal check: Guest (research) access to identifiable data — legal basis (consent or
+  ethics approval) and confidentiality agreement for the guest
+- Email provider with DPA (for invitations now; briefs and consent links later)

@@ -2,6 +2,15 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Breast measurements: basic set + sketch
+
+- The breast measurements are now only the basics: JMD, θηλή–μέση γραμμή, θηλή–πτυχή
+  (υπό τάση), πλάτος βάσης, άλως, μεσομαστική απόσταση. Smaller boxes.
+- Next to them, a front-view **breast sketch** with each measurement drawn as a line and a
+  box on it. Type in the table or on the sketch; both show the same number.
+- Check: Νέα επίσκεψη → + Μαστός / θώρακας; type 21 in JMD Δ in the table and watch it
+  appear on the sketch; type 12,5 in BW on the sketch and watch the table.
+
 ## 11 Oct 2026 — Προεγχειρητική εκτίμηση with implant specs
 
 - "Επεμβάσεις που συζητήθηκαν" is now **Προεγχειρητική εκτίμηση**. Areas are added with

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { fieldClass } from "@/components/ui";
 import { difficultyModifiers, type AreaExam, type ExamValue as Exam, type FieldValue, type MeasureValue } from "@/lib/visits/exams/engine";
+import { BreastSketch } from "./breast-sketch";
 import { FieldsEditor, MeasureInputs, opt } from "./fields-editor";
 
 const pill = (on: boolean) =>
@@ -105,14 +106,26 @@ export function ExamPanel({
         <div className={`flex flex-col gap-2 rounded-[10px] border px-3 py-2.5 ${missingNames.length ? "border-warn-line bg-warn-bg/40" : "border-line-soft bg-surface"}`}>
           <span className="text-sm font-semibold">{area.measurements.title}</span>
           {missingNames.length > 0 && <span role="status" className="text-[13px] font-medium text-warn-ink">{t("requiredMissing", { list: missingNames.join(", ") })}</span>}
-          <div className="flex flex-col gap-2">
-            {area.measurements.fields.map((f) =>
-              f.type !== "measure" ? null : (
-                <div key={f.key} className="flex flex-wrap items-center gap-2">
-                  <span className={`w-44 shrink-0 text-[13px] ${missing.includes(f.key) ? "font-semibold text-warn-ink" : "text-ink-3"}`}>{f.el}</span>
-                  <MeasureInputs field={f} value={exam.measurements?.[f.key]} onChange={(v) => setMeasurement(f.key, v)} />
-                </div>
-              ),
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="flex min-w-0 flex-[1_1_280px] flex-col gap-1.5">
+              {area.measurements.fields.map((f) =>
+                f.type !== "measure" ? null : (
+                  <div key={f.key} className="flex flex-wrap items-center gap-2">
+                    <span className={`w-40 shrink-0 text-[13px] ${missing.includes(f.key) ? "font-semibold text-warn-ink" : "text-ink-3"}`}>{f.el}</span>
+                    <MeasureInputs compact field={f} value={exam.measurements?.[f.key]} onChange={(v) => setMeasurement(f.key, v)} />
+                  </div>
+                ),
+              )}
+            </div>
+            {area.measurements.sketch === "breast" && (
+              <div className="flex-[1_1_260px]">
+                <BreastSketch
+                  values={exam.measurements ?? {}}
+                  names={Object.fromEntries(area.measurements.fields.map((f) => [f.key, f.el]))}
+                  onChange={setMeasurement}
+                  missing={missing}
+                />
+              </div>
             )}
           </div>
           {area.measurements.note && <span className="text-[12.5px] text-muted">{area.measurements.note}</span>}

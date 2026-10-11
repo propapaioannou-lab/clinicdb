@@ -37,7 +37,7 @@ export type AreaExam = {
   key: string;
   findings: Finding[];
   // Area-wide measurements block (breast, nose), written as "Μετρήσεις: …".
-  measurements?: { title: string; note?: string; fields: Field[] };
+  measurements?: { title: string; note?: string; fields: Field[]; sketch?: "breast" };
   // Groups of finding chips, in display order (findings without a group come first).
   groups?: string[];
   // Previous operations in this area for a revision case (year typed by hand).

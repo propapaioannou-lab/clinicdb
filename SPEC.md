@@ -216,9 +216,10 @@ services and are NOT rebuilt here.
   surgical fee** (applied in the quote, never shown to the surgeon) and **+10′ to the
   operating time**. Used when there is no AI transcript.
   **All areas** (decided 11 Oct 2026) use the same engine, with standard scales:
-  Breast/chest — measurements in cm, right/left (JMD/SN–N, nipple–midline, N–IMF relaxed
-  and under stretch, base width, upper-pole and IMF pinch, skin stretch, areola,
-  intermammary distance); before any breast procedure the app warns if JMD, N–IMF under
+  Breast/chest — the basic measurements in cm, right/left (JMD, nipple–midline, N–IMF
+  under stretch, base width, areola; intermammary distance), in a compact table with a
+  **front-view breast evaluation sketch** beside it (consultation-sheet style) where the
+  same values can be typed on the drawn lines (decided 11 Oct 2026); before any breast procedure the app warns if JMD, N–IMF under
   stretch and base width are missing (for gynaecomastia/top surgery: areola instead of
   base width). Gynaecomastia (Simon I–III), and **top surgery / gender dysphoria
   documented separately** (identity, persistent chest dysphoria, goal, nipples, binder,

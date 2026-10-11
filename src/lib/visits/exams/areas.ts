@@ -23,18 +23,15 @@ const G_TOP = "Top surgery · δυσφορία φύλου";
 const BREAST: AreaExam = {
   key: "breast",
   groups: [G_GYNAE, G_TOP],
+  // The basic set (decided 11 Oct 2026), also shown on the breast sketch.
   measurements: {
     title: "Μετρήσεις (cm)",
-    note: "Οδηγός: σφαγή–θηλή ~19–21 · θηλή–πτυχή υπό τάση ~7–8 (για βάση 12 cm) · pinch άνω πόλου < 2 cm → υπομυϊκά · διάταση δέρματος > 3 cm χαλαρό",
+    sketch: "breast",
     fields: [
-      cm("jmd", "Σφαγή–θηλή (JMD / SN–N)", "JMD"),
+      cm("jmd", "Σφαγή–θηλή (JMD)", "JMD"),
       cm("nml", "Θηλή–μέση γραμμή", "θηλή–μέση γραμμή"),
-      cm("nimf", "Θηλή–πτυχή (χαλαρό)", "θηλή–πτυχή"),
-      cm("nimfStretch", "Θηλή–πτυχή (υπό τάση)", "θηλή–πτυχή υπό τάση"),
+      cm("nimfStretch", "Θηλή–πτυχή (υπό τάση)", "θηλή–πτυχή"),
       cm("bw", "Πλάτος βάσης (BW)", "BW"),
-      cm("pinchUpper", "Pinch άνω πόλου", "pinch άνω πόλου", { max: 15 }),
-      cm("pinchImf", "Pinch πτυχής", "pinch πτυχής", { max: 15 }),
-      cm("stretch", "Διάταση δέρματος (SS)", "SS", { max: 15 }),
       cm("areola", "Διάμετρος άλω", "άλως", { max: 20 }),
       { key: "intermammary", el: "Μεσομαστική απόσταση", type: "measure", unit: "cm", say: "μεσομαστική απόσταση", max: 20 },
     ],

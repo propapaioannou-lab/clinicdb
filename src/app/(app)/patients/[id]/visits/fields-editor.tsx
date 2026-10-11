@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { fieldClass } from "@/components/ui";
 import { fieldShown, type Field, type FieldValue, type FindingValue, type MeasureValue } from "@/lib/visits/exams/engine";
@@ -13,27 +14,52 @@ const parse = (s: string) => {
   return s.trim() && Number.isFinite(n) ? n : undefined;
 };
 
-// Number inputs for one measurement: one box, or Δ / Α boxes. Uncontrolled so a half-typed
-// "21," is not rewritten while typing.
-export function MeasureInputs({ field, value, onChange }: { field: Extract<Field, { type: "measure" }>; value: MeasureValue | undefined; onChange: (v: MeasureValue | undefined) => void }) {
+// One number box. While focused it shows what is typed (so "21," survives); otherwise
+// it shows the stored value, so two boxes for the same number (table and sketch) agree.
+export function NumberBox({ value, onChange, label, placeholder, className }: { value: number | undefined; onChange: (n: number | undefined) => void; label: string; placeholder?: string; className: string }) {
+  const [draft, setDraft] = useState<string | null>(null);
+  return (
+    <input
+      value={draft ?? shown(value)}
+      onFocus={() => setDraft(shown(value))}
+      onBlur={() => setDraft(null)}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        onChange(parse(e.target.value));
+      }}
+      inputMode="decimal"
+      aria-label={label}
+      placeholder={placeholder}
+      className={className}
+    />
+  );
+}
+
+export const putSide = (value: MeasureValue | undefined, k: keyof MeasureValue, n: number | undefined) => {
+  const next = { ...(value ?? {}) };
+  if (n === undefined) delete next[k];
+  else next[k] = n;
+  return Object.keys(next).length ? next : undefined;
+};
+
+// Number inputs for one measurement: one box, or Δ / Α boxes.
+export function MeasureInputs({ field, value, onChange, compact }: { field: Extract<Field, { type: "measure" }>; value: MeasureValue | undefined; onChange: (v: MeasureValue | undefined) => void; compact?: boolean }) {
   const t = useTranslations("exam");
-  const put = (k: keyof MeasureValue, s: string) => {
-    const next = { ...(value ?? {}) };
-    const n = parse(s);
-    if (n === undefined) delete next[k];
-    else next[k] = n;
-    onChange(Object.keys(next).length ? next : undefined);
-  };
   const box = (k: keyof MeasureValue, label: string) => (
     <label className="flex items-center gap-1 text-[13px] text-muted">
       {label}
-      <input defaultValue={shown(value?.[k])} onChange={(e) => put(k, e.target.value)} inputMode="decimal" aria-label={`${field.el}${label ? ` ${label}` : ""}`} className={`${fieldClass} w-[72px] text-center`} />
+      <NumberBox
+        value={value?.[k]}
+        onChange={(n) => onChange(putSide(value, k, n))}
+        label={`${field.el}${label ? ` ${label}` : ""}`}
+        className={compact ? "h-9 w-14 rounded-control border border-line-strong bg-surface px-1 text-center text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint" : `${fieldClass} w-[72px] text-center`}
+      />
     </label>
   );
   return (
     <span className="flex flex-wrap items-center gap-2">
       {field.sides ? <>{box("r", t("right"))}{box("l", t("left"))}</> : box("v", "")}
-      {field.unit && <span className="text-[13px] text-muted">{field.unit}</span>}
+      {field.unit && !compact && <span className="text-[13px] text-muted">{field.unit}</span>}
     </span>
   );
 }

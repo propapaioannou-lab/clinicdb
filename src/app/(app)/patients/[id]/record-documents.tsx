@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Dropdown } from "@/components/dropdown";
 import { useState, useTransition } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { PlusIcon } from "@/components/icons";
@@ -37,18 +38,13 @@ function MetaFields({ visits, initial }: { visits: { id: string; label: string }
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       <label className="block text-sm text-ink-3">{t("type")}
-        <select name="type" defaultValue={initial?.type ?? "OTHER"} className={inputClass}>
-          {TYPES.map((ty) => <option key={ty} value={ty}>{t(`types.${ty}`)}</option>)}
-        </select>
+        <Dropdown name="type" label={t("type")} defaultValue={initial?.type ?? "OTHER"} placeholder={null} options={TYPES.map((ty) => ({ value: ty, label: t(`types.${ty}`) }))} className="mt-1" />
       </label>
       <label className="block text-sm text-ink-3">{t("date")}
         <input name="documentDate" required defaultValue={initial?.documentDate ? ddmmyyyy(initial.documentDate) : today()} placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" inputMode="numeric" className={inputClass} />
       </label>
       <label className="block text-sm text-ink-3">{t("visit")}
-        <select name="visitId" defaultValue={initial?.visit?.id ?? ""} className={inputClass}>
-          <option value="">—</option>
-          {visits.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
-        </select>
+        <Dropdown name="visitId" label={t("visit")} defaultValue={initial?.visit?.id} options={visits.map((v) => ({ value: v.id, label: v.label }))} className="mt-1" />
       </label>
       <label className="block text-sm text-ink-3 sm:col-span-3">{t("comment")}
         <textarea name="comment" rows={2} defaultValue={initial?.comment ?? ""} className={textareaClass} />

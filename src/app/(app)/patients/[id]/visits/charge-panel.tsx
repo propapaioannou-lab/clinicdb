@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Dropdown } from "@/components/dropdown";
 import { useTranslations } from "next-intl";
 import { card, ErrorBox, inputClass, Notice, primaryButton } from "@/components/ui";
 import type { VisitActionState } from "./actions";
@@ -42,12 +43,13 @@ export function ChargePanel({
         </label>
       </div>
       <label className="block text-sm text-ink-3">{t("method")}
-        <select name="method" defaultValue={money.paymentMethod ?? ""} className={inputClass}>
-          <option value="">—</option>
-          <option value="cash">{t("methods.cash")}</option>
-          <option value="card">{t("methods.card")}</option>
-          <option value="transfer">{t("methods.transfer")}</option>
-        </select>
+        <Dropdown
+          name="method"
+          label={t("method")}
+          defaultValue={money.paymentMethod ?? undefined}
+          options={(["cash", "card", "transfer"] as const).map((m) => ({ value: m, label: t(`methods.${m}`) }))}
+          className="mt-1"
+        />
       </label>
       <p className="text-sm text-ink-3">
         {money.feeCents === null ? t("noCharge") : balance > 0 ? t("balanceDue", { amount: euros(balance) }) : t("paidInFull")}

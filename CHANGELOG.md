@@ -2,6 +2,16 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — All drop-down lists in the app's own style
+
+- Every drop-down list now looks and works the same: rounded, opens downwards, closes as
+  soon as you choose (the implant-size list stayed open before). ↑ ↓, Enter and Esc work.
+- Changed: visit type, implant sizes, document type and visit, patient form (marital
+  status, referral, tax office, treating doctor, sex, language, phone type, country
+  code), payment method, user level and role, audit-log filters, history section.
+- Check: Ctrl + Shift + R, then open a new visit → Είδος επίσκεψης; and edit a patient →
+  Φύλο.
+
 ## 11 Oct 2026 — Implant sizes fill in from the Motiva charts
 
 - The implant selector now knows the Motiva charts you sent: Round and Ergonomix (Mini,

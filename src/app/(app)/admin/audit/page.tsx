@@ -1,4 +1,5 @@
 import { BackLink } from "@/components/back-link";
+import { Dropdown } from "@/components/dropdown";
 import { backLabel } from "@/components/back-label";
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -103,19 +104,25 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
       <form method="get" className="mb-4 grid gap-3 sm:grid-cols-5">
         <label className="text-sm font-medium sm:col-span-2">
           {t("person")}
-          <select name="user" defaultValue={sp.user ?? ""} className={inputClass}>
-            <option value="">{t("everyone")}</option>
-            {people.map((p) => (
-              <option key={p.id} value={p.id}>{p.label}{p.deleted ? ` ${t("deletedMark")}` : ""}</option>
-            ))}
-          </select>
+          <Dropdown
+            name="user"
+            label={t("person")}
+            defaultValue={sp.user || undefined}
+            placeholder={t("everyone")}
+            options={people.map((p) => ({ value: p.id, label: `${p.label}${p.deleted ? ` ${t("deletedMark")}` : ""}` }))}
+            className="mt-1"
+          />
         </label>
         <label className="text-sm font-medium">
           {t("group")}
-          <select name="group" defaultValue={group ?? ""} className={inputClass}>
-            <option value="">{t("allGroups")}</option>
-            {Object.keys(ACTION_GROUPS).map((g) => <option key={g} value={g}>{t(`groups.${g}` as "groups.logins")}</option>)}
-          </select>
+          <Dropdown
+            name="group"
+            label={t("group")}
+            defaultValue={group || undefined}
+            placeholder={t("allGroups")}
+            options={Object.keys(ACTION_GROUPS).map((g) => ({ value: g, label: t(`groups.${g}` as "groups.logins") }))}
+            className="mt-1"
+          />
         </label>
         <label className="text-sm font-medium">
           {t("from")}

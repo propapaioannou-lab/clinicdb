@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { Dropdown } from "@/components/dropdown";
 import { useTranslations } from "next-intl";
 import type { PhoneType } from "@/generated/prisma/client";
 import { PlusIcon } from "@/components/icons";
@@ -47,6 +48,10 @@ export const EMPTY_PATIENT: PatientFormValues = {
 
 const PHONE_TYPES: PhoneType[] = ["MOBILE", "HOME", "WORK", "OTHER"];
 
+// Each phone/email row keeps its own key, so removing one row never shifts typed values.
+let rowKey = 0;
+const keyed = <T,>(items: T[]) => items.map((item) => ({ ...item, key: rowKey++ }));
+
 export function PatientForm({
   mode,
   initial,
@@ -68,12 +73,10 @@ export function PatientForm({
   const t = useTranslations("patientForm");
   const [state, setState] = useState<PatientFormState>({});
   const [pending, start] = useTransition();
-  // Each row keeps its own key, so removing one row never shifts typed values.
-  const nextKey = useRef(0);
-  const keyed = <T,>(items: T[]) => items.map((item) => ({ ...item, key: nextKey.current++ }));
   const [phones, setPhones] = useState(() => keyed(initial.phones.length ? initial.phones : EMPTY_PATIENT.phones));
   const [emails, setEmails] = useState(() => keyed((initial.emails.length ? initial.emails : [""]).map((value) => ({ value }))));
-  const lastFd = useRef<FormData | null>(null);
+  // The last submitted form, for "save anyway" / merge after a duplicate warning.
+  const [lastFd, setLastFd] = useState<FormData | null>(null);
   const panel = useRef<HTMLDivElement>(null);
 
   const run = (fn: () => Promise<PatientFormState>) =>
@@ -90,12 +93,12 @@ export function PatientForm({
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    lastFd.current = fd;
+    setLastFd(fd);
     run(() => action(fd));
   };
   const copy = () => {
     const fd = new FormData();
-    lastFd.current?.forEach((v, k) => fd.append(k, v));
+    lastFd?.forEach((v, k) => fd.append(k, v));
     return fd;
   };
   const saveAnyway = (ids: string[]) => {
@@ -122,10 +125,7 @@ export function PatientForm({
   const select = (name: keyof PatientFormValues, label: string, items: { id: string; label: string }[]) => (
     <label className="block text-sm font-medium text-ink-2">
       {label}
-      <select name={name} defaultValue={initial[name] as string} className={inputClass}>
-        <option value="">—</option>
-        {items.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}
-      </select>
+      <Dropdown name={name} label={label} defaultValue={(initial[name] as string) || undefined} options={items.map((i) => ({ value: i.id, label: i.label }))} className="mt-1" />
     </label>
   );
   const group = (title: string, children: React.ReactNode, cols = "sm:grid-cols-3") => (
@@ -140,11 +140,11 @@ export function PatientForm({
       <div ref={panel} className="scroll-mt-28">
         {state.error && <ErrorBox>{t(`errors.${state.error}`)}</ErrorBox>}
         {state.saved && <Notice>{t("saved")}</Notice>}
-        {state.duplicates && state.duplicates.length > 0 && lastFd.current && (
+        {state.duplicates && state.duplicates.length > 0 && lastFd && (
           <DuplicatePanel
             mode={mode}
             duplicates={state.duplicates}
-            submitted={lastFd.current}
+            submitted={lastFd}
             pending={pending}
             onSaveAnyway={saveAnyway}
             onMerge={mode === "create" ? merge : undefined}
@@ -168,21 +168,24 @@ export function PatientForm({
             })}
             <label className="block text-sm font-medium text-ink-2">
               {t("sex")}
-              <select name="sex" defaultValue={initial.sex} className={inputClass}>
-                <option value="">—</option>
-                <option value="FEMALE">{t("sexes.FEMALE")}</option>
-                <option value="MALE">{t("sexes.MALE")}</option>
-                <option value="TRANS_MAN">{t("sexes.TRANS_MAN")}</option>
-                <option value="TRANS_WOMAN">{t("sexes.TRANS_WOMAN")}</option>
-                <option value="NON_BINARY">{t("sexes.NON_BINARY")}</option>
-              </select>
+              <Dropdown
+                name="sex"
+                label={t("sex")}
+                defaultValue={initial.sex || undefined}
+                options={(["FEMALE", "MALE", "TRANS_MAN", "TRANS_WOMAN", "NON_BINARY"] as const).map((x) => ({ value: x, label: t(`sexes.${x}`) }))}
+                className="mt-1"
+              />
             </label>
             <label className="block text-sm font-medium text-ink-2">
               {t("language")}
-              <select name="language" defaultValue={initial.language} className={inputClass}>
-                <option value="EL">{t("languages.EL")}</option>
-                <option value="EN">{t("languages.EN")}</option>
-              </select>
+              <Dropdown
+                name="language"
+                label={t("language")}
+                defaultValue={initial.language}
+                placeholder={null}
+                options={(["EL", "EN"] as const).map((x) => ({ value: x, label: t(`languages.${x}`) }))}
+                className="mt-1"
+              />
             </label>
           </>)}
 
@@ -192,9 +195,13 @@ export function PatientForm({
               {phones.map((p, i) => (
                 <div key={p.key} className="grid grid-cols-[minmax(0,1fr)_auto_1.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_8rem_auto_1.5rem]">
                   <PhoneInput defaultValue={p.number} label={t("phone")} codeLabel={t("countryCode")} className="col-span-3 sm:col-span-1" />
-                  <select name="phoneType" defaultValue={p.type} aria-label={t("phoneType")} className={`${inputClass} mt-0`}>
-                    {PHONE_TYPES.map((pt) => <option key={pt} value={pt}>{t(`phoneTypes.${pt}`)}</option>)}
-                  </select>
+                  <Dropdown
+                    name="phoneType"
+                    label={t("phoneType")}
+                    defaultValue={p.type}
+                    placeholder={null}
+                    options={PHONE_TYPES.map((pt) => ({ value: pt, label: t(`phoneTypes.${pt}`) }))}
+                  />
                   <label className="flex items-center gap-1.5 text-sm text-ink-3">
                     <input type="radio" name="phoneMain" value={i} defaultChecked={p.isMain} className="accent-primary" />
                     {t("main")}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Dropdown } from "@/components/dropdown";
 import { fieldClass, inputClass } from "@/components/ui";
 import { COUNTRY_CODES, joinPhone, splitPhone } from "@/lib/patients/phone";
 
@@ -9,14 +10,14 @@ export function PhoneInput({ defaultValue, label, codeLabel, className = "" }: {
   const [parts, setParts] = useState(() => splitPhone(defaultValue));
   return (
     <div className={`flex min-w-0 gap-1.5 ${className}`}>
-      <select
+      <Dropdown
         value={parts.code}
-        onChange={(e) => setParts({ ...parts, code: e.target.value })}
-        aria-label={codeLabel}
-        className={`${fieldClass} w-[6.75rem] shrink-0 px-2`}
-      >
-        {COUNTRY_CODES.map((c) => <option key={c.iso} value={c.code}>{c.iso} {c.code}</option>)}
-      </select>
+        onChange={(v) => v && setParts({ ...parts, code: v })}
+        label={codeLabel}
+        placeholder={null}
+        options={COUNTRY_CODES.map((c) => ({ value: c.code, label: `${c.iso} ${c.code}` }))}
+        className="w-[7.5rem] shrink-0"
+      />
       <input
         type="tel"
         value={parts.local}

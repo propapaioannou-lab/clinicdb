@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Dropdown } from "@/components/dropdown";
 import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { Level, Role } from "@/generated/prisma/client";
@@ -51,17 +52,29 @@ export function UserForm({ mode, action, levels, companies, initial, locked = {}
         </label>
         <label className="block text-sm font-medium">
           {t("form.level")}
-          <select name="level" value={level} onChange={(e) => setLevel(e.target.value as Level)} disabled={locked.level} className={inputClass}>
-            {levels.map((l) => <option key={l} value={l}>{tl(l)}</option>)}
-          </select>
+          <Dropdown
+            name={locked.level ? undefined : "level"}
+            label={t("form.level")}
+            value={level}
+            onChange={(v) => v && setLevel(v)}
+            disabled={locked.level}
+            placeholder={null}
+            options={levels.map((l) => ({ value: l, label: tl(l) }))}
+            className="mt-1"
+          />
           <span className="mt-1 block text-xs font-normal text-neutral-500">{t(`form.levelHelp.${level}`)}</span>
           {locked.level && <input type="hidden" name="level" value={level} />}
         </label>
         <label className="block text-sm font-medium">
           {t("form.role")}
-          <select name="role" defaultValue={initial.role} className={inputClass}>
-            {ROLE_OPTIONS.map((r) => <option key={r} value={r}>{tr(r)}</option>)}
-          </select>
+          <Dropdown
+            name="role"
+            label={t("form.role")}
+            defaultValue={initial.role}
+            placeholder={null}
+            options={ROLE_OPTIONS.map((r) => ({ value: r, label: tr(r) }))}
+            className="mt-1"
+          />
           <span className="mt-1 block text-xs font-normal text-neutral-500">{t("form.roleHelp")}</span>
         </label>
         {level === "GUEST" && (

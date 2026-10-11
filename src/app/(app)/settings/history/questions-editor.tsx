@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Dropdown } from "@/components/dropdown";
 import { useTranslations } from "next-intl";
 import { Badge, card, ErrorBox, inputClass, primaryButton, secondaryButton } from "@/components/ui";
 import type { QuestionState } from "../actions";
@@ -59,9 +60,14 @@ function Editor({
         {field("detailEl")}
         {field("hintEl")}
         <label className="block text-sm text-ink-3">{t("fields.section")}
-          <select value={v.section} onChange={(e) => set({ section: e.target.value })} className={inputClass}>
-            {sections.map((s) => <option key={s} value={s}>{th(`sections.${s}` as "sections.heart")}</option>)}
-          </select>
+          <Dropdown
+            value={v.section}
+            onChange={(s) => s && set({ section: s })}
+            label={t("fields.section")}
+            placeholder={null}
+            options={sections.map((s) => ({ value: s, label: th(`sections.${s}` as "sections.heart") }))}
+            className="mt-1"
+          />
         </label>
         <div className="flex flex-col justify-end gap-2 text-sm">
           {(["isActive", "sensitive", "infection"] as const).map((k) => (

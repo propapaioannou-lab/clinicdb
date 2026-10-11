@@ -1,6 +1,7 @@
 "use client";
 
 import { num1 } from "@/lib/format";
+import { Dropdown } from "@/components/dropdown";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { PlusIcon } from "@/components/icons";
@@ -173,10 +174,13 @@ export function VisitForm({
           <section className={`${card} flex flex-col gap-3 p-5`}>
             <div className="flex flex-wrap gap-3">
               <label className="block min-w-[240px] flex-1 text-sm text-ink-3">{t("type")}
-                <select value={v.typeId} onChange={(e) => set({ typeId: e.target.value })} className={inputClass}>
-                  <option value="">—</option>
-                  {types.map((ty) => <option key={ty.id} value={ty.id}>{ty.label}</option>)}
-                </select>
+                <Dropdown
+                  value={v.typeId || undefined}
+                  onChange={(id) => set({ typeId: id ?? "" })}
+                  label={t("type")}
+                  options={types.map((ty) => ({ value: ty.id, label: ty.label }))}
+                  className="mt-1"
+                />
               </label>
               <label className="block text-sm text-ink-3">{t("date")}
                 <input value={v.date} onChange={(e) => set({ date: e.target.value })} placeholder={t("datePlaceholder")} inputMode="numeric" className={`${inputClass} w-36`} />

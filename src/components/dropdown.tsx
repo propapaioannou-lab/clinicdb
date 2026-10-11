@@ -4,32 +4,40 @@ import { useEffect, useId, useRef, useState } from "react";
 
 export type DropdownOption<T extends string | number> = { value: T; label: string };
 
-// Our own drop-down (decided 11 Oct 2026): always opens downwards, rounded, in the app's
-// style (the browser's own list may open upwards and looks different on every system).
-// Keyboard: ↑ ↓ to move, Enter to choose, Esc to close.
-export function Dropdown<T extends string | number>({
-  value,
-  options,
-  onChange,
-  label,
-  placeholder = "—",
-  className = "",
-}: {
-  value: T | undefined;
+// Our own drop-down (decided 11 Oct 2026), used instead of the browser's <select>
+// everywhere: always opens downwards, rounded, in the app's style (the browser's list may
+// open upwards and looks different on every system). Keyboard: ↑ ↓ to move, Enter to
+// choose, Esc to close.
+// Controlled (`value` + `onChange`) or, inside a form, uncontrolled (`defaultValue` +
+// `name`: the choice is sent as a hidden field, like a <select>).
+// `placeholder`: the empty first row ("—"); null when a choice is required.
+export function Dropdown<T extends string | number>(props: {
+  value?: T | undefined;
+  defaultValue?: T;
   options: DropdownOption<T>[];
-  onChange: (v: T | undefined) => void;
+  onChange?: (v: T | undefined) => void;
   label: string;
-  placeholder?: string;
+  name?: string;
+  placeholder?: string | null;
   className?: string;
+  disabled?: boolean;
 }) {
+  const { options, label, name, placeholder = "—", className = "", disabled } = props;
+  const controlled = "value" in props;
+  const [inner, setInner] = useState<T | undefined>(props.defaultValue);
+  const value = controlled ? props.value : inner;
+  const onChange = (v: T | undefined) => {
+    if (!controlled) setInner(v);
+    props.onChange?.(v);
+  };
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const box = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const id = useId();
   const current = options.find((o) => o.value === value);
-  // "—" first, to clear the choice.
-  const rows: { value: T | undefined; label: string }[] = [{ value: undefined, label: placeholder }, ...options];
+  // "—" first, to clear the choice (unless a choice is required).
+  const rows: { value: T | undefined; label: string }[] = placeholder === null ? options : [{ value: undefined, label: placeholder }, ...options];
 
   useEffect(() => {
     if (!open) return;
@@ -64,8 +72,10 @@ export function Dropdown<T extends string | number>({
 
   return (
     <div ref={box} className={`relative ${className}`}>
+      {name && <input type="hidden" name={name} value={value ?? ""} />}
       <button
         type="button"
+        disabled={disabled}
         role="combobox"
         aria-label={label}
         aria-expanded={open}
@@ -73,9 +83,9 @@ export function Dropdown<T extends string | number>({
         aria-activedescendant={open && active >= 0 ? `${id}-${active}` : undefined}
         onClick={() => (open ? setOpen(false) : show())}
         onKeyDown={onKey}
-        className="flex h-11 w-full items-center justify-between gap-2 rounded-control border border-line-strong bg-surface px-3 text-left text-[15px] text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint"
+        className="flex h-11 w-full items-center justify-between gap-2 rounded-control border border-line-strong bg-surface px-3 text-left text-[15px] text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-tint disabled:bg-surface-2 disabled:text-muted"
       >
-        <span className={`truncate ${current ? "" : "text-muted"}`}>{current?.label ?? placeholder}</span>
+        <span className={`truncate ${current ? "" : "text-muted"}`}>{current?.label ?? placeholder ?? "—"}</span>
         <span aria-hidden="true" className={`text-xs text-muted transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
       {open && (
@@ -95,7 +105,12 @@ export function Dropdown<T extends string | number>({
               aria-selected={r.value === value}
               onMouseEnter={() => setActive(i)}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => choose(i)}
+              // preventDefault: inside a <label>, the click would otherwise "click" the box
+              // again and reopen the list.
+              onClick={(e) => {
+                e.preventDefault();
+                choose(i);
+              }}
               className={`mx-1.5 cursor-pointer whitespace-nowrap rounded-[10px] px-3 py-2 ${i === active ? "bg-primary-tint text-primary" : ""} ${r.value === value ? "font-semibold" : ""} ${r.value === undefined ? "text-muted" : ""}`}
             >
               {r.label}

@@ -40,7 +40,10 @@ services and are NOT rebuilt here.
 ## 4. Core data
 
 ### Patient — basic info (from my-medical "Βασικά", ~15,300 patients today)
-- Internal unique ID (e.g. `P-000123`), generated automatically. **Primary identifier.**
+- **Patient number** — primary identifier, unique within each company. Patients imported
+  from my-medical keep their my-medical number; new patients get the next number after
+  the highest. After the import, the duplicate batch tool (§6b) checks names.
+  (Decided 11 Oct 2026.)
 - Surname (required), name, father's name
 - Marital status (list), referral / "Σύσταση" (who referred)
   (my-medical's "Κατηγορία" dropped — never used)
@@ -60,7 +63,7 @@ services and are NOT rebuilt here.
 - Newsletter / marketing consent (checkbox → becomes part of §7 consents)
 - Infectious diseases (ΜΟΛΥΣΜΑΤΙΚΑ) — free text, shown as an alert on the patient header
 - Profile photo (upload or tablet camera)
-- Treating doctor
+- Treating doctor — chosen from app users marked "Doctor"
 - Comments
 - **Patient flag** (replaces my-medical "Κριτική"): none / 🟡 yellow / 🔴 red, with
   reason(s) from an editable list (bargained for discount, no-show, came late, …),
@@ -70,6 +73,9 @@ services and are NOT rebuilt here.
   include them.
 - GHL contact ID (link); company (`Surgery` / `Spa`)
 - Patient overview shows the list of past visits (date, type, diagnosis).
+- **Never deleted in the app** (records are kept 10 years, §7a). An Owner can
+  **archive** a patient: hidden from search and lists, everything kept, can be undone.
+  Permanent removal (e.g. a merged duplicate) only through §6b merge or a server command.
 
 ### Medical history (from my-medical "Αναμνηστικό")
 - Conditions (Νοσήματα): list, add several
@@ -381,7 +387,11 @@ only sees records of the companies they have access to.
 | **User** | Day-to-day work: full patient records (including clinical notes) in their companies. Secretary and spa staff are Users. |
 | **Guest** | Research (e.g. a medical student). **Read-only.** Sees clinical data, patient name, age (not date of birth) and photos. **Never** sees contact details (phones, emails, address) or AMKA/ΑΦΜ. Account has a mandatory **end date**. Every view logged. |
 
-Decided 11 Oct 2026. Exports for Guests: to decide in Phase 2.
+Decided 11 Oct 2026.
+**Guest export** (decided Phase 2): a spreadsheet of clinical data **without** names,
+contact details, address, AMKA/ΑΦΜ or date of birth (age only); patients appear under a
+research code, not their patient number. Every export logged. Free-text notes may still
+contain identifying details — the guest's confidentiality agreement (§13) covers this.
 
 ### New users (invitation)
 - Only Owner and Admin create users: enter name, email, level, company access

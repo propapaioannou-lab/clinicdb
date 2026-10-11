@@ -14,7 +14,6 @@ export async function VisitView({
   v: {
     type: string | null;
     doctor: string | null;
-    general: string | null;
     areas: VisitArea[];
     procedures: VisitProcedure[];
     diagnosis: string | null;
@@ -31,21 +30,19 @@ export async function VisitView({
       <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-4">
         <section className={`${card} flex flex-col gap-3 p-5`}>
           <h2 className="text-[17px] font-semibold">{t("evaluation")}</h2>
-          {v.general && <p className="whitespace-pre-wrap text-[15px]">{v.general}</p>}
           {v.areas.map((a) => (
             <div key={a.area} className="rounded-[12px] border border-line-soft bg-surface-2 p-4">
               <h3 className="mb-1 text-[15px] font-semibold">{EXAM_AREAS.find((d) => d.key === a.area)?.el ?? a.area}</h3>
-              {a.summary && <p className="mb-1.5 text-[15px] leading-relaxed">{a.summary}</p>}
               {a.exam?.difficulty && (
                 <p className="mb-1.5 text-[13px] text-ink-3">
                   {tb("difficultyShort", { rank: a.exam.difficulty })}
                   {difficultyModifiers(a.exam.difficulty).extraMinutes > 0 && ` · ${tb("extraTime", { minutes: difficultyModifiers(a.exam.difficulty).extraMinutes })}`}
                 </p>
               )}
-              {(a.text || !a.summary) && <p className="whitespace-pre-wrap text-sm">{a.text || "—"}</p>}
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{a.text || "—"}</p>
             </div>
           ))}
-          {!v.general && !v.areas.length && <p className="text-sm text-muted">—</p>}
+          {!v.areas.length && <p className="text-sm text-muted">—</p>}
         </section>
         <section className={`${card} flex flex-col gap-2 p-5`}>
           <h2 className="text-[17px] font-semibold">{t("procedures")}</h2>

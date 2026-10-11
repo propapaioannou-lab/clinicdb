@@ -43,7 +43,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
         age={ageToday(p.ageFrom)?.years ?? null}
         types={types}
         initial={{
-          typeId: firstType, date: now.date, time: now.time, general: "", areas: [], procedures: [], diagnosis: "",
+          typeId: firstType, date: now.date, time: now.time, areas: [], procedures: [], diagnosis: "",
           weightKg: "", heightCm: height ? num1(height) : "",
         }}
         previousWeight={last?.weightKg ? { kg: last.weightKg, date: await shortDate(last.startedAt) } : null}
@@ -55,7 +55,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
               <section className={`${card} flex flex-col gap-1.5 p-5`}>
                 <h2 className="text-[17px] font-semibold">{t("previous")}</h2>
                 <span className="text-sm text-muted">{await shortDate(prev.startedAt)} · {prev.type ?? "—"}</span>
-                <p className="line-clamp-4 text-sm">{prev.general || prev.diagnosis || "—"}</p>
+                <p className="line-clamp-4 text-sm">{prev.diagnosis || prev.findings || "—"}</p>
               </section>
             )}
           </>

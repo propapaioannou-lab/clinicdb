@@ -496,9 +496,8 @@ model Visit {
   startedAt     DateTime    @default(now())
   // Who saw the patient (a Surgeon), if any.
   doctorId      String?
-  // "Γενικά · αίτημα ασθενούς".
-  general       String?
-  // [{ "area": "breast", "text": "..." }] — one section per area examined.
+  // [{ "area": "breast", "text": "findings…", "exam": {…} }] — one section per area examined;
+  // text = "Επιπλέον ευρήματα", where the written-up findings land and stay editable.
   areas         Json?
   // [{ "key": "facelift", "subs": ["deepPlane"] }] — procedures discussed (catalog keys).
   procedures    Json?

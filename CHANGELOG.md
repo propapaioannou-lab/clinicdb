@@ -2,6 +2,17 @@
 
 Plain-language record of what changed and how to check it.
 
+## 11 Oct 2026 — Visits: "Επιπλέον ευρήματα" holds the findings
+
+- **"Γενικά · αίτημα ασθενούς" removed.** (Any text already there was moved into the
+  visit's diagnosis/comment, so nothing was lost.)
+- The box under each examined area is now **"Επιπλέον ευρήματα"** and is the record of
+  the findings. For Μαστός, the automatically written text goes **straight into it** and
+  stays editable: it follows your taps until you edit it; after that your wording is
+  kept, and **↻ Ξαναγράψε από τις επιλογές** rewrites it on request.
+- At import, my-medical's **"Αντικειμενικά ευρήματα"** will go into this field.
+- Visit lists, the timeline and "Προηγούμενη επίσκεψη" now quote diagnosis and findings.
+
 ## 11 Oct 2026 — Visits: structured breast examination
 
 - In a visit, **+ Μαστός** now opens a structured exam instead of reminder chips:

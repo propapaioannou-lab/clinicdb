@@ -41,7 +41,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
         <section className={`${card} flex flex-col gap-1.5 p-5`}>
           <h2 className="text-[17px] font-semibold">{t("previous")}</h2>
           <span className="text-sm text-muted">{await shortDate(v.previous.startedAt)} · {v.previous.type ?? "—"}</span>
-          <p className="line-clamp-4 text-sm">{v.previous.general || v.previous.diagnosis || "—"}</p>
+          <p className="line-clamp-4 text-sm">{v.previous.diagnosis || v.previous.findings || "—"}</p>
         </section>
       )}
       {v.status === "CLOSED" && canReopenVisit(actor) && (
@@ -65,7 +65,7 @@ export default async function VisitPage({ params }: PageProps<"/patients/[id]/vi
           age={ageToday(p.ageFrom)?.years ?? null}
           types={types}
           initial={{
-            typeId: v.typeId ?? "", date: when.date, time: when.time, general: v.general ?? "", areas: v.areas, procedures: v.procedures,
+            typeId: v.typeId ?? "", date: when.date, time: when.time, areas: v.areas, procedures: v.procedures,
             diagnosis: v.diagnosis ?? "", weightKg: v.weightKg !== null ? num1(v.weightKg) : "", heightCm: v.heightCm !== null ? num1(v.heightCm) : "",
           }}
           previousWeight={v.previous?.weightKg ? { kg: v.previous.weightKg, date: await shortDate(v.previous.startedAt) } : null}

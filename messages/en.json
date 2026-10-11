@@ -806,7 +806,6 @@
     "datePlaceholder": "dd/mm/yyyy",
     "evaluation": "Clinical evaluation",
     "addArea": "Add area",
-    "general": "General · patient's request",
     "areaLabel": "{area} clinical evaluation",
     "removeArea": "Remove area {area}",
     "procedures": "Procedures discussed",
@@ -863,7 +862,8 @@
       "invalid": "Something went wrong; please try again."
     },
     "saveAndClose": "Save & close visit",
-    "extraNotes": "Additional notes"
+    "findingsText": "Further findings",
+    "rewrite": "Rewrite from the choices"
   },
   "breastExam": {
     "findings": "Findings",
@@ -873,8 +873,6 @@
     "difficulty": "Difficulty (1 = standard)",
     "extraTime": "+{minutes}′ operating time",
     "standard": "standard time",
-    "summary": "Description (written automatically)",
-    "summaryEmpty": "Choose findings to write the description.",
     "difficultyShort": "Difficulty {rank}/10"
   }
 }

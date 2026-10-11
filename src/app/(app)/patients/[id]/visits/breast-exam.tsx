@@ -5,7 +5,6 @@ import { fieldClass } from "@/components/ui";
 import {
   BREAST_FINDINGS,
   BREAST_PREVIOUS,
-  breastSummary,
   difficultyModifiers,
   type BreastExam as Exam,
   type FindingValue,
@@ -16,17 +15,15 @@ const pill = (on: boolean) =>
 const opt = (on: boolean) =>
   `min-h-9 rounded-full px-3 py-1 text-[13px] ${on ? "border border-primary bg-primary-tint font-semibold text-primary" : "border border-line-strong bg-surface text-ink-3 hover:border-primary"}`;
 
-// Structured breast examination: tap a finding, answer its options; the sentences below
-// write themselves (decided 11 Oct 2026). The surgeon never sees money, so difficulty
+// Structured breast examination: tap a finding, answer its options; the sentences are
+// written into "Επιπλέον ευρήματα" below, where they stay editable (decided 11 Oct 2026). The surgeon never sees money, so difficulty
 // shows only the extra time; the fee modifier is applied in the quote.
 export function BreastExam({
   value,
   onChange,
-  age,
 }: {
   value: Exam | undefined;
   onChange: (update: (prev: Exam) => Exam) => void;
-  age: number | null;
 }) {
   const t = useTranslations("breastExam");
   const exam: Exam = value ?? { findings: {} };
@@ -66,7 +63,6 @@ export function BreastExam({
   const setYear = (key: string, year: string) =>
     onChange((p) => ({ ...p, revision: { previous: (p.revision?.previous ?? []).map((x) => (x.key === key ? { ...x, year } : x)) } }));
 
-  const summary = breastSummary(exam, age);
 
   return (
     <div className="flex flex-col gap-3">
@@ -174,10 +170,6 @@ export function BreastExam({
         </div>
       </div>
 
-      <div className="rounded-[10px] bg-primary-tint-2 px-3 py-2.5">
-        <span className="mb-1 block text-[13px] font-medium text-muted">{t("summary")}</span>
-        <p className="text-[15px] leading-relaxed">{summary || <span className="text-muted">{t("summaryEmpty")}</span>}</p>
-      </div>
     </div>
   );
 }

@@ -4,23 +4,27 @@ import type { Prisma } from "@/generated/prisma/client";
 import { canCloseVisit, canEditPatients, canHandleMoney, canReopenVisit } from "@/lib/permissions";
 import type { Actor } from "@/lib/users/manage";
 import { EXAM_AREA_KEYS, findProcedure } from "./catalog";
-import { breastSummary, cleanBreastExam, type BreastExam } from "./exams/breast";
-import { ageOn } from "@/lib/patients/normalize";
-import { athensParts } from "@/lib/time";
+import { cleanBreastExam, type BreastExam } from "./exams/breast";
 
 // Visits (SPEC §4 Visit). Clinical part: anyone who may edit patients. Charge part:
 // Secretary or PA/nurse only, and never returned to anyone else.
 
-// text = free notes; exam = structured findings (breast so far); summary = the findings
-// written as sentences when the visit was saved (kept as recorded, for memos/certificates).
-export type VisitArea = { area: string; text: string; exam?: BreastExam; summary?: string };
+// text = "Επιπλέον ευρήματα": the findings as written (the automatic text lands here and
+// stays editable; imported my-medical "αντικειμενικά ευρήματα" go here too);
+// exam = the structured choices behind it (breast so far).
+export type VisitArea = { area: string; text: string; exam?: BreastExam };
+
+// The findings texts of a visit, for lists and "previous visit".
+export function findingsText(areas: VisitArea[] | null): string | null {
+  const t = (areas ?? []).map((a) => a.text).filter(Boolean).join(" ");
+  return t || null;
+}
 export type VisitProcedure = { key: string; subs: string[] };
 
 export type VisitInput = {
   typeId: string | null;
   // Missing: "now" for a new visit, unchanged when editing.
   startedAt: Date | null;
-  general: string | null;
   areas: VisitArea[];
   procedures: VisitProcedure[];
   diagnosis: string | null;
@@ -80,7 +84,6 @@ export function cleanVisitInput(raw: Record<string, unknown>): VisitInput | "inv
   return {
     typeId: typeof raw.typeId === "string" && raw.typeId ? raw.typeId : null,
     startedAt,
-    general: text(raw.general),
     areas,
     procedures,
     diagnosis: text(raw.diagnosis, 1000),
@@ -94,12 +97,6 @@ async function findPatient(actor: Actor, patientId: string) {
     where: { id: patientId, companyId: { in: actor.companyIds } },
     select: { id: true, companyId: true, birthDate: true },
   });
-}
-
-// Write each structured exam up as sentences, with the patient's age on the visit date.
-function withSummaries(areas: VisitArea[], birthDate: Date | null, at: Date): VisitArea[] {
-  const age = birthDate ? (ageOn(birthDate, athensParts(at))?.years ?? null) : null;
-  return areas.map((a) => (a.area === "breast" && a.exam ? { ...a, summary: breastSummary(a.exam, age) } : a));
 }
 
 async function findVisit(actor: Actor, visitId: string) {
@@ -116,7 +113,6 @@ function clinicalData(input: VisitInput) {
   return {
     typeId: input.typeId,
     ...(input.startedAt && { startedAt: input.startedAt }),
-    general: input.general,
     areas: input.areas as unknown as Prisma.InputJsonValue,
     procedures: input.procedures as unknown as Prisma.InputJsonValue,
     diagnosis: input.diagnosis,
@@ -138,7 +134,6 @@ export async function createVisit(
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(patient.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");
-  input.areas = withSummaries(input.areas, patient.birthDate, input.startedAt ?? new Date());
   const visit = await db.visit.create({
     data: {
       ...clinicalData(input),
@@ -166,8 +161,6 @@ export async function updateVisit(actor: Actor, visitId: string, raw: Record<str
   if (input === "invalid_value") return fail("invalid_value");
   const type = await checkType(before.companyId, input.typeId);
   if (!type.ok) return fail("invalid_type");
-  const p = await db.patient.findUniqueOrThrow({ where: { id: before.patientId }, select: { birthDate: true } });
-  input.areas = withSummaries(input.areas, p.birthDate, input.startedAt ?? before.startedAt);
   const data = clinicalData(input);
   await db.visit.update({ where: { id: visitId }, data });
   // Clinical content stays in the visit; the log names what changed.
@@ -244,7 +237,7 @@ export async function listVisits(actor: Actor, patientId: string) {
     startedAt: v.startedAt,
     type: v.type?.label ?? null,
     doctor: v.doctor?.name ?? null,
-    general: v.general,
+    findings: findingsText(v.areas as VisitArea[] | null),
     diagnosis: v.diagnosis,
     procedures: (v.procedures as VisitProcedure[] | null) ?? [],
     weightKg: dec(v.weightKg),
@@ -283,7 +276,6 @@ export async function getVisit(actor: Actor, visitId: string) {
     type: v.type?.label ?? null,
     doctor: v.doctor?.name ?? null,
     startedAt: v.startedAt,
-    general: v.general,
     areas: (v.areas as VisitArea[] | null) ?? [],
     procedures: (v.procedures as VisitProcedure[] | null) ?? [],
     diagnosis: v.diagnosis,
@@ -293,7 +285,7 @@ export async function getVisit(actor: Actor, visitId: string) {
     closedAt: v.closedAt,
     money: money(actor, v),
     previous: prev
-      ? { startedAt: prev.startedAt, type: prev.type?.label ?? null, general: prev.general, diagnosis: prev.diagnosis, weightKg: dec(prev.weightKg) }
+      ? { startedAt: prev.startedAt, type: prev.type?.label ?? null, findings: findingsText(prev.areas as VisitArea[] | null), diagnosis: prev.diagnosis, weightKg: dec(prev.weightKg) }
       : null,
   };
 }

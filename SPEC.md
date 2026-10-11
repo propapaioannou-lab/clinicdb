@@ -205,14 +205,18 @@ services and are NOT rebuilt here.
   Ασυμμετρία, Χαλαρότητα δέρματος, Πάχος ιστού, Θηλή-άλως, Υπομαστική πτυχή,
   Σωληνοειδής, Θωρακικό τοίχωμα) opens its multiple-choice details (degree, side,
   which side is bigger, Regnault grade, cup, …). The findings are **written up as
-  Greek sentences automatically** («Ασθενής 43 ετών με μέτρια πτώση (Regnault II)…»),
-  stored with the visit as recorded, for memos and private-insurance certificates.
+  Greek sentences automatically** («Ασθενής 43 ετών με μέτρια πτώση (Regnault II)…»)
+  straight into the area's **"Επιπλέον ευρήματα"** text, which stays editable: it follows
+  the taps until the doctor edits it, then keeps the doctor's wording ("↻ Ξαναγράψε από
+  τις επιλογές" rewrites it). That text is the visit's record of the findings, for memos
+  and private-insurance certificates.
   **Revision**: a switch adds previous operations in the same area (with year, typed)
   and implant findings (Baker, malposition, rippling, rupture, double bubble,
   animation). **Difficulty 1–10**: rank 1 = standard; each rank above adds **+5% to the
   surgical fee** (applied in the quote, never shown to the surgeon) and **+10′ to the
   operating time**. Used when there is no AI transcript.
-- **Clinical evaluation** (main content): "General / patient's request" free text +
+- **Clinical evaluation** (main content): (the "General / patient's request" box was
+  dropped — decided 11 Oct 2026)
   one section per area of interest (Breast, Face, Body, Nose, Genital, Other), added
   and removed as needed, several per visit. Each section: reminder chips of what to
   examine (editable in Settings) + free text. AI transcript fills these sections.
@@ -686,6 +690,8 @@ surgeon only; every action audited.
   Import scripts run locally; real data never leaves our machines.
   - Mapping rules (e.g. my-medical visit types → our clean list) are written once the
     exported data has been seen; nothing messy is copied as-is.
+  - my-medical "Αντικειμενικά ευρήματα" of a visit → that visit's "Επιπλέον ευρήματα"
+    text (decided 11 Oct 2026).
 - Later: myDATA provider API (receipts); e-prescription stays on ΗΔΙΚΑ.
 
 ## 11. Users and permissions

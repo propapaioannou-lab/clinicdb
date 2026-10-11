@@ -36,7 +36,7 @@ describe("visits", () => {
   it("a surgeon creates a consultation: charged by default, but the surgeon never sees money", async () => {
     const p = await makePatient(c.surgery, { surname: "Επισκέψεως" });
     const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
-    const r = await createVisit(surgeon, p.id, { typeId: consult, general: "Αυξητική", weightKg: 64 }, ctx);
+    const r = await createVisit(surgeon, p.id, { typeId: consult, diagnosis: "Αυξητική", weightKg: 64 }, ctx);
     if (!r.ok) throw new Error(r.error);
     const stored = await db.visit.findUniqueOrThrow({ where: { id: r.id } });
     expect(stored).toMatchObject({ feeCents: 7000, doctorId: surgeon.id, status: "OPEN" });
@@ -70,12 +70,12 @@ describe("visits", () => {
     expect(await setVisitClosed(surgeon, r.id, true, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await setVisitCharge(secretary, r.id, { feeCents: 7000, paidCents: 7000, paymentMethod: "cash" }, ctx)).toEqual({ ok: true });
     expect(await setVisitClosed(secretary, r.id, true, ctx)).toEqual({ ok: true });
-    expect(await updateVisit(surgeon, r.id, { general: "αλλαγή" }, ctx)).toEqual({ ok: false, error: "closed" });
+    expect(await updateVisit(surgeon, r.id, { diagnosis: "αλλαγή" }, ctx)).toEqual({ ok: false, error: "closed" });
     expect(await setVisitClosed(await makeActor("USER", [c.surgery], "SPA_STAFF"), r.id, false, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await setVisitClosed(surgeon, r.id, false, ctx)).toEqual({ ok: true });
-    expect(await updateVisit(surgeon, r.id, { general: "αλλαγή", typeId: consult }, ctx)).toEqual({ ok: true });
+    expect(await updateVisit(surgeon, r.id, { diagnosis: "αλλαγή", typeId: consult }, ctx)).toEqual({ ok: true });
     const log = await db.auditLog.findFirstOrThrow({ where: { action: "visit.updated", entityId: p.id } });
-    expect(log.details).toMatchObject({ changed: ["general"] });
+    expect(log.details).toMatchObject({ changed: ["diagnosis"] });
   });
 
   it("refuses Guests, other companies and another company's visit types; Guests may read", async () => {
@@ -94,27 +94,25 @@ describe("visits", () => {
   it("gives the weight trend oldest first and the previous visit for reference", async () => {
     const p = await makePatient(c.surgery, { surname: "Βάρους" });
     const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
-    await createVisit(surgeon, p.id, { startedAt: "2026-05-01T09:00:00Z", weightKg: 68, general: "πρώτη" }, ctx);
+    await createVisit(surgeon, p.id, { startedAt: "2026-05-01T09:00:00Z", weightKg: 68, areas: [{ area: "face", text: "πρώτη" }] }, ctx);
     const last = await createVisit(surgeon, p.id, { startedAt: "2026-09-01T09:00:00Z", weightKg: 64 }, ctx);
     if (!last.ok) throw new Error(last.error);
     expect((await weightSeries(p.id)).map((w) => w.kg)).toEqual([68, 64]);
-    expect((await getVisit(surgeon, last.id))?.previous).toMatchObject({ general: "πρώτη", weightKg: 68 });
+    expect((await getVisit(surgeon, last.id))?.previous).toMatchObject({ findings: "πρώτη", weightKg: 68 });
   });
 
-  it("stores the breast findings written as sentences, with the age on the visit date", async () => {
-    const p = await makePatient(c.surgery, { surname: "Μαστού", birthDate: new Date(Date.UTC(1983, 0, 15)) });
+  it("keeps the findings text as written, together with the structured choices", async () => {
+    const p = await makePatient(c.surgery, { surname: "Μαστού" });
     const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
     const r = await createVisit(surgeon, p.id, {
-      startedAt: "2026-10-11T09:00:00Z",
-      areas: [{ area: "breast", text: "σημείωση", exam: { findings: { ptosis: { grade: "2", side: "both" } }, difficulty: 3 } }],
+      areas: [{ area: "breast", text: "Ασθενής 43 ετών με μέτρια πτώση. Ουλή αριστερά.", exam: { findings: { ptosis: { grade: "2" } }, difficulty: 3 } }],
     }, ctx);
     if (!r.ok) throw new Error(r.error);
     const v = await getVisit(surgeon, r.id);
-    expect(v?.areas[0]).toMatchObject({
+    expect(v?.areas[0]).toEqual({
       area: "breast",
-      text: "σημείωση",
-      exam: { difficulty: 3 },
-      summary: "Ασθενής 43 ετών με μέτρια πτώση (Regnault II) αμφοτερόπλευρα.",
+      text: "Ασθενής 43 ετών με μέτρια πτώση. Ουλή αριστερά.",
+      exam: { findings: { ptosis: { grade: "2" } }, difficulty: 3 },
     });
   });
 });

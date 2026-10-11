@@ -194,7 +194,7 @@ async function main() {
               patientId: created[j].id,
               typeId: type?.id ?? null,
               startedAt: new Date(Math.min(when, Date.now() - 86_400_000)),
-              general: k === 0 ? "Δοκιμαστική πρώτη επίσκεψη." : "Δοκιμαστικός επανέλεγχος.",
+              diagnosis: k === 0 ? "Δοκιμαστική πρώτη επίσκεψη." : "Δοκιμαστικός επανέλεγχος.",
               weightKg: kg,
               heightCm: height,
               feeCents: fee,

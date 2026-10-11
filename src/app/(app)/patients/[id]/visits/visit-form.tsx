@@ -8,7 +8,7 @@ import { card, ErrorBox, inputClass, Notice, primaryButton, textareaClass } from
 import { bmi } from "@/lib/history/data";
 import { EXAM_AREAS, PROCEDURE_AREAS, findProcedure } from "@/lib/visits/catalog";
 import type { VisitArea, VisitProcedure } from "@/lib/visits/visits";
-import type { BreastExam as BreastExamValue } from "@/lib/visits/exams/breast";
+import { breastSummary, type BreastExam as BreastExamValue } from "@/lib/visits/exams/breast";
 import type { VisitActionState } from "./actions";
 import { BreastExam } from "./breast-exam";
 
@@ -16,7 +16,6 @@ export type VisitFormValues = {
   typeId: string;
   date: string; // dd/mm/yyyy, Athens
   time: string; // HH:MM
-  general: string;
   areas: VisitArea[];
   procedures: VisitProcedure[];
   diagnosis: string;
@@ -73,8 +72,21 @@ export function VisitForm({
   const removeArea = (area: string) => setV((x) => ({ ...x, areas: x.areas.filter((a) => a.area !== area) }));
   const setAreaText = (area: string, text: string) => setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, text } : a)) }));
   // A reminder chip adds "Πτώση (Regnault): " as a new line, ready to complete.
+  // The written-up findings land in "Επιπλέον ευρήματα" and follow the taps until the
+  // doctor edits the text; after that the text is theirs (the ↻ button rewrites it).
   const setAreaExam = (area: string, update: (prev: BreastExamValue) => BreastExamValue) =>
-    setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area ? { ...a, exam: update(a.exam ?? { findings: {} }) } : a)) }));
+    setV((x) => ({
+      ...x,
+      areas: x.areas.map((a) => {
+        if (a.area !== area) return a;
+        const before = a.exam ?? { findings: {} };
+        const exam = update(before);
+        const following = !a.text.trim() || a.text === breastSummary(before, age);
+        return { ...a, exam, text: following ? breastSummary(exam, age) : a.text };
+      }),
+    }));
+  const rewrite = (area: string) =>
+    setV((x) => ({ ...x, areas: x.areas.map((a) => (a.area === area && a.exam ? { ...a, text: breastSummary(a.exam, age) } : a)) }));
   const addPrompt = (area: string, prompt: string) =>
     setV((x) => ({
       ...x,
@@ -86,7 +98,6 @@ export function VisitForm({
       typeId: v.typeId || null,
       date: v.date,
       time: v.time,
-      general: v.general,
       areas: v.areas,
       procedures: v.procedures,
       diagnosis: v.diagnosis,
@@ -135,9 +146,6 @@ export function VisitForm({
                 ))}
               </div>
             </div>
-            <label className="block text-sm font-medium text-ink-2">{t("general")}
-              <textarea rows={3} value={v.general} onChange={(e) => set({ general: e.target.value })} className={textareaClass} />
-            </label>
             {v.areas.map((a) => {
               const def = EXAM_AREAS.find((d) => d.key === a.area)!;
               return (
@@ -146,7 +154,7 @@ export function VisitForm({
                     <h3 className="text-[15px] font-semibold">{def.el}</h3>
                     <button type="button" onClick={() => removeArea(a.area)} aria-label={t("removeArea", { area: def.el })} className="text-sm text-muted hover:text-danger">✕</button>
                   </div>
-                  {a.area === "breast" && <BreastExam value={a.exam} onChange={(u) => setAreaExam(a.area, u)} age={age} />}
+                  {a.area === "breast" && <BreastExam value={a.exam} onChange={(u) => setAreaExam(a.area, u)} />}
                   {a.area !== "breast" && def.prompts.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {def.prompts.map((pr) => (
@@ -157,8 +165,15 @@ export function VisitForm({
                     </div>
                   )}
                   <label className="block text-[13px] font-medium text-muted">
-                    {a.area === "breast" ? t("extraNotes") : ""}
-                    <textarea rows={a.area === "breast" ? 2 : 4} value={a.text} onChange={(e) => setAreaText(a.area, e.target.value)} aria-label={def.el} className={`${textareaClass} ${a.area === "breast" ? "" : "mt-0"}`} />
+                    <span className="flex flex-wrap items-center justify-between gap-2">
+                      {t("findingsText")}
+                      {a.exam && a.text !== breastSummary(a.exam, age) && breastSummary(a.exam, age) && (
+                        <button type="button" onClick={() => rewrite(a.area)} className="text-[13px] font-semibold text-primary hover:text-primary-hover">
+                          ↻ {t("rewrite")}
+                        </button>
+                      )}
+                    </span>
+                    <textarea rows={4} value={a.text} onChange={(e) => setAreaText(a.area, e.target.value)} aria-label={`${def.el}: ${t("findingsText")}`} className={`${textareaClass} text-[15px] leading-relaxed`} />
                   </label>
                 </div>
               );

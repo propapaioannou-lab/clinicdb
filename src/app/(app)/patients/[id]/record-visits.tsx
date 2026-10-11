@@ -60,7 +60,7 @@ export async function VisitsTab({
                 {v.status === "OPEN" && <Badge tone="amber">{t("open")}</Badge>}
                 {v.doctor && <span className="text-[13px] text-muted">· {v.doctor}</span>}
               </span>
-              {(v.general || v.diagnosis) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.general].filter(Boolean).join(" — ")}</span>}
+              {(v.findings || v.diagnosis) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.findings].filter(Boolean).join(" — ")}</span>}
               {v.procedures.length > 0 && <span className="text-[13px] text-ink-3">{procedureNames(v)}</span>}
             </span>
             <span className="flex min-w-[120px] flex-col gap-0.5 text-[13px] text-ink-3">
@@ -95,7 +95,7 @@ export async function Timeline({ patientId, visits }: { patientId: string; visit
           <span className="mt-[5px] h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
           <span className="flex min-w-0 flex-1 flex-col gap-1">
             <span className="text-[15px] font-semibold">{[v.type, procedureNames(v)].filter(Boolean).join(" · ") || "—"}</span>
-            {(v.diagnosis || v.general) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.general].filter(Boolean).join(" — ")}</span>}
+            {(v.diagnosis || v.findings) && <span className="line-clamp-2 text-sm leading-relaxed text-ink-3">{[v.diagnosis, v.findings].filter(Boolean).join(" — ")}</span>}
           </span>
         </Link>
       ))}

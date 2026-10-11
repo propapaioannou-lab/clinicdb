@@ -1,4 +1,4 @@
-# Clinic Database — Specification v0.9
+# Clinic Database — Specification v1.0
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -51,7 +51,13 @@ services and are NOT rebuilt here.
 - Date of birth → age shown automatically (years + months)
 - Registration date (auto)
 - Area, address, city, postcode, country
-- Phones: several, each with a type (mobile, home, work); one marked main/WhatsApp
+- Phones: several, each with a type (mobile, home, work); one marked main/WhatsApp.
+  Each number is entered with a **country code** (picker, Greece +30 by default).
+  Emails are checked for a valid format as they are typed. (Decided 11 Oct 2026.)
+- **WhatsApp check of the main number** (Phase 6, via GHL): "Verify via WhatsApp" sends
+  the patient a message; the patient taps to confirm; the number shows verified (with
+  date) or "not delivered — check the number / resend". Saving never waits for it;
+  until confirmed the number shows "unverified".
 - Emails (several)
 - Sex, occupation
 - **Communication language** (Greek / English; default Greek). Decides the language
@@ -80,6 +86,7 @@ services and are NOT rebuilt here.
 - **Never deleted in the app** (records are kept 10 years, §7a). An Owner can
   **archive** a patient: hidden from search and lists, everything kept, can be undone.
   Permanent removal (e.g. a merged duplicate) only through §6b merge or a server command.
+
 
 ### Medical history (from my-medical "Αναμνηστικό")
 - Conditions (Νοσήματα): list, add several
@@ -172,6 +179,11 @@ New in our app:
   (today this lives as free text in calendar titles — e.g. brand, profile, cc)
 - Operative note typed directly, complications
 - Status: proposed → booked → done
+- **Estimated duration**: sum of each procedure's default OR time (editable list in
+  Settings, e.g. facelift 4h30′, rhinoplasty 3h, blepharoplasty 2h, breast
+  augmentation 2h, abdominoplasty 3h30′); can be overridden per surgery.
+- Team: anaesthesiologist, anaesthesia type, scrub / recovery nurse (editable lists of
+  external collaborators with e-mail).
 - Linked: specific consent (§7), surgical brief (§8), photos
 
 ### Treatment (repeated, non-surgical) — kept separate from Surgery
@@ -238,11 +250,54 @@ Prescriptions link out to ΗΔΙΚΑ; drawings live under Visits/Surgeries.
 (my-medical's "Σημειώσεις" tab dropped — never used.)
 Also from my-medical: a global To-Do list with reminders (bell with counter).
 
-## 4c. Calendar
-my-medical's calendar is NOT the model — to be designed from scratch with the surgeon
-(built-in vs GHL still open). Known needs so far: appointments linked to a patient
+## 4c. Calendar (designed — see DESIGN.md §6)
+my-medical's calendar is NOT the model. Known needs: appointments linked to a patient
 record; surgery details (procedures, implants) live in the surgery record, not in
 appointment titles; more than one location.
+
+**Data**
+- `Appointment`: company, patient, type, start, duration, resource (doctor / nurse /
+  room / cabin / operating room), location, status (booked → confirmed → arrived →
+  ready → with doctor → to pay → done; or cancelled / no-show), confirmation channel
+  and time, source (staff user or online via GHL), GHL appointment ID.
+- `AppointmentType` (editable): name GR/EN, colour, default length, calendar layer
+  (office / online / surgery / spa), company. Seed practice: first visit 30′,
+  follow-up 15′, pre-op 30′, post-op 15′, online 30′, injectable 30′. Seed spa:
+  laser 60′, peel 45′, hydrafacial 60′, mesotherapy 45′, body package 90′.
+- `Resource` (editable): practice — surgeon, nurse room, operating room (per
+  hospital); spa — cabins / aestheticians. Blocked time (break, congress, holiday) as
+  its own entries. Greek public holidays pre-loaded.
+- **Practice and Spa are separate calendars** (company switch). Never shown together.
+
+**Views**: day (one column per resource, more detail), week (Mon–Sat, layers on/off,
+surgical load bar per day), month (counts per day + surgery load). Click empty slot →
+new appointment. Clash warning and suggested free slots when booking.
+
+**Surgery capacity rules** (Settings, defaults):
+- Surgery days Mon–Fri. Per day max 3 operations or 7 hours of OR time; 30′ turnover
+  between cases.
+- A case ≥ 4 h leaves room only for short cases (≤ 2 h); a case ≥ 5 h closes the day.
+- "+ Νέο χειρουργείο": choose procedures → estimated time → availability grid for the
+  next 3 weeks (fits / only ≤2 h / full / holiday) → pick day → proposed start after
+  the existing cases. Booking creates the Surgery (status booked), its checklist (§4e
+  readiness) and, if ticked, the consent link and deposit request.
+
+**Schedule e-mails** (protected PDF, every send audited):
+- Weekly surgical schedule → external anaesthesiologists and nurses taking part.
+  Auto every Thursday 14:00 for the next week (configurable) + "send now".
+- Monthly surgical plan → the hospital (e.g. Διαβαλκανικό operating-theatre office).
+  Auto on the 20th for the next month + "send now".
+- Content limited to: date, time, patient name, age, procedure(s), estimated
+  duration, anaesthesia type. Clinical details go only in the per-patient surgical
+  brief (§8). Any change after sending → automatic "schedule change" e-mail.
+
+**Waiting list**: patient, wanted type, preferred days/times, since when. On a
+cancellation the app lists matching people; "offer via WhatsApp" (GHL) to several,
+first "yes" gets the slot, the rest are told automatically.
+
+**Confirmations / reminders** go out through GHL (WhatsApp default, patient's
+language); replies update the appointment status. Tomorrow's unconfirmed list on the
+secretary home.
 
 ## 4d. Reports and other my-medical features (decide which to keep)
 my-medical offers: income by visits and by packages, total visits, total surgeries,
@@ -265,7 +320,7 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   Surgery mode: today's operations only, full width (no chat, tasks or upcoming list);
   "ready in OR" still arrives as a banner. The "Surgeries" menu opens this same view:
   starts on today, ‹ › for previous/next day, "Today" button to jump back.
-- Live clock (with seconds) + next-appointment countdown; amber ≤5 min, red "late X min".
+- Live clock (with seconds) at the top left + next-appointment countdown; amber ≤5 min, red "late X min".
 - Patient status flow: Αναμένεται → Στην αναμονή → Έτοιμος · Δωμάτιο X → Ολοκληρώθηκε.
   The assistant marks "ready in room X" from her screen/phone → surgeon gets a banner,
   sound and optional phone push. Same for "ready in operating room" in surgery mode.
@@ -479,6 +534,8 @@ surgeon only; every action audited.
 
 - **GHL**: two-way sync of contact + appointment data only (name, phones, emails,
   lead source, appointment time, category). Never clinical data. Calendar choice pending.
+  Also sends the WhatsApp check message for the main number (§4) — the number only, no
+  clinical data.
 - **Email (SMTP)** via a provider with a DPA: surgical briefs, consent links.
 - **my-medical import**: one-time migration of ~15,300 patients with history, visits,
   surgeries, files, receipts and prescription history.
@@ -520,8 +577,11 @@ and who appears as treating doctor. It does not add permissions beyond the level
   signs off operative notes.
 - **PA / nurse**: PA/nurse home (room board, checklists, intake review, chat); clinical
   read and write; verifies medical history; not sign-off of operative notes.
-- **Secretary**: access to everything in their companies (decided Phase 1, confirmed
-  11 Oct 2026); own home screen designed later (uses PA/nurse home until then).
+- **Secretary**: home = "Υποδοχή" (DESIGN.md 1e): contact details, appointments,
+  calendar, check-in, payments and receipts, waiting list, intake review, documents,
+  surgery administration (hospital booking, deposit, quotes). Her own screens show no
+  clinical notes, but she **may open and read the full patient record** — access to
+  everything in her companies (decided Phase 1, confirmed again 11 Oct 2026).
 - **Spa staff**: usually Spa company only.
 - **Other** (e.g. research guest, IT).
 Admin work (users, settings, backups) comes from the level, not the role.
@@ -565,27 +625,35 @@ Admin work (users, settings, backups) comes from the level, not the role.
 3. Intake: guest/tablet mode, QR, remote link, first-contact consents
 4. Surgeries, procedure consent templates & signing, surgical brief, auto-email
 5. Photo browser (Synology folders)
-6. Calendar + GHL sync
+6. Calendar + GHL sync — calendar, surgery capacity & booking, schedule e-mails,
+   waiting list, secretary home (1e), physician/PA home screens, WhatsApp check of the
+   patient's main number (§10)
 7. AI consultation assistant
 8. Receipts (myDATA provider), Spa workspace
 9. my-medical import — just before the test phase (export request sent then)
 
 ## 13. Open decisions
 
-- Calendar: built-in vs GHL (calendar screen and secretary view to be designed later)
+- Calendar master: our own calendar (recommended; GHL bookings flow in, GHL sends
+  reminders) vs GHL as master — **pending**
+- Real locations (offices, hospitals) — "Ιατρείο Αθήνας" in mockups is a placeholder
+- Appointment default lengths (30′ / 15′ guessed)
+- Who may collect payments and issue receipts (secretary? PA? surgeon only?)
+- Maximum surgery days per week (burnout guard)?
+- Phone (VoIP) integration — caller's record opens on incoming call (optional, later)
 - Is the deposit a crucial (red) or secondary (orange) readiness item?
 - Should "medical history verified" be a crucial readiness item for surgery?
   (suggested: yes)
 - Patients-page filter "Surgery": surgery within 30 days, or any surgical patient?
 - Breast reconstruction consent: one form, or split by sub-type first?
 - AI: local vs API provider
+- Exact patient fields (my-medical screenshots)
+- Photo folder structure on the Synology today
+- Legal check: e-signatures for surgical consent; consent wording
 - Off-site backup destination (needed by deployment)
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
-- Exact patient fields (my-medical screenshots)
-- Photo folder structure on the Synology today
-- Legal check: e-signatures for surgical consent; consent wording
 - Where general comments about a patient (incl. imported my-medical comments) are shown
 - Medical review of the 21 procedure consent drafts (items marked [ΕΛΕΓΧΟΣ ΙΑΤΡΟΥ])
 - Revision-cost policy text (`{{revision_policy}}`), implant warranty/registry

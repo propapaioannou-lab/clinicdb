@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Ημερολόγιο</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Commissioner:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F3EF}
+a{color:#0E5E63;text-decoration:none}a:hover{color:#0A4549}
+input::placeholder{color:#6B7178}
+</style>
+</helmet>
+<div style="font-family: Commissioner, system-ui, sans-serif; color: #1C2024; background: #F4F3EF; min-height: 100vh; display: flex; flex-wrap: wrap; align-items: stretch">
+
+  <nav aria-label="Κύριο μενού" style="flex: 1 1 232px; max-width: 100%; background: #FFFFFF; border-right: 1px solid #E4E2DC; padding: 20px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+      <div style="width: 34px; height: 34px; border-radius: 9px; background: #0E5E63; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px">Π</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-weight: 600; font-size: 15px">Παπαϊωάννου</span>
+        <span style="font-size: 12px; color: #5B636B">Πλαστική Χειρουργική</span>
+      </div>
+    </div>
+    <div role="group" aria-label="Επιχείρηση" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px">
+      <sc-for list="{{companies}}" as="co" hint-placeholder-count="2">
+        <button aria-pressed="{{co.pressed}}" onClick="{{co.pick}}" style="flex: 1; border: 0; border-radius: 8px; padding: 8px 6px; font: inherit; font-size: 13px; cursor: pointer; {{co.style}}">{{co.label}}</button>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px">
+      <a href="Secretary.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"></path><path d="M5 10v10h14V10"></path></svg>
+        Υποδοχή
+      </a>
+      <a href="Calendar.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; background: #E6F0EF; color: #0E5E63; font-weight: 600; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        Ημερολόγιο
+      </a>
+      <a href="Patients.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"></path></svg>
+        Ασθενείς
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.6 7.1L4 20l1-4.6A8 8 0 1121 12z"></path></svg>
+        <span style="flex: 1">Μηνύματα</span>
+        <span style="background: #0E5E63; color: #FFFFFF; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">4</span>
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2"></rect><path d="M2.5 10h19M6.5 15h4"></path></svg>
+        Πληρωμές
+      </a>
+      <a href="#" style="display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #2C3238; font-size: 14.5px">
+        <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg>
+        <span style="flex: 1">Λίστα αναμονής</span>
+        <span style="background: #F1F0EC; color: #2C3238; font-size: 12px; font-weight: 600; border-radius: 999px; padding: 2px 8px">3</span>
+      </a>
+    </div>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid #ECEAE5">
+      <div style="width: 30px; height: 30px; border-radius: 999px; background: #FCF1E3; color: #8A4B08; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">ΓΣ</div>
+      <div style="display: flex; flex-direction: column">
+        <span style="font-size: 13.5px; font-weight: 600">Γεωργία Σ.</span>
+        <span style="font-size: 12px; color: #5B636B">Γραμματεία</span>
+      </div>
+    </div>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 14px 28px; border-bottom: 1px solid #E4E2DC; background: #FBFAF8">
+      <div style="display: flex; align-items: center; gap: 4px">
+        <button onClick="{{prev}}" aria-label="Προηγούμενο" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 18px; cursor: pointer">‹</button>
+        <button onClick="{{today}}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Σήμερα</button>
+        <button onClick="{{next}}" aria-label="Επόμενο" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 18px; cursor: pointer">›</button>
+      </div>
+      <h1 style="margin: 0 8px; font-size: 21px; font-weight: 600; flex: 1 1 220px">{{rangeLabel}}</h1>
+      <div role="group" aria-label="Προβολή" style="display: flex; background: #F1F0EC; border-radius: 10px; padding: 3px; gap: 3px">
+        <sc-for list="{{views}}" as="v" hint-placeholder-count="3">
+          <button aria-pressed="{{v.pressed}}" onClick="{{v.pick}}" style="height: 34px; padding: 0 14px; border: 0; border-radius: 8px; font: inherit; font-size: 13.5px; cursor: pointer; {{v.style}}">{{v.label}}</button>
+        </sc-for>
+      </div>
+      <sc-if value="{{isPractice}}" hint-placeholder-val="{{true}}">
+        <button onClick="{{openSurg}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #2F4B6E; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ Νέο χειρουργείο</button>
+      </sc-if>
+      <button onClick="{{openNew}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ Νέο ραντεβού</button>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 28px; border-bottom: 1px solid #ECEAE5; background: #FBFAF8; font-size: 13px">
+      <span style="color: #5B636B; margin-right: 2px">Ημερολόγια:</span>
+      <sc-for list="{{cals}}" as="c" hint-placeholder-count="4">
+        <button aria-pressed="{{c.pressed}}" onClick="{{c.toggle}}" style="height: 32px; padding: 0 12px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 7px; {{c.style}}"><span style="width: 10px; height: 10px; border-radius: 3px; background: {{c.color}}"></span>{{c.label}}</button>
+      </sc-for>
+      <span style="width: 1px; height: 22px; background: #E4E2DC; margin: 0 4px"></span>
+      <span style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #DAD8D1; background: #FFFFFF">Τοποθεσία: <b style="font-weight: 600">{{locLabel}}</b> ▾</span>
+      <sc-if value="{{showSendBtns}}" hint-placeholder-val="{{true}}">
+        <span style="width: 1px; height: 22px; background: #E4E2DC; margin: 0 4px"></span>
+        <button onClick="{{openWeekly}}" style="height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #9DB3CC; background: #EEF2F7; color: #2F4B6E; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">✉ Εβδομαδιαίο χειρουργείων</button>
+        <button onClick="{{openMonthly}}" style="height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #9DB3CC; background: #EEF2F7; color: #2F4B6E; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer">✉ Μηνιαίο πλάνο κλινικής</button>
+      </sc-if>
+      <span style="margin-left: auto; display: flex; align-items: center; gap: 6px; color: #1E6B45"><span style="width: 8px; height: 8px; border-radius: 999px; background: #2E9E63"></span>Συγχρονισμός με GHL · πριν 1′</span>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-wrap: wrap; gap: 16px; padding: 16px 28px 28px; align-items: flex-start">
+
+      <section aria-label="Ημερολόγιο" style="flex: 999 1 600px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; overflow: hidden">
+        <sc-if value="{{isGrid}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; border-bottom: 1px solid #E4E2DC; background: #FBFAF8">
+            <div style="width: 52px; flex: none"></div>
+            <sc-for list="{{cols}}" as="col" hint-placeholder-count="6">
+              <div style="flex: 1; min-width: 0; padding: 9px 8px; border-left: 1px solid #ECEAE5; display: flex; flex-direction: column; gap: 1px; {{col.headStyle}}">
+                <span style="font-size: 12px; {{col.subStyle}}">{{col.sub}}</span>
+                <span style="font-size: 15px; font-weight: 600">{{col.label}}</span>
+                <sc-if value="{{col.hasCap}}" hint-placeholder-val="{{false}}">
+                  <span title="{{col.capTitle}}" style="display: flex; align-items: center; gap: 5px; margin-top: 3px; font-size: 11px; font-weight: 600; {{col.capText}}"><span style="flex: 1; height: 5px; border-radius: 9px; background: #E4E2DC; overflow: hidden"><span style="display: block; height: 100%; border-radius: 9px; {{col.capBar}}"></span></span>{{col.cap}}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; position: relative; max-height: 790px; overflow-y: auto">
+            <div style="width: 52px; flex: none; display: flex; flex-direction: column">
+              <sc-for list="{{hours}}" as="h" hint-placeholder-count="12">
+                <div style="{{rowH}} box-sizing: border-box; padding: 2px 8px 0 0; text-align: right; font-size: 11.5px; color: #5B636B; font-variant-numeric: tabular-nums">{{h}}</div>
+              </sc-for>
+            </div>
+            <sc-for list="{{cols}}" as="col" hint-placeholder-count="6">
+              <div style="flex: 1; min-width: 0; position: relative; border-left: 1px solid #ECEAE5; {{col.bodyStyle}}">
+                <sc-for list="{{col.slots}}" as="sl" hint-placeholder-count="12">
+                  <button aria-label="{{sl.aria}}" onClick="{{sl.pick}}" style="display: block; width: 100%; {{rowH}} box-sizing: border-box; border: 0; border-top: 1px solid #F1F0EC; background: transparent; cursor: copy; padding: 0"></button>
+                </sc-for>
+                <sc-for list="{{col.events}}" as="e" hint-placeholder-count="4">
+                  <button onClick="{{e.pick}}" aria-label="{{e.aria}}" style="{{e.style}}">
+                    <span style="display: flex; gap: 4px; align-items: baseline; font-weight: 600; white-space: nowrap; overflow: hidden"><span style="font-variant-numeric: tabular-nums">{{e.time}}</span><span style="overflow: hidden; text-overflow: ellipsis; {{e.nameStyle}}">{{e.name}}</span><span style="margin-left: auto; {{e.markStyle}}">{{e.mark}}</span></span>
+                    <span style="display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.85">{{e.sub}}</span>
+                    <sc-if value="{{e.hasMore}}" hint-placeholder-val="{{false}}">
+                      <span style="display: block; white-space: normal; opacity: 0.85; margin-top: 2px; font-weight: 500">{{e.more}}</span>
+                    </sc-if>
+                  </button>
+                </sc-for>
+                <sc-if value="{{col.hasNow}}" hint-placeholder-val="{{false}}">
+                  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; height: 2px; background: #C8312A; pointer-events: none; {{nowTop}}"><span style="position: absolute; left: -5px; top: -4px; width: 10px; height: 10px; border-radius: 999px; background: #C8312A"></span></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isMonth}}" hint-placeholder-val="{{false}}">
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); background: #FBFAF8; border-bottom: 1px solid #E4E2DC">
+            <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7">
+              <span style="padding: 9px 10px; font-size: 12.5px; color: #5B636B; font-weight: 600">{{w}}</span>
+            </sc-for>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr))">
+            <sc-for list="{{month}}" as="md" hint-placeholder-count="35">
+              <button onClick="{{md.pick}}" style="min-height: 124px; border: 0; border-right: 1px solid #F1F0EC; border-bottom: 1px solid #F1F0EC; background: #FFFFFF; padding: 8px; font: inherit; text-align: left; display: flex; flex-direction: column; gap: 4px; cursor: pointer; {{md.cellStyle}}">
+                <span style="font-size: 13px; font-weight: 600; {{md.numStyle}}">{{md.num}}</span>
+                <sc-for list="{{md.pills}}" as="p" hint-placeholder-count="2">
+                  <span style="font-size: 11.5px; border-radius: 6px; padding: 2px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; {{p.style}}">{{p.label}}</span>
+                </sc-for>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </section>
+
+      <aside aria-label="Λεπτομέρειες" style="flex: 1 1 320px; {{asideW}} min-width: 0; background: #FFFFFF; border: 1px solid #E4E2DC; border-radius: 16px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box">
+
+        <sc-if value="{{showAppt}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; {{sel.typeStyle}}">{{sel.typeLabel}}</span>
+            <a href="Patient.dc.html" style="font-size: 20px; font-weight: 600; color: #1C2024">{{sel.name}} <span style="{{sel.flagStyle}}"></span></a>
+            <span style="font-size: 14px; color: #3B4249">{{sel.when}}</span>
+          </div>
+          <dl style="margin: 0; display: grid; grid-template-columns: 112px 1fr; gap: 8px 10px; font-size: 13.5px">
+            <dt style="color: #5B636B">Τηλέφωνο</dt><dd style="margin: 0">{{sel.phone}}</dd>
+            <dt style="color: #5B636B">Πού</dt><dd style="margin: 0">{{sel.place}}</dd>
+            <dt style="color: #5B636B">Επιβεβαίωση</dt><dd style="margin: 0; {{sel.confStyle}}">{{sel.conf}}</dd>
+            <dt style="color: #5B636B">Φόρμα</dt><dd style="margin: 0; {{sel.formStyle}}">{{sel.form}}</dd>
+            <dt style="color: #5B636B">Οικονομικά</dt><dd style="margin: 0">{{sel.money}}</dd>
+            <dt style="color: #5B636B">Κλείστηκε</dt><dd style="margin: 0">{{sel.source}}</dd>
+          </dl>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+            <sc-for list="{{sel.actions}}" as="a" hint-placeholder-count="4">
+              <button style="height: 40px; border-radius: 10px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; {{a.style}}">{{a.label}}</button>
+            </sc-for>
+          </div>
+          <a href="Patient.dc.html" style="font-size: 14px; font-weight: 600">Άνοιγμα καρτέλας ασθενή →</a>
+          <p style="margin: 0; font-size: 12.5px; color: #5B636B; border-top: 1px solid #F1F0EC; padding-top: 10px">Η γραμματεία βλέπει στοιχεία επικοινωνίας, ραντεβού και πληρωμές. Οι ιατρικές σημειώσεις δεν εμφανίζονται εδώ.</p>
+        </sc-if>
+
+        <sc-if value="{{showNew}}" hint-placeholder-val="{{false}}">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 600">{{newTitle}}</h2>
+
+          <sc-if value="{{notBooked}}" hint-placeholder-val="{{true}}">
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3B4249">Ασθενής
+              <input value="Ιωάν" style="height: 42px; border: 1px solid #DAD8D1; border-radius: 10px; padding: 0 12px; font: inherit; font-size: 14.5px; color: #1C2024">
+            </label>
+            <div role="listbox" aria-label="Αποτελέσματα" style="display: flex; flex-direction: column; gap: 4px; margin-top: -6px">
+              <sc-for list="{{pats}}" as="p" hint-placeholder-count="3">
+                <button role="option" aria-selected="{{p.selected}}" onClick="{{p.pick}}" style="display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; border-radius: 9px; font: inherit; text-align: left; cursor: pointer; {{p.style}}">
+                  <span style="font-size: 14px; font-weight: 600">{{p.name}}</span>
+                  <span style="font-size: 12px; color: #5B636B">{{p.note}}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 13px; color: #3B4249">Τύπος</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{btypes}}" as="t" hint-placeholder-count="6">
+                  <button aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="height: 34px; padding: 0 10px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; {{t.style}}">{{t.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{isSurgBk}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 13px; color: #3B4249">Επεμβάσεις · εκτιμώμενος χρόνος</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                  <sc-for list="{{sprocs}}" as="sp" hint-placeholder-count="8">
+                    <button aria-pressed="{{sp.pressed}}" onClick="{{sp.pick}}" style="height: 32px; padding: 0 10px; border-radius: 999px; font: inherit; font-size: 12.5px; cursor: pointer; {{sp.style}}">{{sp.label}}</button>
+                  </sc-for>
+                </div>
+                <span style="font-size: 14px; font-weight: 600">Σύνολο: {{sTotal}} <span style="font-weight: 400; color: #5B636B; font-size: 12.5px">· αλλάζει στις Ρυθμίσεις ή χειροκίνητα</span></span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; background: #F7F9FB; border: 1px solid #DDE5EE; border-radius: 12px; padding: 12px">
+                <span style="font-size: 13px; font-weight: 600; color: #2F4B6E">Διαθεσιμότητα χειρουργείων</span>
+                <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; font-size: 11px; color: #5B636B; text-align: center">
+                  <span>Δευ</span><span>Τρί</span><span>Τετ</span><span>Πέμ</span><span>Παρ</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px">
+                  <sc-for list="{{avail}}" as="av" hint-placeholder-count="15">
+                    <button onClick="{{av.pick}}" aria-label="{{av.aria}}" style="min-height: 58px; border-radius: 9px; padding: 5px 4px; font: inherit; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; {{av.style}}">
+                      <span style="font-size: 13px; font-weight: 700">{{av.num}}</span>
+                      <span style="width: 80%; height: 4px; border-radius: 9px; background: rgba(0,0,0,0.08); overflow: hidden"><span style="display: block; height: 100%; {{av.bar}}"></span></span>
+                      <span style="font-size: 10.5px; font-weight: 600; line-height: 1.15">{{av.label}}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <span style="display: flex; flex-wrap: wrap; gap: 10px; font-size: 11.5px; color: #3B4249">
+                  <span><span style="display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: #2E9E63"></span> Χωράει</span>
+                  <span><span style="display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: #D98A1C"></span> Μόνο ως 2 ώρες</span>
+                  <span><span style="display: inline-block; width: 9px; height: 9px; border-radius: 3px; background: #CFCBC2"></span> Πλήρες / αργία</span>
+                </span>
+                <span style="font-size: 14px; font-weight: 600; {{sPickStyle}}">{{sPick}}</span>
+                <span style="font-size: 11.5px; color: #5B636B">Κανόνες (Ρυθμίσεις): Δευ–Παρ · έως 3 επεμβάσεις ή 7 ώρες χειρουργείου τη μέρα · 30′ μεταξύ επεμβάσεων · επέμβαση ≥4 ωρών αφήνει μόνο μικρές (≤2 ώρες), ≥5 ωρών κλείνει τη μέρα.</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{notSurgBk}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 6px; background: #F5F9F9; border: 1px solid #DCE7E6; border-radius: 12px; padding: 10px 12px">
+              <span style="font-size: 12.5px; color: #5B636B">Πότε</span>
+              <span style="font-size: 15.5px; font-weight: 600">{{newWhen}}</span>
+              <sc-if value="{{hasClash}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 12.5px; font-weight: 600; color: #8C1D18">⚠ {{clash}}</span>
+              </sc-if>
+              <span style="font-size: 12.5px; color: #5B636B; margin-top: 4px">Ελεύθερα κενά για {{newDur}}′:</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{free}}" as="f" hint-placeholder-count="4">
+                  <button onClick="{{f.pick}}" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #CFE0DE; background: #FFFFFF; font: inherit; font-size: 13px; color: #0E5E63; font-weight: 600; cursor: pointer">{{f.label}}</button>
+                </sc-for>
+              </div>
+              <span style="font-size: 12px; color: #5B636B">ή πατήστε σε κενό σημείο του ημερολογίου</span>
+            </div>
+            </sc-if>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px">
+              <span style="display: flex; flex-direction: column; gap: 4px; color: #3B4249">Με<span style="height: 38px; display: flex; align-items: center; padding: 0 10px; border: 1px solid #DAD8D1; border-radius: 9px; color: #1C2024">Δρ Παπαϊωάννου ▾</span></span>
+              <span style="display: flex; flex-direction: column; gap: 4px; color: #3B4249">Πού<span style="height: 38px; display: flex; align-items: center; padding: 0 10px; border: 1px solid #DAD8D1; border-radius: 9px; color: #1C2024">{{newPlace}}</span></span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <sc-for list="{{opts}}" as="o" hint-placeholder-count="4">
+                <button role="switch" aria-checked="{{o.checked}}" onClick="{{o.toggle}}" style="display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 4px 0; font: inherit; font-size: 13.5px; color: #1C2024; text-align: left; cursor: pointer">
+                  <span style="width: 20px; height: 20px; border-radius: 6px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; {{o.boxStyle}}">{{o.tick}}</span>
+                  <span style="flex: 1">{{o.label}}<span style="display: block; font-size: 12px; color: #5B636B">{{o.note}}</span></span>
+                </button>
+              </sc-for>
+            </div>
+
+            <button onClick="{{book}}" style="height: 48px; border-radius: 12px; border: 0; background: #0E5E63; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; {{bookBtnStyle}}">{{bookLabel}}</button>
+          </sc-if>
+
+          <sc-if value="{{isBooked}}" hint-placeholder-val="{{false}}">
+            <div style="background: #E3F1EA; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; color: #1E6B45">
+              <span style="font-size: 15px; font-weight: 600">✓ Κλείστηκε</span>
+              <span style="font-size: 14px; color: #1C2024">{{bookedLine}}</span>
+              <span style="font-size: 13px">{{bookedNote}}</span>
+            </div>
+            <button onClick="{{openNew}}" style="height: 44px; border-radius: 11px; border: 1px solid #DAD8D1; background: #FFFFFF; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Άλλο ραντεβού</button>
+          </sc-if>
+        </sc-if>
+        <sc-if value="{{showSend}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; color: #2F4B6E">{{snd.kicker}}</span>
+            <h2 style="margin: 0; font-size: 19px; font-weight: 600">{{snd.title}}</h2>
+          </div>
+          <div style="border: 1px solid #E4E2DC; border-radius: 12px; overflow: hidden">
+            <div style="display: grid; grid-template-columns: 64px 1fr 58px; gap: 6px; padding: 7px 10px; background: #FBFAF8; font-size: 11.5px; color: #5B636B; font-weight: 600"><span>Πότε</span><span>Ασθενής · επέμβαση · αναισθησία</span><span>Διάρκ.</span></div>
+            <sc-for list="{{snd.rows}}" as="sr" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: 64px 1fr 58px; gap: 6px; padding: 7px 10px; border-top: 1px solid #F1F0EC; font-size: 12.5px">
+                <span style="font-weight: 600; font-variant-numeric: tabular-nums">{{sr.when}}</span>
+                <span><b style="font-weight: 600">{{sr.name}}</b> · {{sr.age}}<span style="display: block; color: #3B4249">{{sr.proc}}</span></span>
+                <span style="font-variant-numeric: tabular-nums">{{sr.dur}}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <span style="font-size: 13px; color: #3B4249">Παραλήπτες (email)</span>
+            <sc-for list="{{snd.recips}}" as="rc" hint-placeholder-count="4">
+              <button role="switch" aria-checked="{{rc.checked}}" onClick="{{rc.toggle}}" style="display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 4px 0; font: inherit; font-size: 13.5px; color: #1C2024; text-align: left; cursor: pointer">
+                <span style="width: 20px; height: 20px; border-radius: 6px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; {{rc.boxStyle}}">{{rc.tick}}</span>
+                <span style="flex: 1">{{rc.label}}<span style="display: block; font-size: 12px; color: #5B636B">{{rc.note}}</span></span>
+              </button>
+            </sc-for>
+          </div>
+          <button role="switch" aria-checked="{{snd.autoChecked}}" onClick="{{snd.toggleAuto}}" style="display: flex; align-items: center; gap: 10px; border: 1px solid #DDE5EE; background: #F7F9FB; border-radius: 10px; padding: 9px 10px; font: inherit; font-size: 13.5px; color: #1C2024; text-align: left; cursor: pointer">
+            <span style="width: 36px; height: 20px; border-radius: 99px; flex: none; position: relative; {{snd.autoTrack}}"><span style="position: absolute; top: 2px; width: 16px; height: 16px; border-radius: 99px; background: #FFFFFF; {{snd.autoKnob}}"></span></span>
+            <span style="flex: 1">{{snd.autoLabel}}<span style="display: block; font-size: 12px; color: #5B636B">Αν αλλάξει κάτι μετά, στέλνεται αυτόματα «Αλλαγή προγράμματος».</span></span>
+          </button>
+          <p style="margin: 0; font-size: 12px; color: #5B636B">Περιέχει μόνο τα απαραίτητα: όνομα, ηλικία, επέμβαση, εκτιμώμενη διάρκεια, αναισθησία. PDF με κωδικό· κάθε αποστολή καταγράφεται. Το αναλυτικό brief κάθε ασθενή πηγαίνει χωριστά την ημέρα του χειρουργείου.</p>
+          <sc-if value="{{snd.notSent}}" hint-placeholder-val="{{true}}">
+            <button onClick="{{snd.send}}" style="height: 46px; border-radius: 12px; border: 0; background: #2F4B6E; color: #FFFFFF; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{snd.btn}}</button>
+          </sc-if>
+          <sc-if value="{{snd.sent}}" hint-placeholder-val="{{false}}">
+            <div style="background: #E3F1EA; color: #1E6B45; border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600">{{snd.sentText}}</div>
+          </sc-if>
+        </sc-if>
+      </aside>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { co: 'practice', view: 'week', off: 0, hide: {}, panel: 'appt', sel: 'e8', nd: 1, nt: 17, bt: 0, bp: 0, o: [true, true, true, false], booked: null, sp: [2], sday: -1, sk: 'week', sent: false, rc: {}, auto: true };
+  }
+  renderVals() {
+    var self = this, S = this.state;
+    var H0 = 8, PX = S.view === 'day' ? 96 : 56, isDay = S.view === 'day';
+    var dayNames = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+    var shortD = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα'];
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function hm(x) { var h = Math.floor(x), m = Math.round((x - h) * 60); return pad(h) + ':' + pad(m); }
+    var T = {
+      first: { label: 'Πρώτη επίσκεψη', bar: '#0E5E63', bg: '#E6F0EF', fg: '#0B4B4F', cal: 'office', dur: 30 },
+      follow: { label: 'Επανέλεγχος', bar: '#7FA9A6', bg: '#EFF5F4', fg: '#2C4F4D', cal: 'office', dur: 15 },
+      preop: { label: 'Προεγχειρητική', bar: '#C27A1A', bg: '#FCF1E3', fg: '#6E3D06', cal: 'office', dur: 30 },
+      postop: { label: 'Μετεγχειρητικό', bar: '#7FA9A6', bg: '#EFF5F4', fg: '#2C4F4D', cal: 'office', dur: 15 },
+      online: { label: 'Online', bar: '#0E5E63', bg: '#FFFFFF', fg: '#0B4B4F', cal: 'online', dur: 30, dashed: true },
+      inj: { label: 'Θεραπεία', bar: '#8A5A9E', bg: '#F3EAF6', fg: '#57306A', cal: 'office', dur: 30 },
+      spa: { label: 'Spa', bar: '#8A5A9E', bg: '#F3EAF6', fg: '#57306A', cal: 'spa', dur: 45 },
+      surg: { label: 'Χειρουργείο', bar: '#1E3550', bg: '#2F4B6E', fg: '#FFFFFF', cal: 'surgery', dur: 180 },
+      block: { label: 'Μη διαθέσιμο', bar: '#CFCBC2', bg: 'repeating-linear-gradient(45deg,#F4F3EF,#F4F3EF 6px,#ECEAE5 6px,#ECEAE5 12px)', fg: '#5B636B', cal: 'office' }
+    };
+    // id, day(0=Mon), start, minutes, name, type, status, flag, sub, resource (for day view)
+    var EV = [
+      ['e1', 0, 9.5, 30, 'Ελένη Μ.', 'first', 'done', '', 'Αυξητική μαστού', 0],
+      ['e2', 0, 10.25, 15, 'Δέσποινα Κ.', 'follow', 'done', '', '', 0],
+      ['e3', 0, 11, 30, 'Κατερίνα Π.', 'preop', 'conf', '', 'Lifting · 22/10', 0],
+      ['e4', 0, 11.75, 30, 'Νίκος Χ.', 'first', 'conf', 'y', 'Ρινοπλαστική', 0],
+      ['e5', 0, 12.5, 30, 'Μαρία Λ.', 'online', 'conf', '', 'Κύπρος · βίντεο', 0],
+      ['e6', 0, 13.5, 150, 'Διάλειμμα', 'block', '', '', '', 0],
+      ['e7', 0, 16.5, 30, 'Σοφία Δ.', 'inj', 'pend', '', 'Αλλαντική τοξίνη', 0],
+      ['e8', 0, 17.25, 30, 'Ιωάννα Ρ.', 'first', 'pend', '', 'Βλεφαροπλαστική', 0],
+      ['e9', 0, 18, 15, 'Γιώργος Τ.', 'follow', 'conf', '', '', 0],
+      ['n1', 0, 11, 30, 'Άννα Β.', 'postop', 'conf', '', 'Αλλαγή επιδέσμων', 1],
+      ['n2', 0, 12, 15, 'Ρένα Μ.', 'postop', 'conf', '', 'Αφαίρεση ραμμάτων', 1],
+      ['s1', 0, 10, 60, 'Λίνα Σ.', 'spa', 'conf', '', 'Laser αποτρίχωσης', 0],
+      ['s2', 0, 11.5, 45, 'Χαρά Ζ.', 'spa', 'conf', '', 'Peeling', 1],
+      ['s3', 0, 15, 60, 'Βίκυ Ο.', 'spa', 'pend', 'r', 'Hydrafacial', 0],
+      ['s4', 0, 17, 45, 'Ρούλα Κ.', 'spa', 'conf', '', 'Μεσοθεραπεία', 1],
+      ['s5', 1, 10, 60, 'Μυρτώ Α.', 'spa', 'conf', '', 'Laser αποτρίχωσης', 0],
+      ['s6', 1, 12, 45, 'Λίνα Σ.', 'spa', 'conf', '', 'Peeling', 1],
+      ['s7', 2, 16, 60, 'Χαρά Ζ.', 'spa', 'pend', '', 'Hydrafacial', 0],
+      ['s8', 3, 11, 90, 'Έφη Τ.', 'spa', 'conf', '', 'Πακέτο σώματος 3/6', 0],
+      ['s9', 4, 10, 45, 'Νάνσυ Π.', 'spa', 'conf', '', 'Peeling', 1],
+      ['s10', 5, 11, 60, 'Δάφνη Μ.', 'spa', 'conf', '', 'Laser αποτρίχωσης', 0],
+      ['t1', 1, 9, 270, 'Θεσσαλία Ν.', 'surg', 'conf', '', 'Ρινοπλαστική · Διαβαλκανικό', 2],
+      ['t2', 1, 14, 150, 'Χρύσα Δ.', 'surg', 'conf', '', 'Βλεφαροπλαστική άνω-κάτω', 2],
+      ['t3', 1, 18, 30, 'Πέτρος Α.', 'first', 'conf', '', 'Γυναικομαστία', 0],
+      ['t4', 1, 18.5, 15, 'Θεσσαλία Ν.', 'postop', 'conf', '', 'Έλεγχος ίδια μέρα', 0],
+      ['w1', 2, 10, 30, 'Ευτυχία Γ.', 'first', 'conf', '', 'Lifting προσώπου', 0],
+      ['w2', 2, 10.5, 30, 'Μάγδα Κ.', 'preop', 'conf', '', 'Κοιλιοπλαστική', 0],
+      ['w3', 2, 11, 15, 'Χρύσα Δ.', 'postop', 'conf', '', '1η μέρα', 0],
+      ['w4', 2, 11.5, 30, 'Τάσος Ε.', 'inj', 'conf', '', 'Fillers', 0],
+      ['w5', 2, 17, 30, 'Sarah W.', 'online', 'pend', '', 'UK · βίντεο', 0],
+      ['w6', 2, 17.5, 30, 'Ελπίδα Β.', 'first', 'conf', '', 'Μείωση μαστών', 0],
+      ['h1', 3, 10, 30, 'Κική Τ.', 'inj', 'conf', '', 'Αλλαντική τοξίνη', 0],
+      ['h2', 3, 10.5, 30, 'Ζωή Λ.', 'inj', 'conf', '', 'Fillers χειλιών', 0],
+      ['h3', 3, 11, 60, 'Ιατρικό συνέδριο', 'block', '', '', '', 0],
+      ['h4', 3, 17, 30, 'Νεφέλη Π.', 'first', 'conf', '', 'Αυξητική μαστού', 0],
+      ['h5', 3, 17.5, 30, 'Αλέξης Μ.', 'first', 'pend', '', 'FFS', 0],
+      ['h6', 3, 18, 15, 'Θεσσαλία Ν.', 'postop', 'conf', '', '1 εβδομάδα · νάρθηκας', 0],
+      ['f1', 4, 9, 330, 'Μάγδα Κ.', 'surg', 'conf', '', 'Κοιλιοπλαστική + λιπο · Διαβαλκανικό', 2],
+      ['f2', 4, 17, 15, 'Ελπίδα Β.', 'follow', 'noshow', 'y', '', 0],
+      ['a1', 5, 10, 30, 'Στέλλα Ι.', 'first', 'conf', '', 'Λιποαναρρόφηση', 0],
+      ['a2', 5, 10.5, 30, 'Δημήτρης Κ.', 'first', 'conf', '', 'Lifting', 0]
+    ];
+    var hide = S.hide;
+    var team = { t1: 'Αναισθ.: Δρ Α. Κωνσταντίνου · Γενική · Νοσ.: Ε. Μανωλάκη', t2: 'Αναισθ.: Δρ Α. Κωνσταντίνου · Μέθη + τοπική · Νοσ.: Ε. Μανωλάκη', f1: 'Αναισθ.: Δρ Μ. Ρήγα · Γενική · Νοσ.: Σ. Πέτρου · 1 διανυκτέρευση' };
+    var dayInfo = { e3: '✓ WhatsApp · συγκατάθεση ✓ · πληρωμή 100 €', e4: '✓ τηλέφωνο · φόρμα στο tablet', e5: 'Σύνδεσμος βίντεο στάλθηκε · προπληρωμή ✓', e7: 'Δεν απάντησε στην υπενθύμιση', e8: 'Online κράτηση · φόρμα δεν συμπληρώθηκε', e9: '✓ SMS', n1: '✓ · 5η μέρα μετά', n2: '✓ · 10η μέρα μετά', e1: 'Εξοφλήθηκε 100 €', e2: 'Χωρίς χρέωση' };
+    // estimated OR hours per procedure (Settings)
+    var PROC = [['Lifting προσώπου', 4.5], ['Ρινοπλαστική', 3], ['Βλεφαροπλαστική', 2], ['Αυξητική μαστού', 2], ['Αυξ. μαστοπηξία', 3], ['Μείωση μαστών', 3], ['Κοιλιοπλαστική', 3.5], ['Λιποαναρρόφηση', 2], ['Γυναικομαστία', 1.5], ['Lifting βραχιόνων', 2]];
+    function hrs(x) { var h = Math.floor(x), m = Math.round((x - h) * 60); return h + 'ω' + (m ? ' ' + m + '′' : ''); }
+    // booked OR load per date (hours, procedure) — week of 12/10 matches the grid
+    var LOAD = { 12: [], 13: [[4.5, 'Ρινοπλαστική'], [2.5, 'Βλεφαροπλαστική']], 14: [], 15: [], 16: [[5.5, 'Κοιλιοπλαστική + λιπο']],
+      19: [], 20: [[2, 'Αυξητική μαστού']], 21: [], 22: [[4.5, 'Lifting + βλεφαρο']], 23: [[2, 'Αυξητική'], [2, 'Λιποαναρρόφηση']],
+      26: [[3, 'Ρινοπλαστική'], [2, 'Βλεφαροπλαστική']], 27: [], 28: 'holiday', 29: [[2, 'Γυναικομαστία']], 30: [[5, 'Lifting + λίπος']] };
+    var CAP = 7, MAXN = 3, GAP = 0.5;
+    function dayLoad(L) { var n = L.length, used = 0, mx = 0; L.forEach(function (x) { used += x[0]; if (x[0] > mx) mx = x[0]; }); if (n > 1) used += GAP * (n - 1); return { n: n, used: used, mx: mx }; }
+    function dayStatus(L, D) {
+      if (L === 'holiday') return 'holiday';
+      var d = dayLoad(L);
+      if (d.n >= MAXN || d.mx >= 5 || d.used >= CAP) return 'full';
+      var need = d.used + (d.n ? GAP : 0) + D;
+      if (d.mx >= 4) return (D <= 2 && need <= CAP) ? 'limited' : 'nofit';
+      if (D >= 5 && d.n) return 'nofit';
+      return need <= CAP ? 'ok' : 'nofit';
+    }
+    var all = EV.map(function (r) {
+      return { id: r[0], d: r[1], s: r[2], m: r[3], n: r[4], t: r[5], st: r[6], f: r[7], sub: r[8], res: r[9] };
+    });
+    if (S.booked) all.push(S.booked);
+    var isSpa = S.co === 'spa';
+    var visible = all.filter(function (e) { return (isSpa ? T[e.t].cal === 'spa' : T[e.t].cal !== 'spa') && !hide[T[e.t].cal] && (S.view !== 'week' || S.off === 0 || e.id === 'bk'); });
+
+    function evStyle(e, sel, lane) {
+      var t = T[e.t];
+      var top = (e.s - H0) * PX + 1, h = Math.max(e.m / 60 * PX - 2, 15);
+      var s = 'position:absolute;' + (lane || 'left:3px;right:3px;') + 'top:' + top + 'px;height:' + h + 'px;box-sizing:border-box;border-radius:7px;padding:2px 6px;overflow:hidden;font:inherit;font-size:11.5px;line-height:1.25;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:0;';
+      s += 'background:' + t.bg + ';color:' + t.fg + ';';
+      s += t.dashed ? 'border:1px dashed #0E5E63;border-left:3px solid ' + t.bar + ';' : 'border:0;border-left:3px solid ' + t.bar + ';';
+      if (isDay) s += 'font-size:13px;padding:4px 9px;';
+      if (e.st === 'done') s += 'opacity:0.55;';
+      if (sel) s += 'box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #0E5E63;z-index:2;';
+      return s;
+    }
+    function mk(e, lane) {
+      var sel = S.panel === 'appt' && S.sel === e.id;
+      var mark = e.st === 'conf' ? '✓' : e.st === 'pend' ? '?' : e.st === 'noshow' ? '✕' : '';
+      var markStyle = e.st === 'pend' ? 'color:#8A4B08;background:#FCF1E3;border-radius:4px;padding:0 4px' : e.st === 'noshow' ? 'color:#8C1D18' : '';
+      return {
+        style: evStyle(e, sel, lane), time: e.t === 'block' ? '' : hm(e.s), name: (e.f ? (e.f === 'r' ? '● ' : '● ') : '') + e.n,
+        nameStyle: e.st === 'noshow' ? 'text-decoration:line-through' : '',
+        mark: mark, markStyle: markStyle, sub: (isDay && e.t !== 'block' ? T[e.t].label + (e.sub ? ' · ' + e.sub : '') + ' · ' + hm(e.s) + '–' + hm(e.s + e.m / 60) : (e.sub || T[e.t].label)),
+        hasMore: isDay && !!(team[e.id] || dayInfo[e.id] || e.t === 'surg'), more: team[e.id] || dayInfo[e.id] || '',
+        aria: hm(e.s) + ' ' + e.n + ' · ' + T[e.t].label,
+        pick: function () { if (e.t !== 'block') self.setState({ panel: 'appt', sel: e.id }); }
+      };
+    }
+    function slots(dayIdx) {
+      var a = [];
+      for (var h = H0; h < 21; h++) (function (h) {
+        a.push({ aria: 'Νέο ραντεβού ' + pad(h) + ':00', pick: function () { self.setState({ panel: 'new', nd: dayIdx, nt: h, booked: null }); } });
+      })(h);
+      return a;
+    }
+    var hours = []; for (var h = H0; h < 21; h++) hours.push(pad(h) + ':00');
+
+    var weekStart = 12 + S.off * 7;
+    var cols;
+    var todayHead = 'background:#E6F0EF;color:#0E5E63';
+    if (S.view === 'week') {
+      cols = dayNames.map(function (dn, i) {
+        var isT = S.off === 0 && i === 0;
+        return { label: (weekStart + i) + ' ' + shortD[i], sub: dn + (isT ? ' · σήμερα' : ''), headStyle: isT ? todayHead : '', subStyle: isT ? 'color:#0E5E63;font-weight:600' : 'color:#5B636B',
+          bodyStyle: i === 5 ? 'background:#FDFCFA' : '', hasNow: isT,
+          hasCap: !isSpa && !hide.surgery && i < 5 && S.off === 0 && LOAD[12 + i].length > 0,
+          cap: (function () { var L = LOAD[12 + i]; if (!L || !L.length) return ''; var d = dayLoad(L); var st = dayStatus(L, 0); return hrs(d.used) + '/' + CAP + 'ω' + (st === 'full' ? ' · πλήρες' : (st === 'limited' ? ' · ≤2ω' : '')); })(),
+          capTitle: 'Χειρουργικός χρόνος της ημέρας',
+          capText: (function () { var L = LOAD[12 + i]; var st = L && L.length ? dayStatus(L, 0) : 'ok'; return st === 'full' ? 'color:#2F4B6E' : (st === 'limited' ? 'color:#8A4B08' : 'color:#1E6B45'); })(),
+          capBar: (function () { var L = LOAD[12 + i]; if (!L || !L.length) return ''; var d = dayLoad(L); var st = dayStatus(L, 0); return 'width:' + Math.min(100, Math.round(d.used / CAP * 100)) + '%;background:' + (st === 'full' ? '#2F4B6E' : (st === 'limited' ? '#D98A1C' : '#2E9E63')); })(),
+          slots: slots(i), events: (function () {
+            var evs = visible.filter(function (e) { return e.d === i; });
+            var split = evs.some(function (e) { return e.res === 1; });
+            return evs.map(function (e) {
+              var side = e.res === 1;
+              return mk(e, !split ? '' : (side ? 'left:62%;right:3px;' : 'left:3px;right:39%;'));
+            });
+          })() };
+      });
+    } else {
+      var res = isSpa ? [['Καμπίνα 1', 'Αισθητικός'], ['Καμπίνα 2', 'Αισθητικός']] : [['Δρ Παπαϊωάννου', 'Ιατρείο'], ['Νοσηλεύτρια', 'Δωμάτιο 2'], ['Χειρουργείο', 'Διαβαλκανικό']];
+      var d0 = S.off;
+      cols = res.map(function (r, i) {
+        return { label: r[0], sub: r[1], headStyle: '', subStyle: 'color:#5B636B', bodyStyle: '', hasNow: d0 === 0, hasCap: false, cap: '', capTitle: '', capText: '', capBar: '',
+          slots: slots(0), events: visible.filter(function (e) { return e.d === d0 && e.res === i; }).map(function (e) { return mk(e, ''); }) };
+      });
+    }
+    var nowTop = 'top:' + ((11.87 - H0) * PX) + 'px';
+
+    var months = 'Οκτωβρίου';
+    var rangeLabel;
+    if (S.view === 'week') rangeLabel = (S.off === 0 ? '12 – 17 Οκτωβρίου 2026' : weekStart + ' – ' + (weekStart + 5) + ' (δείγμα)');
+    else if (S.view === 'day') rangeLabel = dayNames[(S.off % 6 + 6) % 6] + ' ' + (12 + S.off) + ' ' + months;
+    else rangeLabel = 'Οκτώβριος 2026';
+
+    var vOn = 'background:#FFFFFF;color:#0E5E63;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.1)';
+    var vOff = 'background:transparent;color:#3B4249;font-weight:500';
+    var views = [['day', 'Ημέρα'], ['week', 'Εβδομάδα'], ['month', 'Μήνας']].map(function (v) {
+      return { label: v[1], pressed: S.view === v[0] ? 'true' : 'false', style: S.view === v[0] ? vOn : vOff, pick: function () { self.setState({ view: v[0], off: 0 }); } };
+    });
+    var cals = (isSpa ? [['spa', 'Θεραπείες Spa', '#8A5A9E']] : [['office', 'Ιατρείο', '#0E5E63'], ['online', 'Online', '#7FA9A6'], ['surgery', 'Χειρουργεία', '#2F4B6E']]).map(function (c) {
+      var on = !hide[c[0]];
+      return { label: c[1], color: on ? c[2] : '#DAD8D1', pressed: on ? 'true' : 'false',
+        style: on ? 'border:1px solid #CFE0DE;background:#FFFFFF;color:#1C2024;font-weight:600' : 'border:1px solid #E4E2DC;background:#F4F3EF;color:#6B7178;text-decoration:line-through',
+        toggle: function () { var n = Object.assign({}, self.state.hide); n[c[0]] = !n[c[0]]; self.setState({ hide: n }); } };
+    });
+
+    // month grid: Mon 28 Sep → Sun 1 Nov
+    var weekdays = ['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ'];
+    var month = [];
+    for (var k = 0; k < 35; k++) (function (k) {
+      var dnum = k < 3 ? 28 + k : (k - 2 <= 31 ? k - 2 : k - 33);
+      var inMonth = k >= 3 && k - 2 <= 31;
+      var dow = k % 7;
+      var pills = [];
+      if (inMonth && dow < 6 && isSpa) {
+        pills.push({ label: 'Spa · ' + (3 + (k * 5) % 6), style: 'background:#F3EAF6;color:#57306A' });
+      } else if (inMonth && dow < 6) {
+        var L = LOAD[dnum];
+        var surgDay = L && L.length && L !== 'holiday';
+        if (L === 'holiday') pills.push({ label: 'Αργία · 28η Οκτ.', style: 'background:#F1F0EC;color:#5B636B' });
+        if (surgDay && !hide.surgery) { var dl = dayLoad(L), stt = dayStatus(L, 0); pills.push({ label: 'Χειρ. ×' + dl.n + ' · ' + hrs(dl.used), style: stt === 'full' ? 'background:#2F4B6E;color:#FFFFFF' : (stt === 'limited' ? 'background:#FCF1E3;color:#8A4B08' : 'background:#EEF2F7;color:#2F4B6E') }); }
+        var n = (k * 7) % 9 + (surgDay ? 1 : 4);
+        if (L !== 'holiday' && (dow !== 5 || k % 3 === 0)) pills.push({ label: n + ' ραντεβού', style: 'background:#E6F0EF;color:#0B4B4F' });
+      }
+      var isToday = dnum === 12 && inMonth;
+      month.push({ num: dnum, pills: pills,
+        cellStyle: inMonth ? '' : 'background:#FBFAF8',
+        numStyle: isToday ? 'background:#0E5E63;color:#FFFFFF;border-radius:999px;padding:1px 7px;align-self:flex-start' : (inMonth ? '' : 'color:#9A958B'),
+        pick: function () { if (inMonth) self.setState({ view: 'day', off: dnum - 12 }); } });
+    })(k);
+
+    // selected appointment
+    var e = all.filter(function (x) { return x.id === S.sel; })[0] || all[7];
+    var t = T[e.t];
+    var phones = { 'Ιωάννα Ρ.': '694 552 1180', 'Σοφία Δ.': '697 220 4413', 'Νίκος Χ.': '698 410 0927' };
+    var confMap = { conf: ['✓ Επιβεβαιώθηκε μέσω WhatsApp · 11/10', 'color:#1E6B45;font-weight:600'], pend: ['Αναμένει απάντηση · υπενθύμιση 11/10 18:00', 'color:#8A4B08;font-weight:600'], done: ['Ολοκληρώθηκε', 'color:#5B636B'], noshow: ['Δεν ήρθε · σημείωση στην καρτέλα', 'color:#8C1D18;font-weight:600'] };
+    var cm = e.t === 'surg' ? [(team[e.id] || 'Ομάδα: εκκρεμεί') + ' · στο εβδομαδιαίο ✓', 'color:#1E3550'] : (confMap[e.st] || ['—', '']);
+    var isSurg = e.t === 'surg';
+    var acts = isSurg
+      ? [['Έλεγχος ετοιμότητας', true], ['Μετακίνηση', false], ['Email στην κλινική', false], ['Ακύρωση', false]]
+      : e.st === 'pend'
+        ? [['Επιβεβαίωση', true], ['Υπενθύμιση WhatsApp', false], ['Μετακίνηση', false], ['Ακύρωση', false]]
+        : [['Άφιξη', true], ['Μετακίνηση', false], ['Δεν ήρθε', false], ['Ακύρωση', false]];
+    var sel = {
+      typeLabel: t.label.toUpperCase() + (e.sub && !isSurg ? ' · ' + e.sub : ''), typeStyle: 'color:' + (e.t === 'surg' ? '#2F4B6E' : t.bar),
+      name: e.n, flagStyle: e.f ? 'display:inline-block;width:10px;height:10px;border-radius:999px;vertical-align:middle;background:' + (e.f === 'r' ? '#C8312A' : '#D69E2E') : 'display:none',
+      when: dayNames[e.d] + ' ' + (12 + e.d) + '/10 · ' + hm(e.s) + '–' + hm(e.s + e.m / 60) + ' (' + e.m + '′)',
+      phone: phones[e.n] || '69• ••• ••••',
+      place: isSurg ? e.sub : (e.t === 'online' ? 'Βιντεοκλήση · ο σύνδεσμος στάλθηκε' : (T[e.t].cal === 'spa' ? 'Spa · καμπίνα 1' : 'Ιατρείο Αθήνας')),
+      conf: cm[0], confStyle: cm[1],
+      form: e.t === 'first' ? (e.st === 'pend' ? 'Στάλθηκε σύνδεσμος · δεν συμπληρώθηκε' : '✓ Συμπληρώθηκε') : (isSurg ? 'Συγκατάθεση ✓ · αιματολογικές ✓' : '—'),
+      formStyle: e.t === 'first' && e.st === 'pend' ? 'color:#8A4B08' : '',
+      money: isSurg ? 'Προκαταβολή 1.000 € ✓ · υπόλοιπο 4.500 €' : (e.t === 'first' ? 'Αμοιβή επίσκεψης 100 €' : (e.t === 'inj' ? 'Αμοιβή 300 €' : '—')),
+      source: e.id === 'e8' ? 'Online από τη φόρμα του site (GHL) · 09/10' : (e.id === 'bk' ? 'Γεωργία Σ. · τώρα' : 'Γεωργία Σ. · τηλέφωνο'),
+      actions: acts.map(function (a) { return { label: a[0], style: a[1] ? 'border:0;background:#0E5E63;color:#FFFFFF' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238' }; })
+    };
+
+    // new booking
+    var bts = isSpa ? [['spa', 'Laser · 60′'], ['spa', 'Peeling · 45′'], ['spa', 'Hydrafacial · 60′'], ['spa', 'Μεσοθεραπεία · 45′'], ['spa', 'Πακέτο σώματος · 90′']] : [['first', 'Πρώτη επίσκεψη · 30′'], ['follow', 'Επανέλεγχος · 15′'], ['preop', 'Προεγχειρητική · 30′'], ['postop', 'Μετεγχειρητικό · 15′'], ['online', 'Online · 30′'], ['inj', 'Θεραπεία · 30′'], ['surg', 'Χειρουργείο']];
+    var btKey = (bts[S.bt] || bts[0])[0];
+    var isSurgBk = !isSpa && btKey === 'surg';
+    var sTot = 0; S.sp.forEach(function (i) { sTot += PROC[i][1]; });
+    var dur = isSpa ? [60, 45, 60, 45, 90][S.bt] || 60 : (isSurgBk ? Math.round(sTot * 60) : T[btKey].dur);
+    var sprocs = PROC.map(function (pp, i) {
+      var on = S.sp.indexOf(i) >= 0;
+      return { label: pp[0] + ' · ' + hrs(pp[1]), pressed: on ? 'true' : 'false',
+        style: on ? 'border:2px solid #2F4B6E;background:#EEF2F7;color:#1E3550;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238',
+        pick: function () { var a = self.state.sp.slice(), k = a.indexOf(i); if (k >= 0) a.splice(k, 1); else a.push(i); self.setState({ sp: a, sday: -1 }); } };
+    });
+    var avDays = [12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27, 28, 29, 30];
+    var dn5 = ['Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή'];
+    var avStyle = {
+      ok: 'border:1px solid #9BD3B4;background:#F1F9F4;color:#1E6B45;cursor:pointer',
+      limited: 'border:1px solid #EBC08A;background:#FDF5EA;color:#8A4B08;cursor:pointer',
+      nofit: 'border:1px solid #E4E2DC;background:#F4F3EF;color:#6B7178;cursor:not-allowed',
+      full: 'border:1px solid #E4E2DC;background:#ECEAE5;color:#6B7178;cursor:not-allowed',
+      holiday: 'border:1px solid #E4E2DC;background:#ECEAE5;color:#6B7178;cursor:not-allowed',
+      today: 'border:1px dashed #CFCBC2;background:#FFFFFF;color:#9A958B;cursor:not-allowed'
+    };
+    var sPick = 'Επιλέξτε ημέρα', sPickStyle = 'color:#5B636B;font-weight:500', sStart = 0, sDate = -1;
+    var avail = avDays.map(function (dd, idx) {
+      var L = LOAD[dd], st = dd === 12 ? 'today' : dayStatus(L, sTot);
+      var d = L === 'holiday' ? { used: 0, n: 0 } : dayLoad(L);
+      var lab = { ok: d.n ? 'υπόλ. ' + hrs(CAP - d.used - GAP) : 'Ελεύθερο', limited: 'Μόνο ≤2ω', nofit: 'Δεν χωράει', full: 'Πλήρες', holiday: 'Αργία', today: 'Σήμερα' }[st];
+      var can = st === 'ok' || st === 'limited';
+      var chosen = S.sday === idx && can;
+      if (chosen) {
+        sStart = 8.5 + d.used + (d.n ? GAP : 0); sDate = dd;
+        sPick = dn5[idx % 5] + ' ' + dd + '/10 · ' + hm(sStart) + '–' + hm(sStart + sTot) + (d.n ? ' · μετά από ' + L.map(function (x) { return x[1]; }).join(', ') : ' · πρώτη της ημέρας');
+        sPickStyle = 'color:#1C2024';
+      }
+      return { num: dd, label: lab, aria: dd + '/10 ' + lab,
+        style: avStyle[st] + (chosen ? ';box-shadow:0 0 0 2px #FFFFFF,0 0 0 4px #2F4B6E' : ''),
+        bar: 'width:' + Math.min(100, Math.round(d.used / CAP * 100)) + '%;background:' + (st === 'limited' ? '#D98A1C' : (st === 'ok' ? '#2E9E63' : '#9A958B')),
+        pick: function () { if (can) self.setState({ sday: idx }); } };
+    });
+    if (isSurgBk && !sTot) { sPick = 'Επιλέξτε επέμβαση'; }
+    var btypes = bts.map(function (b, i) {
+      var on = S.bt === i;
+      return { label: b[1], pressed: on ? 'true' : 'false', style: on ? 'border:2px solid #0E5E63;background:#E6F0EF;color:#0E5E63;font-weight:600' : 'border:1px solid #DAD8D1;background:#FFFFFF;color:#2C3238',
+        pick: function () { self.setState({ bt: i }); } };
+    });
+    var pl = [['Ιωάννα Ραφαηλίδου', 'Ταίριαξε: όνομα · 694 552 1180 · τελευταία επίσκεψη 2019'], ['Ιωάννης Τσακίρης', 'Ταίριαξε: όνομα · 697 880 2214 · Spa'], ['+ Νέος ασθενής «Ιωάν…»', 'Δημιουργεί καρτέλα και στέλνει φόρμα εισόδου']];
+    var pats = pl.map(function (p, i) {
+      var on = S.bp === i;
+      return { name: p[0], note: p[1], selected: on ? 'true' : 'false', style: on ? 'border:2px solid #0E5E63;background:#F5F9F9' : 'border:1px solid #E4E2DC;background:#FFFFFF',
+        pick: function () { var o = self.state.o.slice(); if (i === 2) o[2] = true; self.setState({ bp: i, o: o }); } };
+    });
+    var nd = S.nd, nt = S.nt;
+    var clashEv = all.filter(function (x) { return x.d === nd && x.res === 0 && x.t !== 'surg' && (isSpa ? T[x.t].cal === 'spa' : T[x.t].cal !== 'spa') && x.s < nt + dur / 60 && nt < x.s + x.m / 60; })[0];
+    var surgClash = isSpa ? null : all.filter(function (x) { return x.d === nd && x.t === 'surg' && x.s < nt + dur / 60 && nt < x.s + x.m / 60; })[0];
+    var clash = clashEv ? ('Συμπίπτει με ' + (clashEv.t === 'block' ? clashEv.n : clashEv.n + ' ' + hm(clashEv.s))) : (surgClash ? 'Ο γιατρός είναι στο χειρουργείο' : '');
+    var freeList = [[0, 18.5], [1, 17], [2, 12.5], [3, 18.5]].map(function (f) {
+      return { label: shortD[f[0]] + ' ' + (12 + f[0]) + '/10 ' + hm(f[1]), pick: function () { self.setState({ nd: f[0], nt: f[1] }); } };
+    });
+    var optDefs = isSurgBk ? [['Ενημέρωση ασθενή (WhatsApp)', 'Ημερομηνία, κλινική, οδηγίες νηστείας'], ['Λίστα ελέγχου χειρουργείου', 'Συγκατάθεση, αιματολογικές, προεγχειρητική, φωτογραφίες'], ['Αποστολή συγκατάθεσης για υπογραφή', 'Στη γλώσσα του ασθενή'], ['Ζητείται προκαταβολή', 'Σύνδεσμος πληρωμής μέσω GHL']] : [['Επιβεβαίωση μέσω WhatsApp (GHL)', 'Στέλνεται αμέσως, στη γλώσσα του ασθενή'], ['Υπενθύμιση 24 ώρες πριν', 'Με κουμπιά «Έρχομαι / Αλλαγή»'], ['Αποστολή φόρμας εισόδου', 'Ιστορικό + συγκαταθέσεις πριν την επίσκεψη'], ['Ζητείται προκαταβολή', 'Σύνδεσμος πληρωμής μέσω GHL']];
+    var opts = optDefs.map(function (o, i) {
+      var on = S.o[i];
+      return { label: o[0], note: o[1], checked: on ? 'true' : 'false', tick: on ? '✓' : '',
+        boxStyle: on ? 'background:#0E5E63;color:#FFFFFF;border:0' : 'background:#FFFFFF;border:1.5px solid #CFCBC2',
+        toggle: function () { var a = self.state.o.slice(); a[i] = !a[i]; self.setState({ o: a }); } };
+    });
+    var patName = S.bp === 0 ? 'Ιωάννα Ρ.' : (S.bp === 1 ? 'Ιωάννης Τ.' : 'Νέος ασθενής');
+    var whenStr = dayNames[nd] + ' ' + (12 + nd) + '/10 · ' + hm(nt) + '–' + hm(nt + dur / 60);
+    var b = S.booked;
+    var surgWhen = sDate > 0 ? dn5[avDays.indexOf(sDate) % 5] + ' ' + sDate + '/10 · ' + hm(sStart) + '–' + hm(sStart + sTot) : '';
+    var procNames = S.sp.map(function (i) { return PROC[i][0]; }).join(' + ');
+
+    // schedule e-mails
+    var weekly = [['Τρ 20/10', '08:30', 'Ελένη Μ.', '34 ετών', 'Αυξητική μαστού · Γενική', '2ω'], ['Πε 22/10', '08:30', 'Κατερίνα Π.', '56 ετών', 'Lifting προσώπου + βλεφαροπλαστική · Γενική', '4ω 30′'], ['Πα 23/10', '08:30', 'Νεφέλη Π.', '31 ετών', 'Αυξητική μαστού · Γενική', '2ω'], ['Πα 23/10', '11:00', 'Στέλλα Ι.', '42 ετών', 'Λιποαναρρόφηση · Γενική', '2ω']];
+    var monthly = [['02/11', '08:30', 'Ροδάνθη Κ.', '29 ετών', 'Ρινοπλαστική · Γενική', '3ω'], ['03/11', '08:30', 'Ευτυχία Γ.', '61 ετών', 'Lifting προσώπου · Γενική', '4ω 30′'], ['05/11', '08:30', 'Ελπίδα Β.', '38 ετών', 'Μείωση μαστών · Γενική', '3ω'], ['05/11', '12:00', 'Πέτρος Α.', '27 ετών', 'Γυναικομαστία · Γενική', '1ω 30′'], ['10/11', '08:30', 'Μάγδα Κ.', '44 ετών', 'Λιποαναρρόφηση (2ος χρόνος)', '2ω'], ['12/11', '08:30', 'Αλέξης Μ.', '33 ετών', 'FFS · Γενική', '5ω'], ['17/11', '08:30', 'Χαρά Ζ.', '36 ετών', 'Αυξ. μαστοπηξία · Γενική', '3ω'], ['19/11', '08:30', 'Δημήτρης Κ.', '58 ετών', 'Lifting προσώπου · Γενική', '4ω 30′']];
+    var isW = S.sk === 'week';
+    var recDefs = isW
+      ? [['Δρ Α. Κωνσταντίνου', 'Αναισθησιολόγος · 20/10, 22/10'], ['Δρ Μ. Ρήγα', 'Αναισθησιολόγος · 23/10'], ['Ε. Μανωλάκη', 'Νοσηλεύτρια εργαλειοδοσίας'], ['Σ. Πέτρου', 'Νοσηλεύτρια ανάνηψης']]
+      : [['Διαβαλκανικό · Γραφείο χειρουργείων', 'Κράτηση αιθουσών και κλινών'], ['Διαβαλκανικό · Προϊσταμένη χειρουργείου', ''], ['Αντίγραφο σε εμένα', '']];
+    var nRc = 0;
+    var recips = recDefs.map(function (r, i) {
+      var key = S.sk + i, on = S.rc[key] !== false;
+      if (on) nRc++;
+      return { label: r[0], note: r[1], checked: on ? 'true' : 'false', tick: on ? '✓' : '',
+        boxStyle: on ? 'background:#2F4B6E;color:#FFFFFF;border:0' : 'background:#FFFFFF;border:1.5px solid #CFCBC2',
+        toggle: function () { var n = Object.assign({}, self.state.rc); n[key] = !(n[key] !== false); self.setState({ rc: n, sent: false }); } };
+    });
+    var snd = {
+      kicker: isW ? 'ΕΒΔΟΜΑΔΙΑΙΟ ΠΡΟΓΡΑΜΜΑ · ΑΝΑΙΣΘΗΣΙΟΛΟΓΟΙ & ΝΟΣΗΛΕΥΤΕΣ' : 'ΜΗΝΙΑΙΟ ΠΛΑΝΟ · ΚΛΙΝΙΚΗ',
+      title: isW ? 'Χειρουργεία 19–23 Οκτωβρίου' : 'Χειρουργεία Νοεμβρίου 2026 · Διαβαλκανικό',
+      rows: (isW ? weekly : monthly).map(function (r) { return { when: r[0] + ' ' + r[1], name: r[2], age: r[3], proc: r[4], dur: r[5] }; }),
+      recips: recips,
+      autoChecked: S.auto ? 'true' : 'false',
+      autoTrack: S.auto ? 'background:#2F4B6E' : 'background:#CFCBC2',
+      autoKnob: S.auto ? 'left:18px' : 'left:2px',
+      autoLabel: isW ? 'Αυτόματα κάθε Πέμπτη 14:00 για την επόμενη εβδομάδα' : 'Αυτόματα στις 20 κάθε μήνα για τον επόμενο',
+      toggleAuto: function () { self.setState({ auto: !self.state.auto }); },
+      btn: 'Αποστολή τώρα σε ' + nRc + (nRc === 1 ? ' παραλήπτη' : ' παραλήπτες'),
+      notSent: !S.sent, sent: S.sent,
+      sentText: '✓ Στάλθηκε 12/10 11:52 σε ' + nRc + (nRc === 1 ? ' παραλήπτη' : ' παραλήπτες') + ' · καταγράφηκε στο ιστορικό',
+      send: function () { if (nRc) self.setState({ sent: true }); }
+    };
+
+    return {
+      rangeLabel: rangeLabel, views: views, cals: cals, hours: hours, cols: cols, nowTop: nowTop,
+      isGrid: S.view !== 'month', isMonth: S.view === 'month', weekdays: weekdays, month: month,
+      prev: function () { self.setState({ off: self.state.off - 1 }); },
+      next: function () { self.setState({ off: self.state.off + 1 }); },
+      today: function () { self.setState({ off: 0 }); },
+      openNew: function () { self.setState({ panel: 'new', booked: null, bt: self.state.bt === 6 ? 0 : self.state.bt }); },
+      openSurg: function () { self.setState({ panel: 'new', booked: null, bt: 6, sday: -1 }); },
+      isPractice: !isSpa,
+      openWeekly: function () { self.setState({ panel: 'send', sk: 'week', sent: false }); },
+      openMonthly: function () { self.setState({ panel: 'send', sk: 'month', sent: false }); },
+      showSendBtns: !isSpa && !hide.surgery, showSend: S.panel === 'send', snd: snd,
+      rowH: 'height:' + PX + 'px;',
+      asideW: (S.panel === 'send' || (S.panel === 'new' && isSurgBk)) ? 'max-width: 420px;' : 'max-width: 360px;',
+      isSurgBk: isSurgBk, notSurgBk: !isSurgBk, sprocs: sprocs, sTotal: sTot ? hrs(sTot) + ' (' + procNames + ')' : '—', avail: avail, sPick: sPick, sPickStyle: sPickStyle,
+      newTitle: isSurgBk ? 'Νέο χειρουργείο' : 'Νέο ραντεβού',
+      bookLabel: isSurgBk ? 'Κράτηση χειρουργείου' : 'Κράτηση ραντεβού',
+      bookBtnStyle: isSurgBk && sDate < 0 ? 'opacity:0.45;cursor:not-allowed' : '',
+      showAppt: S.panel === 'appt', showNew: S.panel === 'new', sel: sel,
+      pats: pats, btypes: btypes, newWhen: whenStr, newDur: dur, free: freeList,
+      hasClash: !!clash, clash: clash, opts: opts,
+      newPlace: isSpa ? 'Spa · Καμπίνα 1' : isSurgBk ? 'Διαβαλκανικό' : (btKey === 'online' ? 'Βιντεοκλήση' : 'Ιατρείο Αθήνας'),
+      locLabel: isSpa ? 'Spa' : 'Ιατρείο Αθήνας',
+      notBooked: !b, isBooked: !!b,
+      bookedLine: b ? patName + ' · ' + (b.t === 'surg' ? b.when + ' · ' + b.sub : whenStr) : '',
+      bookedNote: b && b.t === 'surg' ? 'Μπήκε στο εβδομαδιαίο πρόγραμμα αναισθησιολόγων/νοσηλευτών και στο μηνιαίο πλάνο της κλινικής· δημιουργήθηκε λίστα ελέγχου.' : b ? ((S.o[0] ? 'Το GHL στέλνει επιβεβαίωση WhatsApp τώρα. ' : '') + (S.o[2] ? 'Η φόρμα εισόδου στάλθηκε.' : '')) : '',
+      book: function () {
+        if (isSurgBk) {
+          if (sDate < 0) return;
+          var wk = sDate <= 16 ? sDate - 12 : -1;
+          self.setState({ booked: { id: 'bk', d: wk >= 0 ? wk : 9, s: sStart, m: Math.round(sTot * 60), n: patName, t: 'surg', st: 'conf', f: '', sub: procNames, res: 2, when: surgWhen } });
+          return;
+        }
+        self.setState({ booked: { id: 'bk', d: self.state.nd, s: self.state.nt, m: dur, n: patName, t: isSpa ? 'spa' : btKey, st: 'pend', f: '', sub: 'Νέο', res: 0 } });
+      },
+      companies: [['practice', 'Ιατρείο'], ['spa', 'Spa']].map(function (c) {
+        var on = S.co === c[0];
+        return { label: c[1], pressed: on ? 'true' : 'false', style: on ? 'background:#FFFFFF;color:#0E5E63;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.08)' : 'background:transparent;color:#5B636B;font-weight:500',
+          pick: function () { self.setState({ co: c[0], sel: c[0] === 'spa' ? 's1' : 'e8', panel: 'appt', bt: 0, booked: null, hide: {} }); } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

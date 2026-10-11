@@ -1,4 +1,4 @@
-# DESIGN.md — Interface (approved 11 Oct 2026)
+# DESIGN.md — Interface (approved 11 Oct 2026, v2: secretary + calendar)
 
 The surgeon reviewed and approved these screens on a design canvas. This file plus
 the mockups in `design/` describe **how the app looks and behaves**. `SPEC.md`
@@ -26,6 +26,8 @@ describes **what it does**. If they disagree, ask the surgeon.
 | `Visit.dc.html` | 3 · New visit |
 | `Intake.dc.html` | 4 · Intake form on tablet, step 2a (medication, allergies, smoking, weight) |
 | `IntakeHistory.dc.html` | 4b · Intake form, step 2b (full history questionnaire) |
+| `Secretary.dc.html` | 1e · Home — secretary / reception ("Υποδοχή") |
+| `Calendar.dc.html` | 6 · Calendar (day / week / month, booking, surgery booking, schedule e-mails) |
 
 ## Design tokens (put them in `tailwind.config` as named colours)
 - Font: **Commissioner** (Google Fonts, has Greek), weights 400/500/600/700; fallback
@@ -56,8 +58,12 @@ describes **what it does**. If they disagree, ask the surgeon.
 - **Mobile-first**: every screen works on a phone. On a phone the left menu becomes a
   bottom bar (Σήμερα, Αναζήτηση, Chat, Ημερολόγιο), and cards expand on tap. See
   `SurgeryMobile.dc.html`.
-- **Role-based home**: physician → 1a; PA/nurse → 1b; secretary → designed later
-  (use 1b for now).
+- **Role-based home**: physician → 1a; PA/nurse → 1b; secretary → 1e.
+- **Menus per role.** Physician: Ιατρείο · Ασθενείς · Ημερολόγιο · Χειρουργεία ·
+  Εργασίες. PA/nurse: see 1b. Secretary: Υποδοχή · Ημερολόγιο · Ασθενείς · Μηνύματα ·
+  Πληρωμές · Λίστα αναμονής.
+- **Company switch (Ιατρείο | Spa) really switches data.** Spa has its own calendar,
+  resources and appointment types; practice and spa never appear in one calendar.
 - **Expand in place**: long lists (to-dos, surgery checklists) are grouped and
   collapsed. Click a group to expand it. Avoid modal pop-ups where possible.
 - All text in translation files (Greek first, English later), as CLAUDE.md requires.
@@ -65,7 +71,7 @@ describes **what it does**. If they disagree, ask the surgeon.
 ## Screens
 
 ### 1a · Physician — Ιατρείο (office day)
-- Live clock with seconds and a countdown to the next appointment (amber ≤5 min,
+- Live clock **at the top left** (before the greeting/date), with seconds and a countdown to the next appointment (amber ≤5 min,
   red "late X min").
 - A **"ready in room" banner** appears when the assistant marks a patient ready,
   with a sound and an optional phone push.
@@ -93,6 +99,59 @@ describes **what it does**. If they disagree, ask the surgeon.
   - red = a crucial item is missing (consent, bloods, pre-op clearance)
   - which items are crucial is set in Settings
 - Each card has an expandable checklist.
+
+### 1e · Secretary — Υποδοχή
+- Top: date + location, small stat tiles (appointments, waiting, to pay, collected
+  today). Header buttons: Φόρμα εισόδου (QR), Νέος ασθενής, + Νέο ραντεβού.
+- **Αφίξεις σήμερα**: one row per appointment with time, name, flag, type, small tags
+  (form not filled, not confirmed, possible duplicate) and status. One main button per
+  row moves the patient on: Άφιξη ✓ → Έτοιμος · ειδοποίηση (notifies doctor) → Τέλος
+  επίσκεψης → **Είσπραξη X €**. Secondary: Δεν ήρθε, Στείλε φόρμα. Online appointments:
+  "Άνοιγμα κλήσης".
+- Είσπραξη expands **inline** under the row: amount, method (cash / card POS / bank
+  transfer), "Είσπραξη & απόδειξη (Epsilon Net)" → row shows "Εξοφλήθηκε · ΑΠΥ n".
+- Right column: tiles (new intake forms, duplicates, WhatsApp messages); **tomorrow's
+  confirmations** with progress bar and the unanswered ones (Επιβεβαιώθηκε / Κλήση);
+  **waiting list** — on a cancellation, matching people with "Πρόταση WhatsApp"
+  (first to accept gets the slot, others are told automatically); **surgeries –
+  administrative** (hospital booked, quote signed, deposit, bloods appointment) with
+  red/orange/green dot; chat with presets.
+- **No clinical notes** anywhere on the secretary's screens.
+
+### 6 · Calendar
+- Toolbar: ‹ Σήμερα ›, range title, view switch Ημέρα | Εβδομάδα | Μήνας,
+  "+ Νέο χειρουργείο" (dark blue, practice only), "+ Νέο ραντεβού".
+- Second bar: calendar chips that switch layers on/off (practice: Ιατρείο, Online,
+  Χειρουργεία; spa: Θεραπείες Spa), location, "✉ Εβδομαδιαίο χειρουργείων",
+  "✉ Μηνιαίο πλάνο κλινικής", GHL sync status.
+- **Week**: Mon–Sat columns, 08:00–21:00, 56 px/hour, scrolls inside its box. Colour
+  per type (first visit teal, follow-up/post-op light teal, pre-op amber, injectable
+  purple, online dashed, surgery dark blue, blocked hatched). ✓ confirmed, ? waiting,
+  ✕ no-show (struck through), done = faded. Nurse appointments sit in a narrow side
+  lane. Under each date a **surgical load bar** (e.g. "7ω 30′/7ω · πλήρες").
+- **Day**: one column per resource (practice: Δρ Παπαϊωάννου, Νοσηλεύτρια,
+  Χειρουργείο; spa: Καμπίνα 1, 2). 96 px/hour, more detail per block: time range,
+  type, confirmation / form / payment; for surgeries anaesthesiologist, anaesthesia
+  type, nurse.
+- **Month**: per day, pills with number of appointments and "Χειρ. ×n · hours"
+  coloured by load (blue full, orange limited); public holidays marked.
+- Red "now" line on today. Click empty slot → new appointment at that time.
+- **Side panel** (right, 360 px; 420 px for surgery booking / e-mails):
+  - Appointment details: phone, place, confirmation, form, money, who booked it
+    (staff or online via GHL); buttons Επιβεβαίωση / Υπενθύμιση WhatsApp / Μετακίνηση /
+    Ακύρωση / Άφιξη / Δεν ήρθε; link to patient record. Note: no clinical notes.
+  - **New appointment**: patient search (shows matched field, "+ Νέος ασθενής"), type
+    chips (each with default length), "Πότε" box with clash warning and suggested free
+    slots, with whom / where, switches (WhatsApp confirmation via GHL, 24 h reminder,
+    send intake form, request deposit), "Κράτηση ραντεβού".
+  - **New surgery**: procedure chips with estimated time → total; **availability
+    grid** (3 weeks × Mon–Fri): green "Ελεύθερο / υπόλ. Xω", orange "Μόνο ≤2ω", grey
+    "Δεν χωράει / Πλήρες / Αργία"; tap a day → proposed start/end ("μετά από …");
+    switches (inform patient, create surgery checklist, send consent, deposit);
+    "Κράτηση χειρουργείου".
+  - **Schedule e-mail**: preview table (when, patient, age, procedure, anaesthesia,
+    duration), recipients with ticks, auto-send switch, privacy note, "Αποστολή τώρα"
+    → "✓ Στάλθηκε … · καταγράφηκε".
 
 ### 2a · Patients
 - A large search box with accent-, case- and space-insensitive search as you type.
@@ -156,7 +215,7 @@ describes **what it does**. If they disagree, ask the surgeon.
 | 3 Intake | 4 / 4b intake form; history verification in 2b; intake and duplicate items in 1b "Προς διεκπεραίωση" |
 | 4 Surgeries | Surgeries and Treatments tabs; planning panel with sketches and pen; 1c and 1d surgery day with readiness lights and checklists |
 | 5 Photos | Photos tab; photo thumbnails on surgery cards |
-| 6 Calendar + GHL | 1a and 1b home screens with live appointments, room board, ready-in-room banner, staff chat with presets, online-call button |
+| 6 Calendar + GHL | Calendar (6) incl. surgery booking/capacity and schedule e-mails, 1e secretary home, 1a and 1b home screens with live appointments, room board, ready-in-room banner, staff chat with presets, online-call button |
 | 7 AI | Recording control in New visit |
 | 8 Receipts / Spa | Financial tab (Epsilon Net, ΜΑΡΚ) |
 

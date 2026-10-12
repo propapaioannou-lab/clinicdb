@@ -6,6 +6,7 @@ import { holidayOn } from "./holidays";
 import { buildScale, type Scale } from "./bands";
 import { surgeryLoad, type SurgeryLoad } from "./capacity";
 import { calendarConfigOf } from "./config";
+import { markParked } from "./day";
 import { dayRules, hoursOf } from "./hours";
 import { ACTIVE_STATUSES } from "./status";
 
@@ -29,6 +30,7 @@ export type RangeAppointment = {
   room: string | null;
   active: boolean;
   isNew: boolean;
+  parked: boolean;
 };
 export type RangeDay = {
   date: string;
@@ -134,8 +136,10 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
         room: a.room,
         active: ACTIVE_STATUSES.includes(a.status),
         isNew: !!a.patientId && !(firstVisit.get(a.patientId) && firstVisit.get(a.patientId)! < a.startsAt) && firstAppt.get(a.patientId)?.getTime() === a.startsAt.getTime(),
+        parked: false,
       })),
     });
+    markParked(out[out.length - 1].appointments, todays);
   }
   return out;
 }

@@ -161,6 +161,10 @@ const minutesFrom = (raw: unknown, fallback: number) => {
   return Number.isInteger(n) && n >= MIN_MINUTES && n <= MAX_MINUTES ? n : null;
 };
 const text = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) || null : null);
+// Booked / moved anyway over another appointment = parked: it floats there until room is
+// made or its time changes (a move to a free time clears it).
+const parkedNow = (problems: Problem[]) => (problems.some((p) => p.kind === "appointment") ? new Date() : null);
+
 // What was booked anyway, and why — kept in the appointment's history and the audit log.
 const overrideDetails = (problems: Problem[], raw: Record<string, unknown>) =>
   problems.length ? { override: problems.map((p) => p.kind), ...(text(raw.overrideReason, 200) && { overrideReason: text(raw.overrideReason, 200) }) } : {};
@@ -217,7 +221,7 @@ export async function createAppointment(actor: Actor, raw: Record<string, unknow
   if (raw.dryRun === true) return { ok: true, id: "", overridden: problems };
   const created = await db.$transaction(async (tx) => {
     const a = await tx.appointment.create({
-      data: { companyId: s.companyId, patientId, typeId: s.type.id, resourceId: s.resource.id, startsAt, endsAt, reason: text(raw.reason, 120), createdById: actor.id },
+      data: { companyId: s.companyId, patientId, typeId: s.type.id, resourceId: s.resource.id, startsAt, endsAt, reason: text(raw.reason, 120), createdById: actor.id, parkedAt: parkedNow(problems) },
     });
     await log(tx, actor, a, "created", { toStatus: "BOOKED", details: { startsAt: startsAt.toISOString(), minutes, ...overrideDetails(problems, raw) } }, ctx);
     return a;
@@ -247,7 +251,7 @@ export async function moveAppointment(actor: Actor, id: string, raw: Record<stri
   const refused = refusal(problems, raw);
   if (refused) return fail(refused, { problems, suggestions: await freeSlots(a.companyId, resourceId, startsAt, minutes) });
   const eventId = await db.$transaction(async (tx) => {
-    await tx.appointment.update({ where: { id }, data: { startsAt, endsAt, resourceId } });
+    await tx.appointment.update({ where: { id }, data: { startsAt, endsAt, resourceId, parkedAt: parkedNow(problems) } });
     return log(tx, actor, a, "moved", {
       details: {
         from: a.startsAt.toISOString(), to: startsAt.toISOString(), minutes,

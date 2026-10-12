@@ -14,7 +14,8 @@ import { canManageSettings } from "./lists";
 
 export const TYPE_COLORS = ["teal", "tealLight", "consult", "recheck", "amber", "purple", "blue", "rose", "grey", "online"] as const;
 export const LAYERS: CalendarLayer[] = ["OFFICE", "ONLINE", "SURGERY", "SPA"];
-export const RESOURCE_KINDS: ResourceKind[] = ["DOCTOR", "NURSE", "ROOM", "OPERATING_ROOM", "CABIN"];
+// NURSE is no longer offered (no nurse calendar since 12 Oct 2026).
+export const RESOURCE_KINDS: ResourceKind[] = ["DOCTOR", "ROOM", "OPERATING_ROOM", "CABIN"];
 export const BLOCK_KINDS: BlockKind[] = ["BREAK", "CONGRESS", "LEAVE", "OTHER"];
 
 export type CalendarSettingsError = "forbidden" | "not_found" | "duplicate" | "invalid_value";

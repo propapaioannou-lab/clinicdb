@@ -29,7 +29,11 @@ export type DayAppointment = {
   statusAt: string | null; // when it entered its current status ("από 11:06")
   active: boolean;
   visitId: string | null;
+  parked: boolean; // dropped on a taken time on purpose and still overlapping (6a-7)
 };
+// The kinds of resource that get a calendar column.
+export const CALENDAR_KINDS: ("DOCTOR" | "CABIN")[] = ["DOCTOR", "CABIN"];
+
 export type DayData = NonNullable<Awaited<ReturnType<typeof calendarDay>>>;
 
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
@@ -45,8 +49,9 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   const weekday = athensParts(from).weekday || 7;
   const contacts = canSeeContactDetails(actor.level);
   const [resources, appts, blocks, rooms, cfg] = await Promise.all([
-    // Rooms (treatment/conference) are where patients wait for the doctor, not columns.
-    db.resource.findMany({ where: { companyId, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
+    // Columns: doctors (Spa: cabins). Rooms are where patients wait, not columns; no nurse
+    // calendar (removed 12 Oct 2026).
+    db.resource.findMany({ where: { companyId, isActive: true, kind: { in: CALENDAR_KINDS } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     listAppointments(actor, companyId, from, to),
     db.calendarBlock.findMany({ where: { companyId, startsAt: { lt: to }, endsAt: { gt: from } } }),
     roomsOf(companyId),
@@ -99,8 +104,10 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
       statusAt: (() => { const e = events.find((x) => x.appointmentId === a.id && x.toStatus === a.status); return e ? hhmm(clockOf(e.at)) : null; })(),
       active: ACTIVE_STATUSES.includes(a.status),
       visitId: a.visitId,
+      parked: false,
     };
   });
+  markParked(appointments, appts);
 
   const holiday = holidayOn(isoDate) ?? null;
   const columns = resources.map((r) => {
@@ -193,4 +200,13 @@ export function scaleInput(hoursRaw: unknown[], kinds: string[], cfg: Parameters
     }
   });
   return { surgery, office, items: items.map((a) => ({ from: a.start, to: a.end })) };
+}
+
+// A parked appointment floats only while it still overlaps another one in its column;
+// once room is made it is drawn as a normal card again.
+export function markParked<T extends { id: string; resourceId: string; start: number; end: number; active: boolean; parked: boolean }>(list: T[], rows: { id: string; parkedAt: Date | null }[]) {
+  for (const a of list) {
+    if (!a.active || !rows.find((r) => r.id === a.id)?.parkedAt) continue;
+    a.parked = list.some((b) => b.id !== a.id && b.active && b.resourceId === a.resourceId && b.start < a.end && b.end > a.start);
+  }
 }

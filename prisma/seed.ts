@@ -129,11 +129,12 @@ async function main() {
           ? [{ kind: "CABIN" as const, label: "Καμπίνα 1" }, { kind: "CABIN" as const, label: "Καμπίνα 2" }]
           : [
               ...(surgeons.length ? surgeons.map((u) => ({ kind: "DOCTOR" as const, label: u.name, userId: u.id })) : [{ kind: "DOCTOR" as const, label: "Ιατρός" }]),
-              { kind: "NURSE" as const, label: "Νοσηλεύτρια" },
               { kind: "OPERATING_ROOM" as const, label: "Χειρουργείο", hours: [1, 2, 3, 4, 5].map((day) => ({ day, from: "08:00", to: "16:00" })) },
             ];
       await db.resource.createMany({ data: resources.map((r, i) => ({ companyId: company.id, sortOrder: i, ...r })) });
     }
+    // No nurse calendar (decided 12 Oct 2026): a nurse column is hidden, never deleted.
+    await db.resource.updateMany({ where: { companyId: company.id, kind: "NURSE", isActive: true }, data: { isActive: false } });
     // Spa cabins without their own hours keep the pre-v2 hours (the new default is the
     // practice's office hours).
     if (c.code === "spa") {

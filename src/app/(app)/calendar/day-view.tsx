@@ -164,7 +164,10 @@ export function DayView({ data, types, startAt, carry }: { data: DayData; types:
           {data.columns.map((c) => (
             <div key={c.id} className="flex items-baseline justify-between gap-2 border-l border-line-soft px-3 py-2">
               <span className="truncate text-[15px] font-semibold">{c.label}</span>
-              <span className="shrink-0 text-[12.5px] text-muted">{t("columnSummary", { surgeries: c.surgeries, count: c.count, free: c.hours.length ? duration(c.freeMinutes) : "—" })}</span>
+              <span className="shrink-0 text-[12.5px] text-muted">
+                {data.appointments.some((a) => a.resourceId === c.id && a.parked) && <b className="mr-2 text-cal-blue">⤓ {t("parkedCount", { count: data.appointments.filter((a) => a.resourceId === c.id && a.parked).length })}</b>}
+                {t("columnSummary", { surgeries: c.surgeries, count: c.count, free: c.hours.length ? duration(c.freeMinutes) : "—" })}
+              </span>
             </div>
           ))}
         </div>
@@ -204,14 +207,17 @@ export function DayView({ data, types, startAt, carry }: { data: DayData; types:
                     <button key={a.id} type="button" onClick={() => setPanel({ kind: "appointment", id: a.id })}
                       data-appt={JSON.stringify({ id: a.id, date: data.date, resourceId: a.resourceId, start: a.start, end: a.end, active: a.active, movable, label: `${a.patient?.short ?? a.type.label} · ${a.type.label} ${a.end - a.start}′` } satisfies ApptInfo)}
                       // Cancelled / no-show: a small chip on the right, so the freed time stays clickable.
-                      className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""} ${movable ? "cursor-grab touch-none active:cursor-grabbing" : ""}`}
-                      style={{ ...box, zIndex: a.active ? 2 : 3 }}>
+                      className={`absolute ${a.parked ? "left-[22%]" : a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""} ${movable ? "cursor-grab touch-none active:cursor-grabbing" : ""} ${a.parked ? "outline-dashed outline-2 outline-offset-1 outline-cal-blue shadow-[0_10px_24px_rgba(28,32,36,0.28)]" : ""}`}
+                      style={{ ...box, zIndex: a.parked ? 4 : a.active ? 2 : 3 }}>
                       <CardText h={a.active ? box.height : 0} time={a.time} end={a.end} name={a.patient?.short ?? t("noPatient")} type={a.type.label} reason={a.reason} surgery={a.type.layer === "SURGERY"}
                         extra={<>
                           {a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>}
                           {a.patient && a.patient.tags.length > 0 && <span className="ml-1.5 inline-flex gap-1 align-middle font-normal"><TagChips tags={a.patient.tags} /></span>}
                         </>} />
-                      <span className="shrink-0">{statusChip(a)}</span>
+                      <span className="flex shrink-0 items-center gap-1">
+                        {a.parked && <span title={t("parkedHint")} className="rounded-full bg-cal-blue px-2 py-0.5 text-[11px] font-semibold text-white">⤓ {t("parked")}</span>}
+                        {statusChip(a)}
+                      </span>
                       {movable && <span data-resize aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize" />}
                     </button>
                   );

@@ -1335,7 +1335,10 @@
       "cancelCarry": "Cancel the move",
       "carryHint": "Drop it on a free time (any day, week or month) · Esc = cancel",
       "carryFrom": "from {from}",
-      "label": "Move"
+      "label": "Move",
+      "park": "park here — overlaps {name}",
+      "parkedTo": "Parked → {to}",
+      "parkedNote": "It stays over the other appointment until room is made or its time changes."
     },
     "saveMove": "Move",
     "moveAnyway": "Move anyway",
@@ -1592,7 +1595,10 @@
       "undo": "Move undone",
       "notifyOn": "Tell the patient: yes",
       "notifyOff": "Tell the patient: no"
-    }
+    },
+    "parked": "parked",
+    "parkedHint": "Overlaps another appointment: make room or change its time.",
+    "parkedCount": "{count} parked"
   },
   "live": {
     "ready": "{name} is ready",

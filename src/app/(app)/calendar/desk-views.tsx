@@ -64,9 +64,10 @@ export async function DeskWeek({ days, resources, todayIso, scale, types, carry 
                       return (
                         <Link key={a.id} href={`/calendar?date=${d.date}`} title={`${a.time} ${a.name ?? ""} · ${a.typeLabel}${a.reason ? ` · ${a.reason}` : ""}`} draggable={false}
                           data-appt={JSON.stringify({ id: a.id, date: d.date, resourceId: a.resourceId, start: a.start, end: a.end, active: a.active, movable, label: `${a.name ?? a.typeLabel} · ${a.typeLabel} ${a.end - a.start}′` } satisfies ApptInfo)}
-                          className={`absolute left-0.5 right-0.5 flex justify-between gap-1 overflow-hidden rounded-[5px] px-1.5 text-[11.5px] ${box.height >= 34 ? "items-start py-1" : "items-center leading-none"} ${calColor(a.color).box} ${a.status === "DONE" ? "opacity-60" : ""} ${movable ? "cursor-grab touch-none" : ""}`}
-                          style={{ ...box, zIndex: 2 }}>
+                          className={`absolute ${a.parked ? "left-[30%]" : "left-0.5"} right-0.5 flex justify-between gap-1 overflow-hidden rounded-[5px] px-1.5 text-[11.5px] ${box.height >= 34 ? "items-start py-1" : "items-center leading-none"} ${calColor(a.color).box} ${a.status === "DONE" ? "opacity-60" : ""} ${movable ? "cursor-grab touch-none" : ""} ${a.parked ? "outline-dashed outline-2 outline-cal-blue shadow-[0_8px_18px_rgba(28,32,36,0.28)]" : ""}`}
+                          style={{ ...box, zIndex: a.parked ? 4 : 2 }}>
                           <CardText h={box.height} time={a.time} end={a.end} name={a.name ?? a.typeLabel} type={a.typeLabel} reason={a.layer === "SURGERY" ? a.reason : null} surgery={a.layer === "SURGERY"} />
+                          {a.parked && <span className="shrink-0 font-bold text-cal-blue" title={t("parked")}>⤓</span>}
                           {a.layer !== "SURGERY" && <span className={`shrink-0 ${a.status === "BOOKED" ? "rounded-full bg-warn-bg px-1 font-semibold text-warn-ink" : ""}`}>{a.status === "BOOKED" ? "?" : "✓"}</span>}
                           {movable && <span data-resize aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize" />}
                         </Link>

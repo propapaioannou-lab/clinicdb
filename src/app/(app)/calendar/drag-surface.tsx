@@ -13,7 +13,9 @@ import { moveAction } from "./actions";
 //  · «Μετακίνηση» (carry mode): the card is lifted, a ghost of its length follows the mouse
 //    in any day/week, a click puts it there.
 // While moving, a ghost shows where it would go: green = free, amber = «εκτός ωραρίου
-// +30′», red = clash / closed / past (dropping there does nothing). The grid tells this
+// +30′», blue = taken or too short — dropping there PARKS it (it floats over the other
+// appointment until room is made or its time changes), red = closed / past (dropping
+// there does nothing). The grid tells this
 // component what is where through data attributes:
 //   [data-col]  = { date, resourceId, weekday, normal: Span[], flex: Span[] } (one column)
 //   [data-appt] = { id, date, resourceId, start, end, active, movable, label } (one card)
@@ -22,7 +24,7 @@ import { moveAction } from "./actions";
 export type ColInfo = { date: string; resourceId: string; weekday: number; normal: Span[]; flex: Span[] };
 export type ApptInfo = { id: string; date: string; resourceId: string; start: number; end: number; active: boolean; movable: boolean; label: string };
 export type Carry = { id: string; minutes: number; label: string };
-export type MovedEvent = { id: string; eventId: string; label: string };
+export type MovedEvent = { id: string; eventId: string; label: string; parked?: boolean };
 
 const SNAP = 5;
 const snap = (m: number) => Math.round(m / SNAP) * SNAP;
@@ -38,8 +40,8 @@ const athensNow = () => {
   return { iso: `${p.year}-${p.month}-${p.day}`, minute: Number(p.hour) * 60 + Number(p.minute) };
 };
 
-type Ghost = { left: number; top: number; width: number; height: number; tone: "ok" | "flex" | "bad"; text: string };
-type Target = { col: ColInfo; start: number; end: number; tone: Ghost["tone"]; text: string };
+type Ghost = { left: number; top: number; width: number; height: number; tone: "ok" | "flex" | "park" | "bad"; text: string; flex?: boolean };
+type Target = { col: ColInfo; start: number; end: number; tone: Ghost["tone"]; text: string; flex?: boolean };
 type Drag = { mode: "move" | "resize"; appt: ApptInfo; el: HTMLElement; grab: number; x: number; y: number; started: boolean; touchReady: boolean };
 
 export function DragSurface({ scale, carry, className, style, children }: { scale: Scale; carry?: Carry | null; className?: string; style?: React.CSSProperties; children: React.ReactNode }) {
@@ -64,8 +66,8 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
     const zone = zoneOf({ normal: col.normal, flex: col.flex, surgery: [] }, col.weekday, start, end);
     const at = slotLabel(col.date, start);
     if (col.date < now.iso || (col.date === now.iso && start < now.minute)) return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("past")}` };
-    if (clash) return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("clash", { name: clash.label })}` };
     if (zone === "off" || zone === "weekend") return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("closed")}` };
+    if (clash) return { col, start, end, tone: "park", flex: zone === "flex", text: `⤓ ${at} · ${t("park", { name: clash.label })}` };
     if (zone === "flex") return { col, start, end, tone: "flex", text: `${at} · ${t("flex")}` };
     return { col, start, end, tone: "ok", text: `${at} ✓ ${label}` };
   };
@@ -94,10 +96,10 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
       return;
     }
     setBusy(true);
-    const r = await moveAction(id, { date: tg.col.date, time: hhmm(tg.start), minutes, resourceId: tg.col.resourceId, flex: tg.tone === "flex" });
+    const r = await moveAction(id, { date: tg.col.date, time: hhmm(tg.start), minutes, resourceId: tg.col.resourceId, flex: tg.tone === "flex" || tg.flex, override: tg.tone === "park" });
     setBusy(false);
     if (r.ok && r.eventId) {
-      window.dispatchEvent(new CustomEvent<MovedEvent>("clinic:moved", { detail: { id, eventId: r.eventId, label: slotLabel(tg.col.date, tg.start) } }));
+      window.dispatchEvent(new CustomEvent<MovedEvent>("clinic:moved", { detail: { id, eventId: r.eventId, label: slotLabel(tg.col.date, tg.start), parked: tg.tone === "park" } }));
       if (carry) {
         const q = new URLSearchParams(params.toString());
         q.delete("carry");
@@ -193,7 +195,7 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
     if (tg) void commit(carry.id, tg, carry.minutes);
   };
 
-  const tone = ghost?.tone === "ok" ? "border-ok bg-ok-bg/90 text-ok-ink" : ghost?.tone === "flex" ? "border-warn bg-warn-bg/90 text-warn-ink" : "border-danger bg-danger-bg/90 text-danger-ink";
+  const tone = ghost?.tone === "ok" ? "border-ok bg-ok-bg/90 text-ok-ink" : ghost?.tone === "flex" ? "border-warn bg-warn-bg/90 text-warn-ink" : ghost?.tone === "park" ? "border-cal-blue bg-cal-blue-bg/95 text-cal-blue" : "border-danger bg-danger-bg/90 text-danger-ink";
   return (
     <div ref={box} className={`${className ?? ""} ${carry ? "cursor-copy" : ""}`} style={style} onPointerDown={down} onClickCapture={click} onPointerLeave={() => carry && !drag.current && show(null)} aria-busy={busy}>
       {children}

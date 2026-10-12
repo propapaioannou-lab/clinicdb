@@ -4,6 +4,7 @@ import { athensToUtc } from "@/lib/time";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
 import { createAppointment, moveAppointment, setMoveNotify, undoMove } from "./appointments";
 import { minuteAt, buildScale, yOf } from "./bands";
+import { calendarDay } from "./day";
 import { SPA_HOURS } from "./hours";
 
 // 6a-7: moving (drag, resize, «Μετακίνηση», by hand), «Αναίρεση» and the notify tick.
@@ -79,5 +80,35 @@ describe("moving", () => {
     expect(await setMoveNotify(sec, a2.id, m.eventId, false, ctx)).toEqual({ ok: true });
     const last = await db.appointmentEvent.findFirstOrThrow({ where: { appointmentId: a2.id }, orderBy: { at: "desc" } });
     expect([last.action, last.details]).toEqual(["notify", { notifyPatient: false, forEvent: m.eventId }]);
+  });
+});
+
+describe("parking (dropped on a taken or too-short time)", () => {
+  it("floats over the other appointment until room is made; a free time clears it", async () => {
+    const sec = await makeActor("USER", [c.surgery], "SECRETARY");
+    const a = await createAppointment(sec, { typeId: type, resourceId: doctor, date: "2030-05-13", time: "17:00", minutes: 30 }, ctx);
+    const b = await createAppointment(sec, { typeId: type, resourceId: doctor, date: "2030-05-13", time: "18:00", minutes: 20 }, ctx);
+    if (!a.ok || !b.ok) throw new Error("booking");
+    // Parked at 17:10 (taken): only on purpose (override), no reason needed.
+    expect(await moveAppointment(sec, b.id, { date: "2030-05-13", time: "17:10" }, ctx)).toMatchObject({ ok: false, error: "clash" });
+    expect((await moveAppointment(sec, b.id, { date: "2030-05-13", time: "17:10", override: true }, ctx)).ok).toBe(true);
+    expect((await db.appointment.findUniqueOrThrow({ where: { id: b.id } })).parkedAt).not.toBeNull();
+    const parked = async () => (await calendarDay(sec, c.surgery, "2030-05-13"))!.appointments.find((x) => x.id === b.id)!.parked;
+    expect(await parked()).toBe(true);
+    // Room is made: the other one moves away → a normal card again.
+    expect((await moveAppointment(sec, a.id, { date: "2030-05-13", time: "19:00" }, ctx)).ok).toBe(true);
+    expect(await parked()).toBe(false);
+    // Moving it to a free time clears the mark for good.
+    expect((await moveAppointment(sec, b.id, { date: "2030-05-13", time: "18:30" }, ctx)).ok).toBe(true);
+    expect((await db.appointment.findUniqueOrThrow({ where: { id: b.id } })).parkedAt).toBeNull();
+    // Closed hours are still refused without a reason.
+    expect(await moveAppointment(sec, b.id, { date: "2030-05-13", time: "15:00", override: true }, ctx)).toMatchObject({ ok: false, error: "reason_needed" });
+  });
+
+  it("no nurse column on the calendar", async () => {
+    const sec = await makeActor("USER", [c.surgery], "SECRETARY");
+    const day = (await calendarDay(sec, c.surgery, "2030-05-13"))!;
+    expect(day.columns.some((col) => col.id === nurse)).toBe(false);
+    expect(day.columns.some((col) => col.id === doctor)).toBe(true);
   });
 });

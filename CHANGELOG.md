@@ -2,13 +2,26 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — No nurse calendar; parking an appointment
+
+- **Nurse calendar removed**: no Νοσηλεύτρια column in the day or week view, no
+  "+ Νοσηλεύτρια" button, and "Νοσηλεύτρια" is no longer offered in Settings → Πόροι.
+  The old nurse column is hidden, not deleted (CLAUDE.md).
+- **Parking**: drag (or «Μετακίνηση», or «Χειροκίνητα») an appointment onto a time that is
+  taken or too short → the ghost turns blue «παρκάρισμα — επικαλύπτει …». Drop it: it
+  stays at that time, drawn floating over the other appointment with «⤓ παρκαρισμένο»
+  (the column header counts them). When you make room (move the other one, shorten it)
+  or give it a free time, it becomes a normal card again by itself. Closed hours and the
+  past still can't be used.
+- Check: Ημερολόγιο → a day → drag a 10′ card onto another appointment.
+
 ## 12 Oct 2026 — Phase 6a-7: moving appointments
 
 - **Drag and drop** in the day and week views: grab a card and drop it on another time,
   day or column (doctor ↔ nurse). **Drag the bottom edge** to make it longer or shorter.
 - While dragging, a **ghost** shows where it would go: green = free ("Πεμ 15/10 · 19:55
-  ✓"), amber = «εκτός ωραρίου +30′» (allowed), red = clash / closed / past with the reason
-  ("19:05 × σύγκρουση με Λίνα Σ."). Dropping on red does nothing and says why.
+  ✓"), amber = «εκτός ωραρίου +30′» (allowed), red = closed / past with the reason.
+  Dropping on red does nothing and says why. (Taken times: see "parking" above.)
 - **«Μετακίνηση»** (in the appointment panel): the card lifts and floats at the top; go to
   any day, week or month and click a free time. ✕ or Esc puts it down.
 - **«Χειροκίνητα»**: typing the date and time, as before (with a reason for exceptions).

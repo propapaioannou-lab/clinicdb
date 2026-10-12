@@ -52,7 +52,7 @@ export default async function CalendarSettingsPage({ searchParams }: PageProps<"
         {tab === "hours" && (
           <HoursRulesSettings
             initial={rules}
-            columns={data.resources.filter((r) => r.isActive && (r.kind === "DOCTOR" || r.kind === "NURSE" || r.kind === "CABIN")).map((r) => ({ id: r.id, label: r.label, hours: hoursOf(r.hours) }))}
+            columns={data.resources.filter((r) => r.isActive && (r.kind === "DOCTOR" || r.kind === "CABIN")).map((r) => ({ id: r.id, label: r.label, hours: hoursOf(r.hours) }))}
             save={saveCalendarConfigAction.bind(null, company.id)}
           />
         )}

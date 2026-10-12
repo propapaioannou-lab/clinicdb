@@ -714,6 +714,9 @@ model Appointment {
   resourceId     String
   startsAt       DateTime
   endsAt         DateTime
+  // Parked (calendar v2): dropped on a taken or too-short time on purpose. It floats over
+  // the other appointment until room is made or its time is changed.
+  parkedAt       DateTime?
   status         AppointmentStatus  @default(BOOKED)
   // Room when "ready" (Δωμάτιο 1 …).
   room           String?

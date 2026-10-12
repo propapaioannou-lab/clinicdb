@@ -15,7 +15,8 @@ type BlockRow = { id: string; resourceId: string | null; kind: string; label: st
 
 const COLORS = ["teal", "tealLight", "consult", "recheck", "amber", "purple", "blue", "rose", "grey", "online"];
 const LAYERS = ["OFFICE", "ONLINE", "SURGERY", "SPA"];
-const KINDS = ["DOCTOR", "NURSE", "ROOM", "OPERATING_ROOM", "CABIN"];
+// No nurse calendar (removed 12 Oct 2026); old nurse entries stay hidden, never deleted.
+const KINDS = ["DOCTOR", "ROOM", "OPERATING_ROOM", "CABIN"];
 const BLOCKS = ["BREAK", "CONGRESS", "LEAVE", "OTHER"];
 const DAYS = [1, 2, 3, 4, 5, 6, 7];
 const arrow = "flex h-9 w-9 items-center justify-center rounded-[8px] border border-line-strong text-ink-3 hover:border-primary hover:text-primary disabled:opacity-30";

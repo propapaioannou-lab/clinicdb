@@ -55,7 +55,10 @@ export function MoveToast() {
   return (
     <div role="status" className="fixed bottom-6 left-1/2 z-[70] flex w-[min(520px,calc(100vw-24px))] -translate-x-1/2 flex-col gap-1.5 rounded-[12px] bg-ink px-4 py-3 text-white shadow-[0_12px_32px_rgba(28,32,36,0.35)]">
       <div className="flex items-center justify-between gap-3">
-        <b className="text-[14.5px]">{t("moved", { to: moved.label })}</b>
+        <span className="flex flex-col">
+          <b className="text-[14.5px]">{t(moved.parked ? "parkedTo" : "moved", { to: moved.label })}</b>
+          {moved.parked && <span className="text-[12.5px] opacity-80">{t("parkedNote")}</span>}
+        </span>
         <button type="button" className="shrink-0 text-[14px] font-semibold text-ok-bg hover:underline"
           onClick={async () => {
             const m = moved;

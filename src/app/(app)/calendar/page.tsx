@@ -5,7 +5,7 @@ import { LiveRefresh } from "@/components/live/live-refresh";
 import { primaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { freeSlots } from "@/lib/calendar/appointments";
-import { calendarDay } from "@/lib/calendar/day";
+import { CALENDAR_KINDS, calendarDay } from "@/lib/calendar/day";
 import { confirmations } from "@/lib/calendar/strip";
 import { addDays, calendarRange, mondayOf, ownResource, patientCard, rangeScale } from "@/lib/calendar/views";
 import { activeCompany } from "@/lib/company";
@@ -71,7 +71,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     : null;
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", nurse: sp.nurse as string | undefined, we: weekend ? "1" : undefined, carry: carry?.id, ...over };
+    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", we: weekend ? "1" : undefined, carry: carry?.id, ...over };
     for (const [k, v] of Object.entries(all)) if (v && !(k === "view" && v === "day")) p.set(k, v);
     return `/calendar${p.size ? `?${p}` : ""}`;
   };
@@ -90,9 +90,9 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     : view === "week" ? `${Number(monday.slice(8))} – ${fmt({ day: "numeric", month: "long" }).format(at(addDays(monday, weekDays - 1)))}`
     : fmt({ month: "long", year: "numeric" }).format(at(date));
 
-  // Columns: the surgeon's own; the front desk's doctor (+ nurse on demand in week).
-  // Treatment rooms are where patients wait, not columns.
-  const resources = await db.resource.findMany({ where: { companyId: company.id, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+  // Columns: the surgeon's own; the front desk's doctor(s) (Spa: its cabins). No nurse
+  // calendar (removed 12 Oct 2026); treatment rooms are where patients wait, not columns.
+  const resources = await db.resource.findMany({ where: { companyId: company.id, isActive: true, kind: { in: CALENDAR_KINDS } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
   const doctorCol = resources.find((r) => r.kind === "DOCTOR" || r.kind === "CABIN") ?? resources[0];
   // For the colour key under the grid.
   const officeTypes = (await db.appointmentType.findMany({ where: { companyId: company.id, isActive: true, NOT: { layer: "SURGERY" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }))
@@ -142,7 +142,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     tiles = await doctorTiles({ day, resourceId: own.id, next: nextCard, current, tomorrow: tomorrow![0].appointments.filter((a) => a.active && a.resourceId === own.id) });
     body = <DoctorDay day={day} resourceId={own.id} current={current} scale={rangeScale([...week, day], [own.id])} types={officeTypes} />;
   } else if (view === "week") {
-    const cols = doctor ? (own ? [own] : []) : [doctorCol, ...(sp.nurse === "1" ? resources.filter((r) => r.kind === "NURSE") : [])].filter(Boolean);
+    const cols = doctor ? (own ? [own] : []) : [doctorCol].filter(Boolean);
     const ids = cols.map((c) => c!.id);
     const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
     body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} />;
@@ -197,11 +197,6 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12.5px] ${weekend ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3 hover:border-primary"}`}>
           {weekend ? t("weekOn") : t("weekOff")}
         </Link>
-        {!doctor && view === "week" && resources.some((r) => r.kind === "NURSE") && (
-          <Link href={q({ nurse: sp.nurse === "1" ? undefined : "1" })} className={`whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[13px] ${sp.nurse === "1" ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3"}`}>
-            {sp.nurse === "1" ? "✓" : "+"} {resources.find((r) => r.kind === "NURSE")?.label}
-          </Link>
-        )}
         {!doctor && (
           <span className="ml-auto flex gap-2">
             <span title={t("surgerySoon")} className="flex h-10 items-center whitespace-nowrap rounded-control bg-cal-blue/50 px-3 text-sm font-semibold text-white">+ {t("surgery")}</span>

@@ -114,6 +114,10 @@ async function main() {
     // Calendar (SPEC §4c): appointment types and resources — added only if missing.
     const types = c.code === "spa" ? SPA_TYPES : PRACTICE_TYPES;
     if (c.code !== "spa") await convertTypesV2(company.id);
+    // The type new patients get automatically (6a-6), unless one is already chosen.
+    if (c.code !== "spa" && !(await db.appointmentType.count({ where: { companyId: company.id, forNewPatients: true } }))) {
+      await db.appointmentType.updateMany({ where: { companyId: company.id, labelEl: "Πρώτη επίσκεψη" }, data: { forNewPatients: true } });
+    }
     await db.appointmentType.createMany({
       data: types.map(([labelEl, labelEn, defaultMinutes, color, layer], i) => ({ companyId: company.id, labelEl, labelEn, defaultMinutes, color, layer, sortOrder: i })),
       skipDuplicates: true,

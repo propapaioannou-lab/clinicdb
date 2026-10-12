@@ -1259,7 +1259,9 @@
       "surgery": "Surgery hours (Diavalkaniko)",
       "surgeryHelp": "Surgeries go in this window; after its end a reason is needed. Shown as the compact top band of the calendar.",
       "weekend": "Saturday and Sunday: closed and hidden. \"+ Sat/Sun\" in the calendar shows them; a booking there needs a reason."
-    }
+    },
+    "forNewPatients": "For new patients (set automatically; not offered to existing ones)",
+    "forNewPatientsShort": "new patients"
   },
   "calendar": {
     "subtitle": "Front desk · day",
@@ -1471,7 +1473,10 @@
       "ghlSoon": "Connected in phase 6d",
       "nowIn": "Now · {room}",
       "opsCount": "{count} surg.",
-      "tomorrowSurgery": "Tomorrow · surgery"
+      "tomorrowSurgery": "Tomorrow · surgery",
+      "cannotNotify": "{count} can't be notified",
+      "noReach": "Can't be notified",
+      "byEmail": "by email"
     },
     "overrun": "after {time} = over-run",
     "flexLabel": "outside hours +30′",
@@ -1496,7 +1501,75 @@
     "weekendNote": "Weekends hidden (closed). \"+ Sat/Sun\" shows them for exceptions.",
     "weekOff": "Mon–Fri · + Sat/Sun",
     "weekOn": "Mon–Sun · ✓ Sat/Sun",
-    "recordShort": "Record"
+    "recordShort": "Record",
+    "nextFreeHint": "The next free time",
+    "tags": {
+      "to_confirm": "to confirm",
+      "no_phone": "no phone"
+    },
+    "quick": {
+      "change": "Change",
+      "lastVisit": "last visit {when}",
+      "noVisit": "no visit yet",
+      "upcoming": "next appointment {when}",
+      "noUpcoming": "none upcoming",
+      "flagRed": "Red flag",
+      "flagYellow": "Yellow flag",
+      "fullName": "Full name",
+      "mobile": "Mobile",
+      "email": "Email",
+      "optional": "optional",
+      "maybeExists": "Already a patient?",
+      "thisIsHer": "this is them",
+      "cannotNotify": "no confirmation is sent; shows in \"Confirmations tomorrow\" as \"can't be notified\".",
+      "byEmail": "the confirmation goes by email.",
+      "search": "Name or phone",
+      "noPhone": "no phone",
+      "newPatient": "New patient \"{q}…\"",
+      "fixed": "fixed",
+      "typeSetsLength": "Type (sets the length)",
+      "free": "free",
+      "changeTime": "change time",
+      "book": "Book",
+      "cancel": "Cancel",
+      "whatsapp": "WhatsApp confirmation",
+      "patientErrors": {
+        "surname_required": "Write the full name.",
+        "invalid_email": "The email is not valid.",
+        "invalid_phone": "The mobile is not valid.",
+        "invalid_amka": "Invalid AMKA.",
+        "invalid_afm": "Invalid tax number.",
+        "invalid_birth_date": "Invalid birth date.",
+        "invalid_choice": "Invalid choice.",
+        "forbidden": "Not allowed.",
+        "not_found": "Not found."
+      }
+    },
+    "arrival": {
+      "title": "Arrival · check details",
+      "nameAsId": "Full name (as on the ID)",
+      "mobile": "Mobile",
+      "email": "Email",
+      "optional": "optional",
+      "maybeExists": "Already a patient?",
+      "mergeLater": "Check before going on — it may be the same person.",
+      "noDupPhone": "No duplicate with this mobile",
+      "noDupName": "No duplicate with this name",
+      "confirm": "Confirm → Waiting",
+      "skip": "Skip (the tag stays)",
+      "logged": "The correction is logged with the old and new value.",
+      "errors": {
+        "surname_required": "Write the full name.",
+        "invalid_email": "The email is not valid.",
+        "invalid_phone": "The mobile is not valid.",
+        "invalid_amka": "Invalid AMKA.",
+        "invalid_afm": "Invalid tax number.",
+        "invalid_birth_date": "Invalid birth date.",
+        "invalid_choice": "Invalid choice.",
+        "forbidden": "Not allowed.",
+        "not_found": "Not found."
+      }
+    }
   },
   "live": {
     "ready": "{name} is ready",

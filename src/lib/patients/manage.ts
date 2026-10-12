@@ -134,7 +134,7 @@ export async function createPatient(
   companyId: string,
   raw: PatientInput,
   ctx: RequestContext,
-  opts: { notDuplicateOf?: string[] } = {},
+  opts: { notDuplicateOf?: string[]; tags?: string[] } = {},
 ): Promise<Fail | { ok: true; id: string; number: number }> {
   if (!canEditPatients(actor.level) || !actor.companyIds.includes(companyId)) return fail("forbidden");
   const input = cleanInput(raw);
@@ -150,13 +150,14 @@ export async function createPatient(
         companyId,
         number,
         createdById: actor.id,
+        tags: opts.tags ?? [],
         phones: { create: input.phones.map((p, i) => ({ ...p, companyId, digits: phoneDigits(p.number), sortOrder: i })) },
         emails: { create: input.emails.map((email, i) => ({ email, companyId, sortOrder: i })) },
       },
     });
   });
   await audit(
-    { action: "patient.created", actor, companyId, entityType: "Patient", entityId: patient.id, details: { number: patient.number } },
+    { action: "patient.created", actor, companyId, entityType: "Patient", entityId: patient.id, details: { number: patient.number, ...(opts.tags?.length && { tags: opts.tags }) } },
     ctx,
   );
   // "Create new anyway" after a duplicate warning: remember these are different people.
@@ -221,6 +222,48 @@ export async function updatePatient(
   if (Object.keys(changes).length) {
     await audit({ action: "patient.updated", actor, companyId, entityType: "Patient", entityId: id, details: changes }, ctx);
   }
+  return { ok: true };
+}
+
+// --- «Επιβεβαίωση στοιχείων» at arrival (calendar v2, 6a-6) ---------------------------
+// The name as on the ID, a mobile and/or email; the booking tags are cleared. Only what is
+// given changes (an existing phone or email is never removed). Old and new values go in
+// the log — the patient's earlier details stay readable there (versions come with 8c).
+export async function confirmDetails(
+  actor: Actor,
+  id: string,
+  raw: { firstName?: string; surname?: string; mobile?: string; email?: string },
+  ctx: RequestContext,
+): Promise<Fail | { ok: true }> {
+  const before = await loadEditable(actor, id);
+  if (!before) return fail(canEditPatients(actor.level) ? "not_found" : "forbidden");
+  const surname = (raw.surname ?? before.surname).replace(/\s+/g, " ").trim();
+  const firstName = (raw.firstName ?? before.firstName).replace(/\s+/g, " ").trim();
+  const mobile = raw.mobile?.trim() ?? "";
+  const email = raw.email ? normalizeEmail(raw.email) : "";
+  if (!surname) return fail("surname_required");
+  if (mobile && phoneDigits(mobile).length < 8) return fail("invalid_phone");
+  if (email && !EMAIL_RE.test(email)) return fail("invalid_email");
+  const newPhone = mobile && !before.phones.some((p) => p.digits === phoneDigits(mobile));
+  const newEmail = email && !before.emails.some((e) => e.email === email);
+  await db.$transaction(async (tx) => {
+    await tx.patient.update({
+      where: { id },
+      data: { surname, firstName, searchName: patientSearchName({ surname, firstName }), sortName: patientSortName({ surname, firstName }), tags: [] },
+    });
+    if (newPhone) {
+      await tx.patientPhone.updateMany({ where: { patientId: id }, data: { isMain: false } });
+      await tx.patientPhone.create({ data: { patientId: id, companyId: before.companyId, number: mobile, digits: phoneDigits(mobile), type: "MOBILE", isMain: true, sortOrder: -1 } });
+    }
+    if (newEmail) await tx.patientEmail.create({ data: { patientId: id, companyId: before.companyId, email, sortOrder: before.emails.length } });
+  });
+  const changes: Record<string, { from: Json; to: Json }> = {};
+  if (surname !== before.surname) changes.surname = { from: before.surname, to: surname };
+  if (firstName !== before.firstName) changes.firstName = { from: before.firstName, to: firstName };
+  if (newPhone) changes.phones = { from: before.phones.map((p) => p.number), to: [mobile, ...before.phones.map((p) => p.number)] };
+  if (newEmail) changes.emails = { from: before.emails.map((e) => e.email), to: [...before.emails.map((e) => e.email), email] };
+  if (before.tags.length) changes.tags = { from: before.tags, to: [] };
+  await audit({ action: "patient.detailsConfirmed", actor, companyId: before.companyId, entityType: "Patient", entityId: id, details: changes }, ctx);
   return { ok: true };
 }
 

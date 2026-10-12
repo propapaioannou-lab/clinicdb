@@ -6,170 +6,23 @@ import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown } from "@/components/dropdown";
 import { FlagDot } from "@/components/patient-bits";
-import { card, ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
+import { card, ErrorBox, inputClass, primaryButton } from "@/components/ui";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { calColor } from "@/lib/calendar/colors";
 import type { DayAppointment, DayData } from "@/lib/calendar/day";
 import { nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
-import { bookAction, historyAction, moveAction, statusAction, type BookingResult } from "./actions";
+import { historyAction, moveAction, statusAction, type BookingResult } from "./actions";
+import { ArrivalButton } from "./arrival";
+import { Anyway, Outcome } from "./booking-bits";
+import { QuickBook, TagChips, type QuickType } from "./quick-book";
 import { CardText, ColumnBackground, Folds, GridLines, Legend, place, TimeAxis } from "./grid-bits";
 import { NowLine } from "./now-line";
 
-type Type = { id: string; label: string; minutes: number; color: string };
-type Panel = { kind: "default" } | { kind: "book"; resourceId?: string; start?: number; minutes?: number; flex?: boolean } | { kind: "appointment"; id: string };
+type Panel = { kind: "default" } | { kind: "book"; resourceId: string; start: number; flex?: boolean; x?: number; y?: number } | { kind: "appointment"; id: string };
 
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 const dmy = (iso: string) => iso.split("-").reverse().join("/");
 const duration = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}ω${min % 60 ? ` ${min % 60}′` : ""}` : `${min}′`);
-
-// Booking anyway (SPEC §4c hours): a flex zone takes one more click; off-hours and
-// weekends need a written reason (kept in the log); a clash just a second click.
-function Anyway({ r, pending, go, label }: { r: BookingResult; pending: boolean; go: (o: { flex?: boolean; override?: boolean; overrideReason?: string }) => void; label: string }) {
-  const t = useTranslations("calendar");
-  const [why, setWhy] = useState("");
-  if (r.error === "clash" && r.flexOnly) return <button type="button" disabled={pending} onClick={() => go({ flex: true })} className={secondaryButton}>{t("bookFlex")}</button>;
-  if (r.needsReason && (r.error === "clash" || r.error === "reason_needed"))
-    return (
-      <span className="flex w-full flex-col gap-1.5 text-sm text-ink-3">
-        {t("overrideReason")}
-        <input value={why} onChange={(e) => setWhy(e.target.value)} placeholder={t("overrideHint")} aria-label={t("overrideReason")} className={`${inputClass} mt-0`} />
-        <button type="button" disabled={pending || !why.trim()} onClick={() => go({ override: true, overrideReason: why })} className={`${secondaryButton} self-start`}>{label}</button>
-      </span>
-    );
-  if (r.error === "clash") return <button type="button" disabled={pending} onClick={() => go({ override: true })} className={secondaryButton}>{label}</button>;
-  return null;
-}
-
-// Clash warnings and suggested free times, shared by booking and moving.
-function Outcome({ r, pick }: { r: BookingResult; pick: (date: string, time: string) => void }) {
-  const t = useTranslations("calendar");
-  if (r.ok && r.warned?.length) return <Notice>{t("bookedDespite", { list: r.warned.join(" · ") })}</Notice>;
-  if (!r.error) return null;
-  return (
-    <div className="flex flex-col gap-2 rounded-[10px] border border-warn-line bg-warn-bg/60 px-3 py-2.5 text-sm text-warn-ink">
-      <span className="font-semibold">{r.error === "clash" ? (r.flexOnly ? t("flexZone") : t("clash")) : t(`errors.${r.error}`)}</span>
-      {r.problems?.map((p) => <span key={p}>• {p}</span>)}
-      {!!r.suggestions?.length && (
-        <div className="flex flex-col gap-1.5">
-          <span className="text-ink-3">{t("suggestions")}</span>
-          <div className="flex flex-wrap gap-1.5">
-            {r.suggestions.map((s) => (
-              <button key={s.date + s.time} type="button" onClick={() => pick(s.date, s.time)} className="min-h-9 rounded-full border border-ok bg-ok-bg px-3 text-[13px] font-semibold text-ok-ink">{s.label}</button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-type Found = { id: string; code: string; name: string; phone: string | null; age: number | null };
-
-function PatientPicker({ value, onChange }: { value: Found | null; onChange: (p: Found | null) => void }) {
-  const t = useTranslations("calendar");
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState<Found[]>([]);
-  useEffect(() => {
-    if (q.trim().length < 2) return;
-    const ctrl = new AbortController();
-    const id = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/patients/search?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
-        if (res.ok) setResults(((await res.json()).results as Found[]).slice(0, 6));
-      } catch {}
-    }, 180);
-    return () => {
-      clearTimeout(id);
-      ctrl.abort();
-    };
-  }, [q]);
-  if (value)
-    return (
-      <div className="flex items-center justify-between gap-2 rounded-control border border-primary bg-primary-tint px-3 py-2 text-sm">
-        <span><b>{value.name}</b> <span className="text-muted">· {value.code}{value.phone && ` · ${value.phone}`}</span></span>
-        <button type="button" onClick={() => onChange(null)} aria-label={t("changePatient")} className="text-muted hover:text-danger">✕</button>
-      </div>
-    );
-  return (
-    <div className="relative">
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("searchPatient")} aria-label={t("patient")} className={inputClass} />
-      {q.trim().length >= 2 && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-[14px] border border-line bg-surface py-1 text-sm shadow-[0_8px_24px_rgba(28,32,36,0.12)]">
-          {results.map((p) => (
-            <li key={p.id}>
-              <button type="button" onClick={() => { onChange(p); setQ(""); }} className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-primary-tint">
-                <span className="font-semibold">{p.name}</span>
-                <span className="text-[12.5px] text-muted">{[p.code, p.age !== null && `${p.age} ετών`, p.phone].filter(Boolean).join(" · ")}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Link href="/patients/new" target="_blank" className="mt-1 inline-block text-[13px] font-semibold text-primary">+ {t("newPatient")}</Link>
-    </div>
-  );
-}
-
-function BookingPanel({ data, types, initial, close }: { data: DayData; types: Type[]; initial: Extract<Panel, { kind: "book" }>; close: () => void }) {
-  const t = useTranslations("calendar");
-  const router = useRouter();
-  const [pending, start] = useTransition();
-  const firstType = types[0];
-  const [v, setV] = useState({
-    patient: null as Found | null,
-    typeId: firstType?.id ?? "",
-    date: dmy(data.date),
-    time: initial.start !== undefined ? hhmm(initial.start) : "",
-    minutes: String(firstType?.minutes ?? 30),
-    resourceId: initial.resourceId ?? data.columns[0]?.id ?? "",
-    reason: "",
-  });
-  const [r, setR] = useState<BookingResult>({});
-  const set = (p: Partial<typeof v>) => setV((x) => ({ ...x, ...p }));
-  const submit = (o: { flex?: boolean; override?: boolean; overrideReason?: string } = {}) =>
-    start(async () => {
-      const res = await bookAction({ patientId: v.patient?.id ?? null, typeId: v.typeId, resourceId: v.resourceId, date: v.date, time: v.time, minutes: v.minutes, reason: v.reason, flex: initial.flex, ...o });
-      setR(res);
-      if (res.ok) {
-        router.refresh();
-        if (!res.warned?.length) close();
-      }
-    });
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex flex-col gap-3">
-      <div className="flex items-center justify-between"><h2 className="text-[17px] font-semibold">{t("newAppointment")}</h2><button type="button" onClick={close} aria-label={t("close")} className="text-muted hover:text-ink">✕</button></div>
-      <div className="text-sm text-ink-3">{t("patient")}<div className="mt-1"><PatientPicker value={v.patient} onChange={(patient) => set({ patient })} /></div></div>
-      <div className="flex flex-col gap-1.5 text-sm text-ink-3">{t("type")}
-        <div className="flex flex-wrap gap-1.5">
-          {types.map((ty) => (
-            <button key={ty.id} type="button" aria-pressed={v.typeId === ty.id} onClick={() => set({ typeId: ty.id, minutes: String(ty.minutes) })}
-              className={`min-h-9 rounded-full border px-3 text-[13px] ${v.typeId === ty.id ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-2"}`}>
-              <span className={`mr-1.5 inline-block h-2.5 w-2.5 rounded-full align-middle ${calColor(ty.color).dot}`} />{ty.label} · {ty.minutes}′
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-[1fr_88px_80px] gap-2 text-sm text-ink-3">
-        <label>{t("date")}<input value={v.date} onChange={(e) => set({ date: e.target.value })} placeholder="ΗΗ/ΜΜ/ΕΕΕΕ" inputMode="numeric" className={inputClass} /></label>
-        <label>{t("time")}<input value={v.time} onChange={(e) => set({ time: e.target.value })} placeholder="ΩΩ:ΛΛ" inputMode="numeric" className={inputClass} /></label>
-        <label>{t("minutes")}<input value={v.minutes} onChange={(e) => set({ minutes: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} /></label>
-      </div>
-      <label className="text-sm text-ink-3">{t("with")}
-        <Dropdown value={v.resourceId} onChange={(x) => x && set({ resourceId: x })} label={t("with")} placeholder={null} options={data.columns.map((c) => ({ value: c.id, label: c.label }))} className="mt-1" />
-      </label>
-      <label className="text-sm text-ink-3">{t("reason")}<input value={v.reason} onChange={(e) => set({ reason: e.target.value })} placeholder={t("reasonHint")} className={inputClass} /></label>
-      <div className="flex flex-col gap-1 rounded-[10px] bg-surface-2 px-3 py-2 text-[13px] text-muted">
-        {["whatsapp", "reminder", "intake", "deposit"].map((k) => <span key={k}>☐ {t(`switches.${k}`)} · {t("soonGhl")}</span>)}
-      </div>
-      <Outcome r={r} pick={(date, time) => { set({ date: dmy(date), time }); setR({}); }} />
-      {initial.flex && <p className="rounded-[10px] bg-surface-2 px-3 py-2 text-[13px] text-ink-3">{t("flexNote")}</p>}
-      <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={pending || !v.time} className={primaryButton}>{t("book")}</button>
-        <Anyway r={r} pending={pending} go={submit} label={t("bookAnyway")} />
-      </div>
-    </form>
-  );
-}
 
 function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData; close: () => void }) {
   const t = useTranslations("calendar");
@@ -215,6 +68,7 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
         </div>
         <button type="button" onClick={close} aria-label={t("close")} className="text-muted hover:text-ink">✕</button>
       </div>
+      {a.patient && a.patient.tags.length > 0 && <span className="flex flex-wrap gap-1.5"><TagChips tags={a.patient.tags} /></span>}
       <div className={`rounded-[10px] px-3 py-2 text-sm ${calColor(a.type.color).box}`}>
         <b>{a.time}–{hhmm(a.end)}</b> · {a.type.label}{a.reason && ` · ${a.reason}`}
         <div className="text-[12.5px] opacity-80">{data.columns.find((c) => c.id === a.resourceId)?.label}</div>
@@ -227,6 +81,9 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
               <Dropdown label={t("room")} placeholder={null} value={room} onChange={(v) => v && setRoom(v)} options={data.rooms.map((r) => ({ value: r, label: r }))} className="w-[190px]" />
               <button type="button" disabled={pending} onClick={() => status("READY", { room })} className={primaryButton}>{t("actions.READY")}</button>
             </span>
+          ) : s === "ARRIVED" ? (
+            <ArrivalButton key={s} id={a.id} when={`${a.time} · ${a.type.label}`} label={t(`actions.${s}`)} className={primaryButton}
+              patient={a.patient && { id: a.patient.id, firstName: a.patient.firstName, surname: a.patient.surname, phone: a.patient.phone, email: a.patient.email, tags: a.patient.tags }} />
           ) : (
             <button key={s} type="button" disabled={pending} onClick={() => status(s)} className={primaryButton}>{t(`actions.${s}`)}</button>
           ),
@@ -268,9 +125,9 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
 // Secretary day (DESIGN 6a–6g): resource columns on the two-band grid, free gaps to click
 // (white = normal hours, hatched = «εκτός ωραρίου +30′»), status chips. The calendar uses
 // the full width; booking / an appointment open in a panel beside it.
-export function DayView({ data, types, startBooking = false }: { data: DayData; types: Type[]; startBooking?: boolean }) {
+export function DayView({ data, types, startAt }: { data: DayData; types: QuickType[]; startAt?: { resourceId: string; start: number } }) {
   const t = useTranslations("calendar");
-  const [panel, setPanel] = useState<Panel>(startBooking ? { kind: "book" } : { kind: "default" });
+  const [panel, setPanel] = useState<Panel>(startAt ? { kind: "book", ...startAt } : { kind: "default" });
   const scale = data.scale;
   const selected = panel.kind === "appointment" ? data.appointments.find((a) => a.id === panel.id) : undefined;
   const office = scale.bands.find((b) => b.kind === "office");
@@ -285,7 +142,7 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
     return <span className="text-[11.5px]">{STATUS_LABEL[a.status as AppointmentStatus]}</span>;
   };
   const cols = `64px repeat(${data.columns.length}, minmax(0, 1fr))`;
-  const open = panel.kind === "book" || (panel.kind === "appointment" && !!selected);
+  const open = panel.kind === "appointment" && !!selected;
 
   return (
     <div className="flex items-start gap-4">
@@ -313,14 +170,14 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
                   </div>
                 ))}
                 {c.gaps.map((g) => (
-                  <button key={g.start} type="button" onClick={() => setPanel({ kind: "book", resourceId: c.id, start: g.start })}
+                  <button key={g.start} type="button" onClick={(e) => setPanel({ kind: "book", resourceId: c.id, start: g.start, x: e.clientX, y: e.clientY })}
                     className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-ok/60 bg-ok-bg/40 px-2 py-0.5 text-left text-[12.5px] font-semibold text-ok-ink hover:bg-ok-bg"
                     style={place(scale, g.start, g.end)}>
                     + {t("free", { minutes: duration(g.end - g.start) })}
                   </button>
                 ))}
                 {c.flexGaps.map((g) => (
-                  <button key={`f${g.start}`} type="button" onClick={() => setPanel({ kind: "book", resourceId: c.id, start: g.start, flex: true })}
+                  <button key={`f${g.start}`} type="button" onClick={(e) => setPanel({ kind: "book", resourceId: c.id, start: g.start, flex: true, x: e.clientX, y: e.clientY })}
                     title={t("flexNote")}
                     className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-transparent px-2 py-0.5 text-left text-[11.5px] font-semibold text-transparent hover:border-line-strong hover:bg-surface/80 hover:text-muted focus-visible:text-muted"
                     style={place(scale, g.start, g.end)}>
@@ -336,7 +193,10 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
                       className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""}`}
                       style={{ ...box, zIndex: a.active ? 2 : 3 }}>
                       <CardText h={a.active ? box.height : 0} time={a.time} end={a.end} name={a.patient?.short ?? t("noPatient")} type={a.type.label} reason={a.reason} surgery={a.type.layer === "SURGERY"}
-                        extra={a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>} />
+                        extra={<>
+                          {a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>}
+                          {a.patient && a.patient.tags.length > 0 && <span className="ml-1.5 inline-flex gap-1 align-middle font-normal"><TagChips tags={a.patient.tags} /></span>}
+                        </>} />
                       <span className="shrink-0">{statusChip(a)}</span>
                     </button>
                   );
@@ -350,9 +210,9 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
         <Legend types={[...types.map((ty) => ({ label: ty.label, minutes: ty.minutes, color: ty.color })), { label: t("surgery"), minutes: 0, color: "blue" }]} zones={{ flex: t("legend.flex"), closed: t("legend.closedShort") }} />
       </section>
 
+      {panel.kind === "book" && <QuickBook key={`${panel.resourceId}${panel.start}`} data={data} types={types} at={panel} close={() => setPanel({ kind: "default" })} />}
       {open && (
         <aside className={`${card} sticky top-[88px] flex max-h-[calc(100vh-110px)] w-[380px] shrink-0 flex-col gap-4 overflow-y-auto p-5 max-lg:fixed max-lg:inset-x-3 max-lg:bottom-3 max-lg:top-auto max-lg:z-40 max-lg:w-auto max-lg:shadow-[0_12px_40px_rgba(28,32,36,0.25)]`}>
-          {panel.kind === "book" && <BookingPanel key={`${panel.resourceId}${panel.start}`} data={data} types={types} initial={panel} close={() => setPanel({ kind: "default" })} />}
           {panel.kind === "appointment" && selected && <AppointmentPanel key={selected.id} a={selected} data={data} close={() => setPanel({ kind: "default" })} />}
         </aside>
       )}

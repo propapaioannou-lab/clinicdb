@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { canEditPatients, canSeeContactDetails } from "@/lib/permissions";
 import { athensParts, athensToUtc } from "@/lib/time";
 import type { Actor } from "@/lib/users/manage";
+import { reachOf } from "./quick";
 import { ACTIVE_STATUSES } from "./status";
 
 // Top-strip data (DESIGN 6a–6g). "Tomorrow" is the next working day (Friday → Monday).
@@ -29,6 +30,8 @@ export async function confirmations(actor: Actor, companyId: string, todayIso: s
     select: { id: true, startsAt: true, status: true, patientId: true, patient: { select: { surname: true, firstName: true } }, type: { select: { labelEl: true } } },
   });
   const pending = appts.filter((a) => a.status === "BOOKED");
+  // No mobile and no email: no automatic confirmation — the front desk calls or waits.
+  const reach = await reachOf(pending.flatMap((a) => (a.patientId ? [a.patientId] : [])));
   const phones = canSeeContactDetails(actor.level) && pending.length
     ? await db.patientPhone.findMany({ where: { patientId: { in: pending.flatMap((a) => (a.patientId ? [a.patientId] : [])) } }, orderBy: [{ isMain: "desc" }, { sortOrder: "asc" }], select: { patientId: true, number: true } })
     : [];
@@ -36,6 +39,7 @@ export async function confirmations(actor: Actor, companyId: string, todayIso: s
     date,
     total: appts.length,
     confirmed: appts.length - pending.length,
+    cannotNotify: pending.filter((a) => a.patientId && reach.get(a.patientId) === "none").length,
     pending: pending.map((a) => ({
       id: a.id,
       time: hhmm(a.startsAt),
@@ -43,6 +47,7 @@ export async function confirmations(actor: Actor, companyId: string, todayIso: s
       patientId: a.patientId,
       type: a.type.labelEl,
       phone: phones.find((p) => p.patientId === a.patientId)?.number ?? null,
+      reach: (a.patientId && reach.get(a.patientId)) || "none",
     })),
   };
 }

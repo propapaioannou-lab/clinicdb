@@ -32,7 +32,7 @@ function cleanType(raw: Record<string, unknown>) {
   const color = (TYPE_COLORS as readonly string[]).includes(raw.color as string) ? (raw.color as string) : null;
   const layer = LAYERS.includes(raw.layer as CalendarLayer) ? (raw.layer as CalendarLayer) : null;
   if (!labelEl || !color || !layer || !Number.isInteger(minutes) || minutes < 5 || minutes > 720) return null;
-  return { labelEl, labelEn: text(raw.labelEn, 80) || labelEl, color, layer, defaultMinutes: minutes, isActive: raw.isActive !== false };
+  return { labelEl, labelEn: text(raw.labelEn, 80) || labelEl, color, layer, defaultMinutes: minutes, isActive: raw.isActive !== false, forNewPatients: raw.forNewPatients === true };
 }
 
 export async function saveType(actor: Actor, companyId: string, id: string | null, raw: Record<string, unknown>, ctx: RequestContext): Promise<Result> {

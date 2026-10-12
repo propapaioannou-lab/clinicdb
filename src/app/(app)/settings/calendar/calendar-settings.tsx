@@ -9,7 +9,7 @@ import { calColor } from "@/lib/calendar/colors";
 import type { HoursRange } from "@/lib/calendar/hours";
 import type { CalendarSettingsState } from "../actions";
 
-type TypeRow = { id: string; labelEl: string; labelEn: string; color: string; defaultMinutes: number; layer: string; isActive: boolean };
+type TypeRow = { id: string; labelEl: string; labelEn: string; color: string; defaultMinutes: number; layer: string; isActive: boolean; forNewPatients: boolean };
 type ResourceRow = { id: string; label: string; kind: string; userId: string | null; hours: HoursRange[]; isActive: boolean };
 type BlockRow = { id: string; resourceId: string | null; kind: string; label: string | null; from: string; to: string };
 
@@ -59,6 +59,7 @@ function TypeEditor({ initial, save, cancel, pending }: { initial: Omit<TypeRow,
           ))}
         </div>
       </div>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={v.forNewPatients} onChange={(e) => set({ forNewPatients: e.target.checked })} className="h-4 w-4 accent-primary" />{t("forNewPatients")}</label>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={v.isActive} onChange={(e) => set({ isActive: e.target.checked })} className="h-4 w-4 accent-primary" />{t("active")}</label>
       <div className="flex gap-2">
         <button type="submit" disabled={pending || !v.labelEl.trim()} className={primaryButton}>{t("save")}</button>
@@ -86,7 +87,7 @@ export function TypesSettings({ rows, save, move }: { rows: TypeRow[]; save: (id
                 <button type="button" aria-label={t("down", { label: r.labelEl })} disabled={pending || i === rows.length - 1} onClick={() => act(() => move(r.id, 1))} className={arrow}>↓</button>
               </span>
               <span className={`rounded-[8px] px-3 py-1.5 text-sm font-semibold ${calColor(r.color).box}`}>{r.labelEl}</span>
-              <span className="text-[13px] text-muted">{r.defaultMinutes}′ · {t(`layers.${r.layer}`)}</span>
+              <span className="text-[13px] text-muted">{r.defaultMinutes}′ · {t(`layers.${r.layer}`)}{r.forNewPatients && ` · ${t("forNewPatientsShort")}`}</span>
               {!r.isActive && <Badge tone="neutral">{t("hidden")}</Badge>}
               <button type="button" onClick={() => setEditing(r.id)} className="ml-auto min-h-9 px-2 text-[13.5px] font-semibold text-primary">{t("edit")}</button>
             </li>
@@ -94,7 +95,7 @@ export function TypesSettings({ rows, save, move }: { rows: TypeRow[]; save: (id
         )}
       </ul>
       {editing === "new" ? (
-        <TypeEditor initial={{ labelEl: "", labelEn: "", color: "teal", defaultMinutes: 30, layer: "OFFICE", isActive: true }} pending={pending} cancel={() => setEditing(null)} save={(v) => act(() => save(null, v), () => setEditing(null))} />
+        <TypeEditor initial={{ labelEl: "", labelEn: "", color: "teal", defaultMinutes: 30, layer: "OFFICE", isActive: true, forNewPatients: false }} pending={pending} cancel={() => setEditing(null)} save={(v) => act(() => save(null, v), () => setEditing(null))} />
       ) : (
         <button type="button" onClick={() => setEditing("new")} className="self-start text-[13.5px] font-semibold text-primary">+ {t("addType")}</button>
       )}

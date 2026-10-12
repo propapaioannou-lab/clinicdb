@@ -128,6 +128,26 @@ async function main() {
         }
       }
     }
+    // A quickly booked new patient, as on the boards (6a-6): name only, «προς επιβεβαίωση»,
+    // «χωρίς τηλέφωνο» — tomorrow's confirmations show her as «Δεν μπορεί να ειδοποιηθεί».
+    const first = types.find((t) => t.forNewPatients);
+    const doc = resources.find((r) => r.kind === "DOCTOR");
+    if (company.code !== "spa" && first && doc) {
+      let ioanna = await db.patient.findFirst({ where: { companyId: company.id, surname: "Ράπη", firstName: "Ιωάννα" } });
+      if (!ioanna) {
+        const max = await db.patient.aggregate({ where: { companyId: company.id }, _max: { number: true } });
+        ioanna = await db.patient.create({ data: { companyId: company.id, number: (max._max.number ?? 0) + 1, surname: "Ράπη", firstName: "Ιωάννα", searchName: "rapi ioanna", sortName: "ΡΑΠΗ ΙΩΑΝΝΑ", tags: ["to_confirm", "no_phone"] } });
+      } else await db.patient.update({ where: { id: ioanna.id }, data: { tags: ["to_confirm", "no_phone"] } });
+      const startsAt = athensToUtc(2026, 10, 13, 19, 0);
+      const endsAt = new Date(startsAt.getTime() + first.defaultMinutes * 60e3);
+      const over = await db.appointment.findMany({ where: { resourceId: doc.id, startsAt: { lt: endsAt }, endsAt: { gt: startsAt }, events: { some: { byName: "seed", action: "created" } } }, select: { id: true } });
+      await db.appointmentEvent.deleteMany({ where: { appointmentId: { in: over.map((o) => o.id) } } });
+      await db.appointment.deleteMany({ where: { id: { in: over.map((o) => o.id) } } });
+      await db.appointment.create({
+        data: { companyId: company.id, patientId: ioanna.id, typeId: first.id, resourceId: doc.id, startsAt, endsAt, status: "BOOKED", reason: "Βλεφαροπλαστική",
+          events: { create: { companyId: company.id, action: "created", toStatus: "BOOKED", byName: "seed" } } },
+      });
+    }
     console.log(`${company.code}: ${n} fake appointments`);
   }
 }

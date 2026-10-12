@@ -6,7 +6,9 @@ import { requestContext, requireSession } from "@/lib/auth/current";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { appointmentHistory, createAppointment, moveAppointment, NEEDS_REASON, setAppointmentStatus, startVisit, type CalendarError, type Problem } from "@/lib/calendar/appointments";
+import { arrive, bookingSearch, quickBook, quickDuplicates } from "@/lib/calendar/quick";
 import { STATUS_LABEL } from "@/lib/calendar/status";
+import { activeCompany } from "@/lib/company";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
 import { athensIsoDate, athensParts } from "@/lib/time";
 import { loadActor } from "@/lib/users/manage";
@@ -20,6 +22,7 @@ export type BookingResult = {
   warned?: string[];
   flexOnly?: boolean; // only «εκτός ωραρίου +30′»: one more click books it
   needsReason?: boolean; // off-hours / weekend: booking anyway needs a reason
+  patientError?: string; // the new patient's details were refused (e.g. a bad email)
 };
 
 async function actorNow() {
@@ -107,4 +110,44 @@ export async function historyAction(id: string) {
     by: e.byName ?? "",
     what: e.action === "moved" ? "Μετακίνηση" : e.toStatus ? STATUS_LABEL[e.toStatus] : e.action,
   }));
+}
+
+// ── Quick booking (6a-6) ─────────────────────────────────────────────────────────────
+export async function bookingSearchAction(q: string) {
+  const actor = await actorNow();
+  const company = await activeCompany(actor);
+  return company ? ((await bookingSearch(actor, company.id, String(q).slice(0, 100))) ?? []) : [];
+}
+
+export async function duplicatesAction(raw: { name?: string; mobile?: string; email?: string }, excludeId?: string) {
+  const actor = await actorNow();
+  const company = await activeCompany(actor);
+  return company ? ((await quickDuplicates(actor, company.id, raw, excludeId)) ?? []) : [];
+}
+
+// Is this time free? (the "18:35 – 19:00 · ελεύθερο ✓" line; nothing is saved)
+export async function slotCheckAction(raw: Record<string, unknown>): Promise<BookingResult> {
+  const actor = await actorNow();
+  const r = await createAppointment(actor, { ...raw, date: isoOf(raw.date), dryRun: true, patientId: typeof raw.patientId === "string" ? raw.patientId : null }, await requestContext());
+  if (r.ok) return { ok: true, warned: [] };
+  const t = await getTranslations("calendar.problems");
+  return { error: r.error, problems: r.problems?.map((p) => describe(t, p)), flexOnly: !!r.problems?.length && r.problems.every((p) => p.kind === "flex"), needsReason: !!r.problems?.some((p) => NEEDS_REASON.includes(p.kind)) };
+}
+
+export async function quickBookAction(raw: Record<string, unknown>): Promise<BookingResult> {
+  const actor = await actorNow();
+  const r = await quickBook(actor, { ...raw, date: isoOf(raw.date) }, await requestContext());
+  if (!r.ok && "patientError" in r) return { error: "invalid_value", patientError: r.patientError };
+  if (r.ok) revalidatePath("/");
+  return result(r.ok ? { ok: true, overridden: r.overridden } : r);
+}
+
+// Arrival with «Επιβεβαίωση στοιχείων» (or skipped: the tags stay).
+export async function arriveAction(id: string, raw: { confirm?: { firstName?: string; surname?: string; mobile?: string; email?: string }; skip?: boolean }): Promise<BookingResult> {
+  const actor = await actorNow();
+  const r = await arrive(actor, id, raw, await requestContext());
+  if (!r.ok) return { error: r.error, ...("patientError" in r && { patientError: r.patientError }) };
+  revalidatePath("/calendar");
+  revalidatePath("/");
+  return { ok: true };
 }

@@ -317,6 +317,9 @@ model Patient {
   // High-risk profile, worked out from the latest medical history (src/lib/history/risk.ts).
   riskFactors        String[]        @default([])
   treatingDoctorId   String?
+  // Booking tags (calendar v2): "to_confirm" (booked quickly — check details on arrival),
+  // "no_phone" (no mobile given). Cleared by «Επιβεβαίωση στοιχείων».
+  tags               String[]        @default([])
   // Staff-only marker; never sent to GHL or shown to the patient.
   flag               PatientFlag     @default(NONE)
   flagNote           String?
@@ -669,6 +672,9 @@ model AppointmentType {
   color          String        @default("teal")
   defaultMinutes Int           @default(30)
   layer          CalendarLayer @default(OFFICE)
+  // The type for new patients (Πρώτη επίσκεψη): set automatically for them, not offered
+  // to existing patients.
+  forNewPatients Boolean       @default(false)
   sortOrder      Int           @default(0)
   isActive       Boolean       @default(true)
   createdAt      DateTime      @default(now())

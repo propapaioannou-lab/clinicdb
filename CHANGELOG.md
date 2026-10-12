@@ -2,6 +2,28 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Phase 6a-6: quick booking and the arrival check
+
+- **Quick booking**: click a free time (or «+ Ραντεβού», which now jumps to the next free
+  time) → a small panel opens next to it.
+  - One field: name or phone, with or without accents, Greek or Latin letters. Each result
+    shows the masked phone, last visit and any upcoming appointment; a flag shows in colour.
+  - Existing patient → tap a type (Επανέλεγχος, Botox, …); the length fills in. The panel
+    says "ελεύθερο ✓" or what is wrong with the time.
+  - New patient → only the name is needed (mobile and email optional); the type is always
+    Πρώτη επίσκεψη. «Μήπως υπάρχει ήδη;» appears as you type (by mobile, or by name if no
+    mobile), with «αυτός/ή είναι» to pick the existing record instead.
+  - New patients get the tag «προς επιβεβαίωση», and «χωρίς τηλέφωνο» if no mobile.
+  - No mobile and no email → «Δεν μπορεί να ειδοποιηθεί» in tomorrow's confirmations
+    (tile and list); email only → "με email".
+- **Arrival**: for tagged patients, «Άφιξη ✓» first opens «Επιβεβαίωση στοιχείων» — name as
+  on the ID, mobile, email, a last duplicate check — then «Επιβεβαίωση → Στην αναμονή». Or
+  «Παράλειψη» (the tag stays). Same on the calendar and on the front-desk home page. The
+  correction is logged with the old and new values.
+- Settings → Ημερολόγιο → Τύποι: «Για νέους ασθενείς» marks the type new patients get.
+- Fake week: Ιωάννα Ράπη, booked by name only, Tue 13/10 19:00.
+- Check: see the click list in the reply for this step.
+
 ## 12 Oct 2026 — 6a-5 matched to the new boards
 
 - Your boards (CalSecDay/Week/Month, CalDocDay/Week/Month, CalStates, Patient) are in

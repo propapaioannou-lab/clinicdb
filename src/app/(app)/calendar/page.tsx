@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { LiveRefresh } from "@/components/live/live-refresh";
 import { primaryButton } from "@/components/ui";
@@ -78,13 +78,29 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const doctorCol = resources.find((r) => r.kind === "DOCTOR" || r.kind === "CABIN") ?? resources[0];
   // For the colour key under the grid.
   const officeTypes = (await db.appointmentType.findMany({ where: { companyId: company.id, isActive: true, NOT: { layer: "SURGERY" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }))
-    .map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color }));
+    .map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color, forNewPatients: ty.forNewPatients }));
+  // «+ Ραντεβού» = the next free slot of the doctor's column (normal hours, shortest type),
+  // from the day shown (or now). ?book=next (from the home page) goes straight there.
+  let nextFree: string | null = null;
+  if (!doctor && doctorCol) {
+    const from = date > today ? new Date(`${date}T00:00:00Z`) : new Date();
+    const shortest = Math.min(30, ...officeTypes.map((x) => x.minutes));
+    const slot = (await freeSlots(company.id, doctorCol.id, from, shortest, { days: 60, limit: 1, step: 5 }))[0];
+    if (slot) {
+      const p = athensParts(slot);
+      nextFree = `/calendar?${new URLSearchParams({ date: athensIsoDate(slot), book: `${doctorCol.id}.${p.hour * 60 + p.minute}`, ...(weekend && { we: "1" }) })}`;
+    }
+  }
+  if (sp.book === "next" && nextFree) redirect(nextFree);
   let body: React.ReactNode = null;
   let tiles: Tile[] = [];
   if (view === "day" && !doctor) {
     const data = await calendarDay(actor, company.id, date);
     if (!data) notFound();
-    body = <DayView key={`${date}${sp.book ?? ""}`} startBooking={sp.book === "1"} data={data} types={officeTypes} />;
+    // «+ Ραντεβού» opens the quick-booking panel on the next free slot (?book=resource.minute).
+    const m = typeof sp.book === "string" ? /^([\w-]+)\.(\d{1,4})$/.exec(sp.book) : null;
+    const startAt = m && data.columns.some((c) => c.id === m[1]) ? { resourceId: m[1], start: Number(m[2]) } : undefined;
+    body = <DayView key={`${date}${sp.book ?? ""}`} startAt={startAt} data={data} types={officeTypes} />;
   } else if (view === "day" && own) {
     const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, stepDay(date, 1, false), 1, [own.id])]);
     const day = days![0];
@@ -131,7 +147,6 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     }
   }
   if (!doctor) tiles = await deskTiles(actor, company.id, today);
-
   const nav = "flex h-10 min-w-10 items-center justify-center rounded-control border border-line-strong bg-surface px-2.5 text-sm font-semibold hover:border-primary";
   const seg = (on: boolean) => `whitespace-nowrap rounded-[9px] px-2.5 py-1.5 text-[13px] ${on ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-3 hover:text-ink"}`;
   return (
@@ -172,7 +187,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         {!doctor && (
           <span className="ml-auto flex gap-2">
             <span title={t("surgerySoon")} className="flex h-10 items-center whitespace-nowrap rounded-control bg-cal-blue/50 px-3 text-sm font-semibold text-white">+ {t("surgery")}</span>
-            <Link href={q({ view: undefined, book: "1" })} className={`${primaryButton} min-h-10 whitespace-nowrap px-3.5`}>+ {t("appointment")}</Link>
+            <Link href={nextFree ?? q({ view: undefined })} title={t("nextFreeHint")} className={`${primaryButton} min-h-10 whitespace-nowrap px-3.5`}>+ {t("appointment")}</Link>
           </span>
         )}
       </div>
@@ -195,7 +210,7 @@ async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId
       key: "confirm",
       label: t("strip.confirm"),
       badge: { text: conf ? `${conf.confirmed}/${conf.total}` : "–", tone: conf?.pending.length ? "warn" : conf?.total ? "ok" : "grey" },
-      sub: conf && `${dayLabel}${conf.pending.length > 0 ? ` · ${t("strip.toCall", { count: conf.pending.length })}` : ""}`,
+      sub: conf && [dayLabel, conf.pending.length ? t("strip.toCall", { count: conf.pending.length }) : null, conf.cannotNotify ? t("strip.cannotNotify", { count: conf.cannotNotify }) : null].filter(Boolean).join(" · "),
       body: conf ? (
         conf.pending.length ? (
           <ul className="flex flex-col divide-y divide-line-softer">
@@ -204,6 +219,8 @@ async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId
                 <b className="w-12 tabular-nums">{p.time}</b>
                 {p.patientId ? <Link href={`/patients/${p.patientId}`} className="font-semibold hover:text-primary">{p.name}</Link> : <span>{p.name ?? "—"}</span>}
                 <span className="text-muted">{p.type}</span>
+                {p.reach === "none" && <span className="rounded-[6px] bg-danger-bg px-1.5 py-0.5 text-[11.5px] font-semibold text-danger-ink">{t("strip.noReach")}</span>}
+                {p.reach === "email" && <span className="rounded-[6px] bg-line-softer px-1.5 py-0.5 text-[11.5px] text-ink-3">{t("strip.byEmail")}</span>}
                 {p.phone && <a href={`tel:${p.phone.replace(/\s/g, "")}`} className="ml-auto font-semibold text-primary">{p.phone}</a>}
               </li>
             ))}

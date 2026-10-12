@@ -9,6 +9,7 @@ import type { AppointmentStatus } from "@/generated/prisma/client";
 import { greetingFor } from "@/lib/home/greeting";
 import { RoomNotify, StepButton } from "./buttons";
 import { TodayList } from "./today-list";
+import { ArrivalButton } from "../calendar/arrival";
 
 // Home screens (Phase 6a-4, DESIGN 1a / 1b / 1e): each role sees today's work, kept live
 // by <LiveRefresh>. No money on the physician's screen.
@@ -97,7 +98,13 @@ async function MainAction({ a, data }: { a: DayAppointment; data: DayData }) {
   switch (a.status) {
     case "BOOKED":
     case "CONFIRMED":
-      return <StepButton id={a.id} to="ARRIVED" label={c("actions.ARRIVED")} />;
+      // Patients booked quickly get «Επιβεβαίωση στοιχείων» first (6a-6).
+      return (
+        <span className="inline-flex flex-col">
+          <ArrivalButton id={a.id} when={`${a.time} · ${a.type.label}`} label={c("actions.ARRIVED")} className={`${primaryButton} min-h-10 px-3 text-[13.5px]`}
+            patient={a.patient && { id: a.patient.id, firstName: a.patient.firstName, surname: a.patient.surname, phone: a.patient.phone, email: a.patient.email, tags: a.patient.tags }} />
+        </span>
+      );
     case "ARRIVED":
       return <RoomNotify id={a.id} rooms={data.rooms} suggested={freeRoom(data)} />;
     case "READY":
@@ -224,7 +231,7 @@ export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
   return (
     <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 px-4 py-6 md:px-8">
       <Header title={t("reception")} sub={`${dateLabel} · ${companyLabel}`}
-        aside={<Link href="/calendar?book=1" className={primaryButton}>+ {t("newAppointment")}</Link>} />
+        aside={<Link href="/calendar?book=next" className={primaryButton}>+ {t("newAppointment")}</Link>} />
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {tiles.map((x) => (
           <div key={x.label} className={`${card} px-4 py-3`}>

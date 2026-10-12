@@ -20,7 +20,7 @@ export type DayAppointment = {
   start: number;
   end: number;
   time: string;
-  patient: { id: string; name: string; short: string; code: string; flag: string; phone: string | null } | null;
+  patient: { id: string; name: string; firstName: string; surname: string; short: string; code: string; flag: string; phone: string | null; email: string | null; tags: string[] } | null;
   type: { id: string; label: string; color: string; layer: string };
   reason: string | null;
   status: string;
@@ -64,6 +64,9 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   const phones = contacts
     ? await db.patientPhone.findMany({ where: { patientId: { in: appts.flatMap((a) => (a.patientId ? [a.patientId] : [])) } }, orderBy: [{ isMain: "desc" }, { sortOrder: "asc" }], select: { patientId: true, number: true } })
     : [];
+  const emails = contacts
+    ? await db.patientEmail.findMany({ where: { patientId: { in: appts.flatMap((a) => (a.patientId ? [a.patientId] : [])) } }, orderBy: { sortOrder: "asc" }, select: { patientId: true, email: true } })
+    : [];
   const company = await db.company.findUniqueOrThrow({ where: { id: companyId }, select: { code: true } });
 
   const appointments: DayAppointment[] = appts.map((a) => {
@@ -78,6 +81,10 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
         ? {
             id: a.patient.id,
             name: `${a.patient.surname} ${a.patient.firstName}`.trim(),
+            firstName: a.patient.firstName,
+            surname: a.patient.surname,
+            email: emails.find((e) => e.patientId === a.patient!.id)?.email ?? null,
+            tags: a.patient.tags,
             short: `${a.patient.firstName ? `${a.patient.firstName} ` : ""}${a.patient.surname.slice(0, 1)}.`,
             code: patientCode(a.patient.number, company.code),
             flag: a.patient.flag,

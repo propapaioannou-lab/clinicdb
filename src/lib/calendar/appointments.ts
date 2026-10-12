@@ -212,6 +212,8 @@ export async function createAppointment(actor: Actor, raw: Record<string, unknow
   const problems = await checkSlot(s.companyId, s.resource.id, startsAt, endsAt, { patientId, surgery: s.type.layer === "SURGERY" });
   const refused = refusal(problems, raw);
   if (refused) return fail(refused, { problems, suggestions: await freeSlots(s.companyId, s.resource.id, startsAt, minutes) });
+  // Quick booking asks first, before it creates a new patient.
+  if (raw.dryRun === true) return { ok: true, id: "", overridden: problems };
   const created = await db.$transaction(async (tx) => {
     const a = await tx.appointment.create({
       data: { companyId: s.companyId, patientId, typeId: s.type.id, resourceId: s.resource.id, startsAt, endsAt, reason: text(raw.reason, 120), createdById: actor.id },
@@ -257,7 +259,7 @@ export async function setAppointmentStatus(
   actor: Actor,
   id: string,
   to: AppointmentStatus,
-  opts: { room?: string; reason?: string },
+  opts: { room?: string; reason?: string; note?: Record<string, string> },
   ctx: RequestContext,
 ): Promise<Fail | { ok: true; changed: boolean }> {
   const a = await own(actor, id);
@@ -271,7 +273,7 @@ export async function setAppointmentStatus(
       where: { id },
       data: { status: to, room, ...(to === "CONFIRMED" && { confirmedAt: new Date(), confirmChannel: "staff" }) },
     });
-    await log(tx, actor, a, to === "CANCELLED" ? "cancelled" : "status", { fromStatus: a.status, toStatus: to, details: { ...(room && to === "READY" && { room }), ...(opts.reason && { reason: text(opts.reason, 200) }) } }, ctx);
+    await log(tx, actor, a, to === "CANCELLED" ? "cancelled" : "status", { fromStatus: a.status, toStatus: to, details: { ...(room && to === "READY" && { room }), ...(opts.reason && { reason: text(opts.reason, 200) }), ...opts.note } }, ctx);
   });
   return { ok: true, changed: true };
 }
@@ -283,7 +285,7 @@ export async function listAppointments(actor: Actor, companyId: string, from: Da
     where: { companyId, startsAt: { lt: to }, endsAt: { gt: from } },
     orderBy: { startsAt: "asc" },
     include: {
-      patient: { select: { id: true, number: true, surname: true, firstName: true, flag: true } },
+      patient: { select: { id: true, number: true, surname: true, firstName: true, flag: true, tags: true } },
       type: { select: { id: true, labelEl: true, color: true, layer: true } },
       resource: { select: { id: true, label: true, kind: true } },
     },

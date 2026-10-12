@@ -58,7 +58,7 @@ export default async function CalendarSettingsPage({ searchParams }: PageProps<"
         )}
         {tab === "types" && (
           <TypesSettings
-            rows={data.types.map((x) => ({ id: x.id, labelEl: x.labelEl, labelEn: x.labelEn, color: x.color, defaultMinutes: x.defaultMinutes, layer: x.layer, isActive: x.isActive }))}
+            rows={data.types.map((x) => ({ id: x.id, labelEl: x.labelEl, labelEn: x.labelEn, color: x.color, defaultMinutes: x.defaultMinutes, layer: x.layer, isActive: x.isActive, forNewPatients: x.forNewPatients }))}
             save={saveTypeAction.bind(null, company.id)}
             move={moveCalendarItemAction.bind(null, "type")}
           />

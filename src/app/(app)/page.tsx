@@ -7,13 +7,10 @@ import { requireSession } from "@/lib/auth/current";
 import { calendarDay } from "@/lib/calendar/day";
 import { surgeonResources } from "@/lib/calendar/views";
 import { activeCompany } from "@/lib/company";
-import { db } from "@/lib/db";
 import { canEditPatients } from "@/lib/permissions";
 import { athensIsoDate, athensParts } from "@/lib/time";
 import { loadActor } from "@/lib/users/manage";
 import { DeskHome, PaHome, PhysicianHome } from "./_home/homes";
-
-const DEFAULT_ROOMS = ["Δωμάτιο 1", "Δωμάτιο 2"];
 
 // Home (Phase 6a-4): by role — physician 1a, PA/nurse 1b, everyone else at the front 1e.
 // Guests (research) keep the simple page.
@@ -37,8 +34,7 @@ export default async function Home() {
       if (actor.role === "SURGEON") {
         body = <PhysicianHome {...common} resourceIds={await surgeonResources(actor.id, company.id)} />;
       } else {
-        const rooms = (await db.resource.findMany({ where: { companyId: company.id, isActive: true, kind: "ROOM" }, orderBy: { sortOrder: "asc" }, select: { label: true } })).map((r) => r.label);
-        body = actor.role === "PA_NURSE" ? <PaHome {...common} rooms={rooms.length ? rooms : DEFAULT_ROOMS} /> : <DeskHome {...common} rooms={rooms.length ? rooms : DEFAULT_ROOMS} />;
+        body = actor.role === "PA_NURSE" ? <PaHome {...common} /> : <DeskHome {...common} />;
       }
       return (
         <>

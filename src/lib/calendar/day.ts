@@ -5,6 +5,7 @@ import { athensParts, athensToUtc } from "@/lib/time";
 import type { Actor } from "@/lib/users/manage";
 import { listAppointments } from "./appointments";
 import { holidayOn } from "./holidays";
+import { roomsOf } from "./rooms";
 import { hoursOf, minutesOf } from "./hours";
 import { ACTIVE_STATUSES } from "./status";
 
@@ -41,10 +42,12 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   const to = athensToUtc(y, m, d + 1);
   const weekday = athensParts(from).weekday || 7;
   const contacts = canSeeContactDetails(actor.level);
-  const [resources, appts, blocks] = await Promise.all([
-    db.resource.findMany({ where: { companyId, isActive: true, NOT: { kind: "OPERATING_ROOM" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
+  const [resources, appts, blocks, rooms] = await Promise.all([
+    // Rooms (treatment/conference) are where patients wait for the doctor, not columns.
+    db.resource.findMany({ where: { companyId, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     listAppointments(actor, companyId, from, to),
     db.calendarBlock.findMany({ where: { companyId, startsAt: { lt: to }, endsAt: { gt: from } } }),
+    roomsOf(companyId),
   ]);
   if (!appts) return null;
   const minuteIn = (t: Date) => (t <= from ? 0 : t >= to ? 24 * 60 : clockOf(t));
@@ -143,6 +146,7 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
     startHour: Math.min(startHour, 9),
     endHour: Math.max(endHour, Math.min(startHour, 9) + 8),
     columns,
+    rooms,
     appointments,
     tomorrow: { total: tomorrowTotal, confirmed: tomorrowConfirmed },
     tomorrowDate: new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10),

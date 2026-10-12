@@ -154,6 +154,9 @@ describe("calendar ↔ visits (6a-4)", () => {
     // The day data tells when each entered its current status.
     const day = await calendarDay(sec, c.surgery, "2030-03-18");
     expect(day?.appointments.find((a) => a.id === r.id)).toMatchObject({ status: "DONE", visitId: v.id, statusAt: expect.stringMatching(/^\d{2}:\d{2}$/) });
+    // Rooms are where patients wait for the doctor, never calendar columns.
+    expect(day?.rooms.length).toBeGreaterThan(0);
+    expect(day?.columns.some((col) => col.kind === "ROOM")).toBe(false);
   });
 
   it("a visit without a fee goes straight to 'done'; another patient's visit is refused", async () => {

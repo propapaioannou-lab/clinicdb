@@ -2,6 +2,16 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Rooms: one doctor's office card, therapy rooms to choose from
+
+- The assistant's board now shows the waiting room and **one card: Γραφείο γιατρού**
+  (who is with you, since when, how late).
+- "Έτοιμος · ειδοποίηση" now comes with a room list: **Θεραπευτήριο 1, 2, 3, Αίθουσα
+  συσκέψεων** (the first free one is pre-selected). Same list on the front desk and in
+  the calendar's appointment panel. The banner tells you which room.
+- Check: as the secretary, Άφιξη ✓ on a patient → pick "Θεραπευτήριο 2" →
+  "Έτοιμος · ειδοποίηση". Your window shows "… είναι έτοιμος/η · Θεραπευτήριο 2".
+
 ## 12 Oct 2026 — Phase 6a-4: live home screens and "ready in room"
 
 - The home page now depends on who you are:
@@ -21,7 +31,7 @@ Plain-language record of what changed and how to check it.
   appointment; saving it moves the appointment to "Προς πληρωμή" (or "Ολοκληρώθηκε" if
   there is no fee); the front desk closing the visit after payment finishes it.
 - Check: open the app as yourself in one window and as the secretary in another
-  (private window). Secretary home: press **Άφιξη ✓** on a patient, then **Δωμάτιο 1 ·
+  (private window). Secretary home: press **Άφιξη ✓** on a patient, then **Έτοιμος ·
   ειδοποίηση** — your window shows the green banner within a second or two. Then press
   **Έναρξη επίσκεψης** on that patient on your home page.
 

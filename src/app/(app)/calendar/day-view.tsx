@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown } from "@/components/dropdown";
 import { FlagDot } from "@/components/patient-bits";
-import { card, ErrorBox, fieldClass, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
+import { card, ErrorBox, inputClass, Notice, primaryButton, secondaryButton } from "@/components/ui";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { calColor } from "@/lib/calendar/colors";
 import type { DayAppointment, DayData } from "@/lib/calendar/day";
@@ -159,7 +159,7 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
   const t = useTranslations("calendar");
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [room, setRoom] = useState(a.room ?? "Δωμάτιο 1");
+  const [room, setRoom] = useState(a.room ?? data.rooms[0]);
   const [moving, setMoving] = useState(false);
   const [mv, setMv] = useState({ date: dmy(data.date), time: a.time, minutes: String(a.end - a.start), resourceId: a.resourceId });
   const [r, setR] = useState<BookingResult>({});
@@ -208,7 +208,7 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
         {forward.map((s) =>
           s === "READY" ? (
             <span key={s} className="flex items-center gap-1.5">
-              <input value={room} onChange={(e) => setRoom(e.target.value)} aria-label={t("room")} className={`${fieldClass} h-10 w-[120px]`} />
+              <Dropdown label={t("room")} placeholder={null} value={room} onChange={(v) => v && setRoom(v)} options={data.rooms.map((r) => ({ value: r, label: r }))} className="w-[190px]" />
               <button type="button" disabled={pending} onClick={() => status("READY", { room })} className={primaryButton}>{t("actions.READY")}</button>
             </span>
           ) : (

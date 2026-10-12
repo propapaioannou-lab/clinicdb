@@ -698,11 +698,15 @@ Bulk SMS/email move to GHL. Prescription statistics dropped.
   and a now-line that follows the clock (manual scroll pauses it 30 s), "Έναρξη
   επίσκεψης" (→ with the doctor, opens a new visit linked to the appointment; saving it
   → "Προς πληρωμή" if charged, else "Ολοκληρώθηκε"; closing the visit after payment →
-  "Ολοκληρώθηκε"); no money. **1b PA/nurse**: "Ροή ημέρας" — waiting room, one card per
-  room (resources of kind ROOM, else Δωμάτιο 1 / 2), "Δωμάτιο X · ειδοποίηση", doctor
-  status pill ("με … από 11:06 · +4′ από πρόγραμμα"), today's list with one main button.
+  "Ολοκληρώθηκε"); no money. **1b PA/nurse**: "Ροή ημέρας" — waiting room and ONE card
+  for the **doctor's office** (who is with the doctor, since when, "+X′ από πρόγραμμα");
+  today's list with one main button. **Rooms** (decided 12 Oct 2026) are where staff bring
+  a patient so the doctor is notified: Θεραπευτήριο 1, 2, 3 and Αίθουσα συσκέψεων (a
+  pick-list next to "Έτοιμος · ειδοποίηση", first free room pre-selected; resources of
+  kind ROOM replace the list; rooms are never calendar columns; editing them in Settings
+  later).
   **1e front desk** (and everyone else who edits): "Υποδοχή" — tiles, today's list with
-  one main button (Άφιξη ✓ → Δωμάτιο · ειδοποίηση → Τέλος επίσκεψης → Είσπραξη, which
+  one main button (Άφιξη ✓ → room + Έτοιμος · ειδοποίηση → Τέλος επίσκεψης → Είσπραξη, which
   opens the visit's charge panel), "Δεν ήρθε", tomorrow's confirmations. **Live**:
   PostgreSQL NOTIFY in the same transaction as each appointment change → one listener
   per server → Server-Sent Events (`/api/live`) → home and calendar redraw themselves;

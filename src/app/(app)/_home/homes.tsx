@@ -7,7 +7,7 @@ import type { DayAppointment, DayData } from "@/lib/calendar/day";
 import { STATUS_LABEL } from "@/lib/calendar/status";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { greetingFor } from "@/lib/home/greeting";
-import { StepButton } from "./buttons";
+import { RoomNotify, StepButton } from "./buttons";
 import { TodayList } from "./today-list";
 
 // Home screens (Phase 6a-4, DESIGN 1a / 1b / 1e): each role sees today's work, kept live
@@ -68,7 +68,6 @@ export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds }: Co
   );
 }
 
-// Rooms on the board: "Δωμάτιο" columns from Settings, else Δωμάτιο 1 and 2.
 async function Header({ title, sub, aside }: { title: string; sub: string; aside?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-3">
@@ -82,7 +81,13 @@ async function Header({ title, sub, aside }: { title: string; sub: string; aside
 }
 
 // The one next step for an appointment at the front (secretary and PA/nurse).
-async function MainAction({ a, rooms }: { a: DayAppointment; rooms: string[] }) {
+// Rooms already taken (someone ready or with the doctor there) → suggest the first free one.
+const freeRoom = (data: DayData) => {
+  const taken = new Set(data.appointments.filter((x) => x.status === "READY" || x.status === "WITH_DOCTOR").map((x) => x.room));
+  return data.rooms.find((r) => !taken.has(r)) ?? data.rooms[0];
+};
+
+async function MainAction({ a, data }: { a: DayAppointment; data: DayData }) {
   const t = await getTranslations("home");
   const c = await getTranslations("calendar");
   switch (a.status) {
@@ -90,9 +95,9 @@ async function MainAction({ a, rooms }: { a: DayAppointment; rooms: string[] }) 
     case "CONFIRMED":
       return <StepButton id={a.id} to="ARRIVED" label={c("actions.ARRIVED")} />;
     case "ARRIVED":
-      return <span className="flex flex-wrap justify-end gap-1.5">{rooms.map((r) => <StepButton key={r} id={a.id} to="READY" room={r} label={t("readyIn", { room: r })} />)}</span>;
+      return <RoomNotify id={a.id} rooms={data.rooms} suggested={freeRoom(data)} />;
     case "READY":
-      return <span className="text-[13px] text-muted">{t("waitsDoctor")}</span>;
+      return <span className="text-[13px] text-muted">{t("waitsDoctor")}{a.room && ` · ${a.room}`}</span>;
     case "WITH_DOCTOR":
       return <StepButton id={a.id} to="TO_PAY" kind="secondary" label={c("actions.TO_PAY")} />;
     case "TO_PAY":
@@ -115,58 +120,51 @@ function Name({ a }: { a: DayAppointment }) {
 }
 
 // ── 1b · PA / nurse ─────────────────────────────────────────────────────────────
-export async function PaHome({ data, nowMin, dateLabel, companyLabel, rooms }: Common & { rooms: string[] }) {
+// Board: the waiting room (arrived → pick a room → the doctor is notified; ready ones
+// show their room) and ONE card for the doctor's office (decided 12 Oct 2026).
+export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) {
   const t = await getTranslations("home");
   const appts = data.appointments.filter((a) => a.active);
-  const waiting = appts.filter((a) => a.status === "ARRIVED");
+  const waiting = appts.filter((a) => a.status === "ARRIVED" || a.status === "READY");
   const withDoctor = appts.find((a) => a.status === "WITH_DOCTOR");
   const late = withDoctor ? (toMin(withDoctor.statusAt) ?? nowMin) - withDoctor.start : 0;
-  const inRoom = (room: string) => appts.find((a) => (a.status === "READY" || a.status === "WITH_DOCTOR") && a.room === room);
   return (
     <main className="mx-auto flex w-full max-w-[1400px] flex-col gap-5 px-4 py-6 md:px-8">
       <Header title={t("flow")} sub={`${companyLabel} · ${dateLabel} · ${t("appointmentsCount", { count: appts.length })}`}
         aside={
-          <span className="flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-[13.5px]">
-            <span className={`h-2.5 w-2.5 rounded-full ${withDoctor ? "bg-ok" : "bg-line-strong"}`} />
-            {withDoctor
-              ? <>{t("doctorWith", { room: withDoctor.room ?? "—", name: withDoctor.patient?.short ?? withDoctor.type.label, since: withDoctor.statusAt ?? "" })}
-                  {late > 0 && <b className="text-warn-ink">{t("behind", { minutes: late })}</b>}</>
-              : t("doctorFree")}
-          </span>
+          withDoctor && late > 0 ? <span className="rounded-full border border-warn-line bg-warn-bg px-4 py-2 text-[13.5px] font-semibold text-warn-ink">{t("behind", { minutes: late })}</span> : undefined
         } />
-      <div className="grid gap-4 md:grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+      <div className="grid gap-4 md:grid-cols-2">
         <section className={`${card} flex flex-col gap-3 p-5`}>
           <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted">{t("waitingRoom")} · {waiting.length}</h2>
           {!waiting.length && <p className="text-[14px] text-muted">{t("nobodyWaiting")}</p>}
           {waiting.map((a) => (
-            <div key={a.id} className="flex flex-col gap-2 border-t border-line-softer pt-3 first:border-0 first:pt-0">
-              <Name a={a} />
-              <span className="text-[13px] text-muted">{t("arrivedLine", { arrived: a.arrivedAt ?? "—", time: a.time })} · {a.type.label}</span>
-              <MainAction a={a} rooms={rooms} />
+            <div key={a.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-line-softer pt-3 first-of-type:border-0 first-of-type:pt-0">
+              <span className="flex flex-col">
+                <Name a={a} />
+                <span className="text-[13px] text-muted">{t("arrivedLine", { arrived: a.arrivedAt ?? "—", time: a.time })} · {a.type.label}</span>
+              </span>
+              {a.status === "READY"
+                ? <span className="rounded-full bg-ok px-3 py-1 text-[12.5px] font-semibold text-white">{t("readyIn", { room: a.room ?? "—" })}{a.statusAt && ` · ${t("since", { time: a.statusAt })}`}</span>
+                : <MainAction a={a} data={data} />}
             </div>
           ))}
         </section>
-        {rooms.map((room) => {
-          const a = inRoom(room);
-          const busy = a?.status === "WITH_DOCTOR";
-          return (
-            <section key={room} className={`flex flex-col gap-2 rounded-card p-5 ${busy ? "border-2 border-primary bg-surface" : a ? "border border-ok bg-ok-bg/40" : "border border-dashed border-line-strong bg-surface"}`}>
-              <h2 className={`text-[13px] font-semibold uppercase tracking-wide ${busy ? "text-primary" : "text-muted"}`}>
-                {room}{busy ? ` · ${t("withDoctorUpper")}` : a ? ` · ${t("readyUpper")}` : ""}
-              </h2>
-              {a ? (
-                <>
-                  <Name a={a} />
-                  <span className="text-[13px] text-muted">{a.type.label}{a.statusAt && ` · ${t("since", { time: a.statusAt })}`}</span>
-                  {busy && <MainAction a={a} rooms={rooms} />}
-                </>
-              ) : <span className="text-[14px] text-muted">{t("roomFree")}</span>}
-            </section>
-          );
-        })}
+        <section className={`flex flex-col gap-2 rounded-card p-5 ${withDoctor ? "border-2 border-primary bg-surface" : "border border-dashed border-line-strong bg-surface"}`}>
+          <h2 className={`text-[13px] font-semibold uppercase tracking-wide ${withDoctor ? "text-primary" : "text-muted"}`}>
+            {t("doctorOffice")}{withDoctor ? ` · ${t("withDoctorUpper")}` : ""}
+          </h2>
+          {withDoctor ? (
+            <>
+              <Name a={withDoctor} />
+              <span className="text-[13px] text-muted">{withDoctor.type.label}{withDoctor.room && ` · ${withDoctor.room}`}{withDoctor.statusAt && ` · ${t("since", { time: withDoctor.statusAt })}`}</span>
+              <MainAction a={withDoctor} data={data} />
+            </>
+          ) : <span className="text-[14px] text-muted">{t("doctorFree")}</span>}
+        </section>
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Schedule data={data} rooms={rooms} />
+        <Schedule data={data} />
         <div className="flex flex-col gap-4">
           <Later title={t("pending")} phase="3" />
           <Later title={t("surgeryChecks")} phase="4" />
@@ -177,7 +175,7 @@ export async function PaHome({ data, nowMin, dateLabel, companyLabel, rooms }: C
   );
 }
 
-async function Schedule({ data, rooms }: { data: DayData; rooms: string[] }) {
+async function Schedule({ data }: { data: DayData }) {
   const t = await getTranslations("home");
   const rows = data.appointments.filter((a) => a.active);
   return (
@@ -196,9 +194,9 @@ async function Schedule({ data, rooms }: { data: DayData; rooms: string[] }) {
               <span className="text-[13px] text-muted">{a.type.label}{a.reason && ` · ${a.reason}`}</span>
             </span>
             <span className="w-[120px] text-[13px]">{a.status === "BOOKED" ? <span className="text-warn-ink">? {t("unconfirmed")}</span> : <span className="text-ok-ink">✓ {t("confirmed")}</span>}</span>
-            <span className="w-[130px] text-[13px] font-semibold">{STATUS_LABEL[a.status as AppointmentStatus]}{a.status === "READY" && a.room && ` · ${a.room}`}</span>
+            <span className="w-[130px] text-[13px] font-semibold">{STATUS_LABEL[a.status as AppointmentStatus]}</span>
             <span className="flex min-w-[150px] flex-wrap items-center justify-end gap-2">
-              <MainAction a={a} rooms={rooms} />
+              <MainAction a={a} data={data} />
               {(a.status === "BOOKED" || a.status === "CONFIRMED") && <StepButton id={a.id} to="NO_SHOW" kind="link" label={t("noShow")} />}
             </span>
           </li>
@@ -209,7 +207,7 @@ async function Schedule({ data, rooms }: { data: DayData; rooms: string[] }) {
 }
 
 // ── 1e · Front desk ─────────────────────────────────────────────────────────────
-export async function DeskHome({ data, dateLabel, companyLabel, rooms }: Common & { rooms: string[] }) {
+export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
   const t = await getTranslations("home");
   const appts = data.appointments.filter((a) => a.active);
   const tiles = [
@@ -232,7 +230,7 @@ export async function DeskHome({ data, dateLabel, companyLabel, rooms }: Common 
         ))}
       </div>
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <Schedule data={data} rooms={rooms} />
+        <Schedule data={data} />
         <div className="flex flex-col gap-4">
           <section className={`${card} flex flex-col gap-3 p-5`}>
             <div className="flex items-center justify-between">

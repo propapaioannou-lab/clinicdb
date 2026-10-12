@@ -604,7 +604,13 @@
     "procedures": "Procedures",
     "proceduresText": "Procedures by area and their sub-options.",
     "calendar": "Calendar",
-    "calendarText": "Appointment types, columns and hours, blocked time."
+    "calendarText": "Appointment types and lengths, columns and hours, blocked time (congresses, leave).",
+    "groups": {
+      "account": "Account",
+      "security": "Security & access",
+      "customization": "Practice customization",
+      "money": "Money"
+    }
   },
   "patientForm": {
     "newTitle": "New patient",

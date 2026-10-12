@@ -2,6 +2,21 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — SPEC v1.10 (calendar v2 plan) and Settings in groups
+
+- **SPEC v1.10 / DESIGN v3**: your calendar change list is now in SPEC §4c and DESIGN
+  (6a–6g, 2b): surgery hours 07:30–14:00, office Mon/Tue/Thu 16:30–20:00 with ±30′ flex,
+  weekends hidden, new appointment types and lengths (only defaults — every appointment
+  can still get its own length), quick booking, move with undo, cancel without delete,
+  two-band day/week view, menu rail, top strip; surgery limit = the 07:30–14:00 window.
+- **Plan**: 6a continues with 6a-5 (hours, types, layout) → 6a-6 quick booking + arrival
+  check → 6a-7 move → 6a-8 cancel → 6a-9 «+ Ραντεβού» from the record → 6a-10 staff chat.
+  Then Phase 4. The surgery thumbnail and fit badges are in 6b.
+- **Settings** now in groups: Λογαριασμός · Ασφάλεια & πρόσβαση · Προσαρμογή ιατρείου ·
+  Οικονομικά. Every page inside keeps "← Ρυθμίσεις". Type lengths: Ρυθμίσεις →
+  Ημερολόγιο → Τύποι ραντεβού.
+- Check: open Ρυθμίσεις — four headings; open any card and come back with "← Ρυθμίσεις".
+
 ## 12 Oct 2026 — Rooms: one doctor's office card, therapy rooms to choose from
 
 - The assistant's board now shows the waiting room and **one card: Γραφείο γιατρού**

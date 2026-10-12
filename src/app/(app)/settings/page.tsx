@@ -16,21 +16,43 @@ export default async function SettingsPage() {
   const format = await getFormatter();
   const manager = canManageUsers(user.level);
 
-  const admin = [
-    { href: "/admin/users", title: t("nav.users"), text: t("settings.usersText") },
-    { href: "/admin/devices", title: t("nav.devices"), text: t("settings.devicesText") },
-    { href: "/admin/audit", title: t("nav.audit"), text: t("settings.auditText") },
-    { href: "/admin/backups", title: t("nav.backups"), text: t("settings.backupsText") },
-    { href: "/settings/lists", title: t("settings.lists"), text: t("settings.listsText") },
-    { href: "/settings/history", title: t("settings.history"), text: t("settings.historyText") },
-    { href: "/settings/procedures", title: t("settings.procedures"), text: t("settings.proceduresText") },
+  // Grouped (decided 12 Oct 2026): account · security & access · customization · money.
+  // Every page inside has "← Ρυθμίσεις" to come back here.
+  type Item = { href: string; title: string; text: string };
+  const groups: { key: string; items: Item[] }[] = [
+    {
+      key: "security",
+      items: manager
+        ? [
+            { href: "/admin/users", title: t("nav.users"), text: t("settings.usersText") },
+            { href: "/admin/devices", title: t("nav.devices"), text: t("settings.devicesText") },
+            { href: "/admin/audit", title: t("nav.audit"), text: t("settings.auditText") },
+            { href: "/admin/backups", title: t("nav.backups"), text: t("settings.backupsText") },
+          ]
+        : [],
+    },
+    {
+      key: "customization",
+      items: [
+        // Calendar: blocked time for every staff member; types/lengths/hours inside for Owner/Admin.
+        ...(canEditPatients(user.level) ? [{ href: "/settings/calendar", title: t("settings.calendar"), text: t("settings.calendarText") }] : []),
+        ...(manager
+          ? [
+              { href: "/settings/lists", title: t("settings.lists"), text: t("settings.listsText") },
+              { href: "/settings/history", title: t("settings.history"), text: t("settings.historyText") },
+              { href: "/settings/procedures", title: t("settings.procedures"), text: t("settings.proceduresText") },
+            ]
+          : []),
+      ],
+    },
+    // Fees are money: the Secretary / PA-nurse set them, never the surgeon.
+    { key: "money", items: canHandleMoney(actor) ? [{ href: "/settings/fees", title: t("settings.fees"), text: t("settings.feesText") }] : [] },
   ];
-  // Fees are money: the Secretary / PA-nurse set them, never the surgeon.
-  const money = canHandleMoney(actor);
 
   return (
     <main className="mx-auto flex w-full max-w-[1240px] flex-col gap-5 px-4 py-6 md:px-8">
       <h1 className="text-[28px] font-semibold">{t("nav.settings")}</h1>
+      <h2 className="-mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted">{t("settings.groups.account")}</h2>
 
       <section className={`${card} flex flex-wrap items-center gap-4 p-5`}>
         <Avatar name={user.name} size={52} />
@@ -65,33 +87,19 @@ export default async function SettingsPage() {
         </section>
       )}
 
-      {manager && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          {admin.map((a) => (
-            <Link key={a.href} href={a.href} className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
-              <span className="text-[17px] font-semibold text-primary">{a.title}</span>
-              <span className="text-sm text-ink-3">{a.text}</span>
-            </Link>
-          ))}
+      {groups.filter((g) => g.items.length).map((g) => (
+        <section key={g.key} className="flex flex-col gap-3">
+          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted">{t(`settings.groups.${g.key}` as "settings.groups.security")}</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {g.items.map((a) => (
+              <Link key={a.href} href={a.href} className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
+                <span className="text-[17px] font-semibold text-primary">{a.title}</span>
+                <span className="text-sm text-ink-3">{a.text}</span>
+              </Link>
+            ))}
+          </div>
         </section>
-      )}
-      {/* Calendar: blocked time for every staff member; types/resources inside for Owner/Admin. */}
-      {canEditPatients(user.level) && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          <Link href="/settings/calendar" className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
-            <span className="text-[17px] font-semibold text-primary">{t("settings.calendar")}</span>
-            <span className="text-sm text-ink-3">{t("settings.calendarText")}</span>
-          </Link>
-        </section>
-      )}
-      {money && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          <Link href="/settings/fees" className={`${card} flex flex-col gap-1 p-5 hover:border-primary`}>
-            <span className="text-[17px] font-semibold text-primary">{t("settings.fees")}</span>
-            <span className="text-sm text-ink-3">{t("settings.feesText")}</span>
-          </Link>
-        </section>
-      )}
+      ))}
     </main>
   );
 }

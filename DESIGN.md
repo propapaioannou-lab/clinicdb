@@ -1,4 +1,4 @@
-# DESIGN.md — Interface (approved 11 Oct 2026, v2: secretary + calendar)
+# DESIGN.md — Interface (approved 11 Oct 2026, v2: secretary + calendar; v3 12 Oct 2026: calendar v2)
 
 The surgeon reviewed and approved these screens on a design canvas. This file plus
 the mockups in `design/` describe **how the app looks and behaves**. `SPEC.md`
@@ -30,6 +30,7 @@ describes **what it does**. If they disagree, ask the surgeon.
 | `Calendar.dc.html` | 6 · Calendar functions: booking panel, surgery booking + availability grid, schedule e-mails (layout superseded by 6a–6f) |
 | `CalDocDay/Week/Month.dc.html` | 6a–6c · Physician calendar — day / week / month |
 | `CalSecDay/Week/Month.dc.html` | 6d–6f · Secretary calendar — day / week / month |
+| *(canvas boards 6a–6g, 2b — v3, approved 12 Oct 2026; files to be added to `design/`)* | 6a–6f redrawn for calendar v2 (two bands, top strip, Mon–Fri); **6g** booking, move, cancel, arrival and override states; **2b · booking from the patient record** («+ Ραντεβού ▾» / «+ Χειρουργείο») |
 
 ## Design tokens (put them in `tailwind.config` as named colours)
 - Font: **Commissioner** (Google Fonts, has Greek), weights 400/500/600/700; fallback
@@ -183,6 +184,38 @@ Principle: each person sees only what they act on.
     chip (πλήρες / μόνο ≤2ω / υπόλ. Xω), holidays; orange banner when new-patient
     slots are full > 10 days, with the first free slot.
 
+### 6a–6g · Calendar v2 (12 Oct 2026, supersedes the layout parts of 6 and 6a–6f)
+**Layout**
+- The left menu collapses to a **68 px icon rail** with a «»» button; the choice is
+  remembered per device; it collapses by itself under 1280 px.
+- **One-line header**: ‹ Σήμερα › · title · Ημέρα / Εβδομάδα / Μήνας · Δευ–Παρ (with
+  «+ Σαβ/Κυρ») · actions.
+- Side widgets move to a **top strip of tiles** that expand downward:
+  - secretary: Αιτήματα κράτησης, Επιβεβαιώσεις αύριο, Λίστα αναμονής, Νέες φόρμες, GHL
+    status;
+  - physician: Τώρα, Επόμενος (rich), Σήμερα, Αύριο.
+- The calendar itself uses the full width.
+
+**Time scale**
+- Day and week views use **two bands**, with 14:30–16:00 collapsed:
+  - surgery band compact (day ≈ 52 px/h, week ≈ 40 px/h);
+  - office band detailed (day ≈ 144 px/h, week ≈ 112 px/h), so 10′ appointments stay
+    readable.
+- Replaces the uniform 96 px/h (and 56 / 72 / 52 px/h above). The now-line and
+  auto-scroll work per band.
+
+**Other**
+- Week Mon–Fri; month **5 columns** (Mon–Fri); Sat/Sun only with «+ Σαβ/Κυρ».
+- Colours: Νέα συμβουλευτική #4E9A95; Επανέλεγχος #9CC3BF; Botox #8A5A9E; flex zone
+  hatched; closed #ECEAE5; surgery-window tint #F5F7FA.
+- **6g** states: quick-booking panel next to the slot (search, type chips, new patient
+  with name only, «Μήπως υπάρχει ήδη;»), arrival «Επιβεβαίωση στοιχείων», lifted card /
+  red ghost while moving, toast «Μετακινήθηκε → …» with undo and «☑ Ενημέρωση ασθενούς»,
+  the four cancel options, the override step (reason).
+- **2b · booking from the patient record**: «+ Ραντεβού ▾» (type → week view with the
+  floating patient thumbnail and a ghost block of the exact length) and «+ Χειρουργείο»
+  (navy thumbnail, «✓ χωράει / ⚠» per day — phase 6b).
+
 ### 2a · Patients
 - A large search box with accent-, case- and space-insensitive search as you type.
   Each result shows **which field matched**.
@@ -245,6 +278,7 @@ Principle: each person sees only what they act on.
 | 3 Intake | 4 / 4b intake form; history verification in 2b; intake and duplicate items in 1b "Προς διεκπεραίωση" |
 | 4 Surgeries | Surgeries and Treatments tabs; planning panel with sketches and pen; 1c and 1d surgery day with readiness lights and checklists |
 | 5 Photos | Photos tab; photo thumbnails on surgery cards |
+| 6a Calendar v2 (6a-5 … 6a-10) | 6a–6g layout (rail, one-line header, top strip, two bands, Mon–Fri), quick booking, arrival check, move, cancel, «+ Ραντεβού» from 2b, staff chat |
 | 6 Calendar + GHL | Calendar (6) incl. surgery booking/capacity and schedule e-mails, 1e secretary home, 1a and 1b home screens with live appointments, room board, ready-in-room banner, staff chat with presets, online-call button |
 | 6f Tasks | "Εργασίες" page (tabs Σήμερα / Καθυστερούν / Επόμενες / Ολοκληρωμένες, filter by person), "+ Εργασία" buttons, "→ Εργασία" in chat, tasks on home screens and patient record — screen to be drawn; follow the cards/rows style of 1b "Προς διεκπεραίωση" |
 | 7 AI | Recording control in New visit |

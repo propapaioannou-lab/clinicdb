@@ -1,7 +1,7 @@
-# Clinic Database — Specification v1.9
+# Clinic Database — Specification v1.10
 
 (v1.6 from the surgeon + decisions made in Claude Code, merged 11 Oct 2026; v1.8 adds
-what is actually built and every deviation; v1.9: build order and Phase 7 status. Status per phase: `STATE.md`.)
+what is actually built and every deviation; v1.9: build order and Phase 7 status; v1.10: calendar v2 — hours, types, quick booking, move, cancel without delete, two-band views, steps 6a-5…6a-10. Status per phase: `STATE.md`.)
 
 Status: draft, 11 Oct 2026. Living document — update as decisions are made.
 Owner: the surgeon (product owner, tester). Code: written by Claude Code.
@@ -556,19 +556,26 @@ appointment titles; more than one location.
   room / cabin / operating room), location, status (ONE list for the whole app, see
   below), confirmation channel and time, source (staff user or online via GHL), GHL
   appointment ID.
-- **Appointment status — the only list** (Greek label · who presses it):
+- **Appointment status — the only list** (Greek label · who presses it; v1.10 adds
+  the two cancel variants below, built in 6a-8):
   booked «Κλείστηκε» (staff / online) → confirmed «Επιβεβαιώθηκε» (patient reply via GHL
   or staff) → arrived «Στην αναμονή» (secretary: Άφιξη) → ready «Έτοιμος · Δωμάτιο X»
   (the person assigned to that room — PA/nurse, or the secretary when no PA; pressing
   it twice does nothing, others see who did it) → with doctor «Με τον γιατρό»
   (surgeon opens the visit) → to pay «Προς πληρωμή» (surgeon closes the visit) → done
   «Ολοκληρώθηκε» (payment recorded, or no charge). Side exits: cancelled «Ακυρώθηκε»,
-  no-show «Δεν ήρθε» (feeds the patient flag). Every change is logged with user + time.
+  late cancellation «Εκπρόθεσμη ακύρωση» (cancelled_late), no-show «Δεν ήρθε» (feeds
+  the patient flag), entered in error «Λάθος καταχώριση» (entered_in_error, hidden). Never
+  deleted. Every change is logged with user + time.
 - **Online bookings** (GHL / website) create a **pending patient** in our app if no
   match is found → duplicate check → intake link sent automatically.
 - `AppointmentType` (editable): name GR/EN, colour, default length, calendar layer
-  (office / online / surgery / spa), company. Seed practice: first visit 30′,
-  follow-up 15′, pre-op 30′, post-op 15′, online 30′, injectable 30′. Seed spa:
+  (office / online / surgery / spa), company. Seed practice (v1.10; the length is only
+  the default — it can be changed on each appointment; defaults editable in Settings):
+  Πρώτη επίσκεψη 30′ (new patients only, set automatically), Νέα συμβουλευτική 25′
+  (existing patient, new question), Επανέλεγχος 10′ (incl. post-op checks), Botox 10′,
+  Προεγχειρητική 30′, Online 30′. The earlier follow-up / post-op become Επανέλεγχος and
+  injectable becomes Botox (old types switched off, never deleted). Seed spa:
   laser 60′, peel 45′, hydrafacial 60′, mesotherapy 45′, body package 90′.
 - `Resource` (editable): practice — surgeon, nurse room, operating room (per
   hospital); spa — cabins / aestheticians. Blocked time (break, congress, holiday) as
@@ -604,13 +611,72 @@ appointment titles; more than one location.
   ≥ 2 h, amber < 2 h, red full, past, holidays) + banner when the first free new-patient
   slot is > 10 days away. **New patient** = no earlier visit and no earlier kept
   appointment. Surgery chips, load bars and tomorrow's surgeries come with Phase 4/6b.
-**Views**: day (one column per resource, more detail), week (Mon–Sat, layers on/off,
-surgical load bar per day), month (counts per day + surgery load). Click empty slot →
+**Calendar v2 (decided 12 Oct 2026 — DESIGN 6a–6g and 2b; built in 6a-5…6a-9)**
+
+*Hours (6a-5)*
+- Surgery: Mon–Fri 07:30–14:00 (Διαβαλκανικό). Office: Mon, Tue, Thu 16:30–20:00.
+- Flex zones 16:00–16:30 and 20:00–20:30: staff book there with one extra click
+  («εκτός ωραρίου +30′»); online booking never offers them.
+- Free-time counts and the "> 10 days full" rule count normal hours only.
+- All other times are greyed out; booking there is an override (reason, logged).
+- Sat/Sun closed and hidden; a «+ Σαβ/Κυρ» toggle shows them; a weekend booking is an
+  override. All of the above editable in Settings.
+
+*Quick booking (6a-6)*
+- Click a free slot (or «+ Ραντεβού» = next free slot) → small panel next to the slot.
+- One search field, name or phone; accent-insensitive, Greek or Latin letters.
+- Existing patient → one-tap type chips → the length fills in (still editable).
+- New patient: only the name is required (mobile, email optional); type fixed to Πρώτη
+  επίσκεψη. Duplicate check by mobile; with no mobile, by name ("Μήπως υπάρχει ήδη;").
+- Tags: «προς επιβεβαίωση» on every new patient booked this way; «χωρίς τηλέφωνο» when
+  no mobile was given.
+- Notifications: no mobile and no email → no automatic confirmation; the appointment
+  shows in «Επιβεβαιώσεις αύριο» as «Δεν μπορεί να ειδοποιηθεί»; email only → the
+  confirmation goes by email. *Sending waits for GHL (6d) / the e-mail provider (§13);
+  until then the app only marks who can and cannot be notified.*
+
+*Arrival (6a-6)*
+- For tagged patients the first step is «Επιβεβαίωση στοιχείων»: name spelling from
+  their ID, mobile/email, final duplicate check. The correction is a new version,
+  logged (*until 8c the old → new values are kept in the audit log*). The secretary can
+  skip the step; the tag stays.
+
+*Move (6a-7)*
+- Drag and drop in day/week views; dragging the bottom edge changes the length.
+- «Μετακίνηση» → the card lifts → click a slot in any week or month. Manual date + time
+  fields. Collisions and off-hours show a red ghost.
+- After the move: toast «Μετακινήθηκε → …» with 10 s undo and «☑ Ενημέρωση ασθενούς» (on
+  by default; sending waits for 6d). Logged.
+
+*Cancel — never delete (6a-8)*
+- Ακύρωση (≥ 48 h before, no flag); Εκπρόθεσμη ακύρωση (< 48 h → yellow flag); Δεν ήρθε
+  (→ red flag); Λάθος καταχώριση (hidden, no flag). A second late cancellation within 12
+  months → red flag. Automatic flags add their reason; staff can change a flag, with a
+  reason. 48 h and 12 months editable in Settings.
+- The freed slot is offered to the waiting list (*6a-8 adds a minimal waiting list —
+  patient, type, preferred days/times — and shows the matches; WhatsApp offers come with
+  6d/6e*). «Εμφάνιση ακυρωμένων» toggle.
+
+*From the patient record (6a-9; surgery part in 6b)*
+- «+ Ραντεβού ▾» → choose type → the calendar opens in week view on the first week with
+  a free slot of that length; the patient card floats as a thumbnail (showing any
+  future appointment); a ghost block of the exact length follows the cursor; drop or
+  click → confirm strip; ✕ / Esc → back to the record.
+- «+ Χειρουργείο» (6b) → choose procedures → estimated time → navy floating thumbnail;
+  while dragging every day shows «✓ χωράει» or «⚠»; hovering shows the day's load after
+  the drop; the drop proposes a start time; over a limit → the override step; the
+  «Προτεινόμενες ημέρες» list stays as an alternative. Booking creates the checklist and
+  the post-op visits, as before.
+
+**Views**: day (one column per resource, more detail), week (Mon–Fri from v1.10, layers
+on/off, surgical load bar per day), month (counts per day + surgery load; Mon–Fri). Click empty slot →
 new appointment. Clash warning and suggested free slots when booking.
 
 **Surgery capacity rules** (Settings, defaults):
-- Surgery days Mon–Fri. Per day max 3 operations or 7 hours of OR time; 30′ turnover
-  between cases.
+- Surgery days Mon–Fri. Per day max 3 operations within the window **07:30–14:00**
+  (v1.10, replaces "7 hours of OR time"); 30′ turnover between cases. A case ending
+  after 14:00 is an override: warning, reason, logged, and a ⚠ mark on the calendar and
+  in the schedule e-mail.
 - A case ≥ 4 h leaves room only for short cases (≤ 2 h); a case ≥ 5 h closes the day.
 - "+ Νέο χειρουργείο": choose procedures → estimated time → availability grid for the
   next 3 weeks (fits / only ≤2 h / full / holiday) → pick day → proposed start after
@@ -1135,7 +1201,21 @@ Status of every phase and step: see **`STATE.md`** (kept up to date with each co
      holidays), the single status list, role views day/week/month (DESIGN 6a–6f),
      booking panel with clash warning and free slots, live home screens, ready-in-room
      banner, staff chat. *Test: book, move, cancel; check in; banner within 2 s.*
-   - **6b Surgery scheduling:** procedure times, daily limits + override, availability
+     Small steps (v1.10): 6a-1 data ✓ · 6a-2 secretary day + booking ✓ · 6a-3 week/month,
+     physician views ✓ · 6a-4 live homes + ready banner ✓ ·
+     **6a-5** hours (surgery/office/flex, weekends hidden), appointment types and
+     lengths, Mon–Fri, two-band day/week view, collapsible menu rail, top strip of tiles,
+     one-line header; seed 12–16 Oct like the mockups ·
+     **6a-6** quick booking (one search, new patient with name only, tags, duplicate check
+     by phone/name, «Δεν μπορεί να ειδοποιηθεί» in tomorrow's confirmations) + arrival
+     check «Επιβεβαίωση στοιχείων» ·
+     **6a-7** move: drag & drop, resize, «Μετακίνηση», manual date/time, undo + notify ·
+     **6a-8** cancel without delete: 4 options, automatic flags, waiting-list offer ·
+     **6a-9** «+ Ραντεβού» from the patient record with floating thumbnail ·
+     **6a-10** staff chat with one-tap presets (editable in Settings).
+     The surgery floating thumbnail, fit badges and the over-the-limit override are in 6b.
+   - **6b Surgery scheduling:** procedure times, daily limits (window 07:30–14:00) +
+     override, «+ Χειρουργείο» floating thumbnail with «✓ χωράει / ⚠» per day, availability
      grid, post-op plan, quote with automatic cost breakdown, €500 deposit rules,
      safety flags. *Test: book a facelift → day turns orange; post-op visits appear.*
    - **6c Schedule e-mails:** weekly (anaesthesiologists/nurses) and monthly (hospital)
@@ -1191,10 +1271,10 @@ secretary or PA; outcomes/complications record — yes.
 - Legal check: Guest (research) access to identifiable data — legal basis (consent or
   ethics approval) and confidentiality agreement for the guest
 - Email provider with DPA (for invitations now; briefs and consent links later)
-- **Office hours** per resource: set to Mon–Fri 09:00–14:00 + 17:00–21:00 until you
-  enter the real ones (Settings → Ημερολόγιο → Πόροι & ωράρια)
+- Resolved (v1.10): **hours** — surgery Mon–Fri 07:30–14:00, office Mon/Tue/Thu
+  16:30–20:00, flex zones ±30′; **appointment lengths** — see §4c (defaults only, editable
+  per appointment and in Settings).
 - Real locations (offices, hospitals) — "Ιατρείο Αθήνας" in mockups is a placeholder
-- Appointment default lengths (30′ / 15′ guessed)
 - Who may collect payments and issue receipts (secretary? PA? surgeon only?)
 - Maximum surgery days per week (burnout guard)?
 - Phone (VoIP) integration — caller's record opens on incoming call (optional, later)
@@ -1228,6 +1308,11 @@ Decided while building; the mockups in `design/` are not changed.
   calendar), never with the browser's date picker, which may show month/day on an
   English-language computer.
 - **Back links** ("← Ρυθμίσεις", "← Καρτέλα ασθενή"…) on every sub-page and form.
+- **Settings** grouped (12 Oct 2026): Λογαριασμός · Ασφάλεια & πρόσβαση (users, devices,
+  audit log, backups) · Προσαρμογή ιατρείου (calendar incl. type lengths, lists, medical
+  history, procedures) · Οικονομικά (visit fees, secretary/PA only).
+- **Rooms** (12 Oct 2026): the PA board shows the waiting room and one «Γραφείο γιατρού»
+  card; "ready" picks Θεραπευτήριο 1–3 / Αίθουσα συσκέψεων (DESIGN 1b had room 1 / room 2).
 - **Patient record**: the patient card opens "Όλα τα στοιχεία ▾" in place (Επεξεργασία,
   Σήμανση, Αρχειοθέτηση there); a red **"Ελλιπή στοιχεία: …"** badge when surname, first
   name, birth date, phone or email is missing (tap = edit); medical history never saved →
@@ -1242,7 +1327,8 @@ Decided while building; the mockups in `design/` are not changed.
   height, BMI only. No close button for the surgeon; the secretary/PA closes after
   payment ("Αποθήκευση & κλείσιμο").
 - **Calendar day (6a-2)**: 96 px per hour (DESIGN §6) instead of the smaller 6a–6f scale,
-  so 15′ appointments stay readable; booking requests and the WhatsApp/reminder/intake/
+  so 15′ appointments stay readable (*replaced in 6a-5 by the two-band scale of DESIGN
+  v3*); booking requests and the WhatsApp/reminder/intake/
   deposit switches are shown but marked "με GHL (6d)".
 - **Menu**: Ημερολόγιο active; Χειρουργεία and Εργασίες greyed ("σύντομα"); Settings
   holds Users, Devices, Audit log, Backups, Lists, Medical history, Procedures, Calendar

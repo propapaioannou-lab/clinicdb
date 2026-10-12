@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown } from "@/components/dropdown";
@@ -12,7 +13,7 @@ type TypeRow = { id: string; labelEl: string; labelEn: string; color: string; de
 type ResourceRow = { id: string; label: string; kind: string; userId: string | null; hours: HoursRange[]; isActive: boolean };
 type BlockRow = { id: string; resourceId: string | null; kind: string; label: string | null; from: string; to: string };
 
-const COLORS = ["teal", "tealLight", "amber", "purple", "blue", "rose", "grey", "online"];
+const COLORS = ["teal", "tealLight", "consult", "recheck", "amber", "purple", "blue", "rose", "grey", "online"];
 const LAYERS = ["OFFICE", "ONLINE", "SURGERY", "SPA"];
 const KINDS = ["DOCTOR", "NURSE", "ROOM", "OPERATING_ROOM", "CABIN"];
 const BLOCKS = ["BREAK", "CONGRESS", "LEAVE", "OTHER"];
@@ -232,5 +233,50 @@ export function BlocksSettings({ rows, resources, add, remove }: { rows: BlockRo
         <button type="submit" disabled={pending} className={`${primaryButton} self-start`}>{t("addBlock")}</button>
       </form>
     </div>
+  );
+}
+
+// ── Hours rules (calendar v2) ──────────────────────────────────────────────────────
+export function HoursRulesSettings({ initial, columns, save }: {
+  initial: { surgery: HoursRange[]; flexBefore: number; flexAfter: number };
+  columns: { id: string; label: string; hours: HoursRange[] }[];
+  save: (v: Record<string, unknown>) => Promise<CalendarSettingsState>;
+}) {
+  const t = useTranslations("settingsCalendar");
+  const { act, pending, error } = useAct();
+  const [v, setV] = useState({ surgery: initial.surgery, flexBefore: String(initial.flexBefore), flexAfter: String(initial.flexAfter) });
+  const [saved, setSaved] = useState(false);
+  const summary = (hours: HoursRange[]) =>
+    DAYS.filter((d) => hours.some((h) => h.day === d)).map((d) => `${t(`days.${d}`)} ${hours.filter((h) => h.day === d).map((h) => `${h.from}–${h.to}`).join(", ")}`).join(" · ") || t("closed");
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); setSaved(false); act(() => save({ surgery: v.surgery, flexBefore: v.flexBefore, flexAfter: v.flexAfter }), () => setSaved(true)); }} className="flex flex-col gap-5">
+      {error}
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[15px] font-semibold">{t("rules.office")}</span>
+        <span className="text-[13px] text-muted">{t("rules.officeHelp")}</span>
+        <ul className="flex flex-col gap-1 text-sm">
+          {columns.map((c) => <li key={c.id}><b>{c.label}</b> <span className="text-ink-3">· {summary(c.hours)}</span></li>)}
+        </ul>
+        <Link href="/settings/calendar?tab=resources" className="self-start text-[13.5px] font-semibold text-primary">{t("rules.changeOffice")} →</Link>
+      </div>
+      <div className="flex flex-col gap-1.5 border-t border-line-softer pt-4">
+        <span className="text-[15px] font-semibold">{t("rules.flex")}</span>
+        <span className="text-[13px] text-muted">{t("rules.flexHelp")}</span>
+        <div className="flex flex-wrap gap-3">
+          <label className="block w-[150px] text-sm text-ink-3">{t("rules.flexBefore")}<input value={v.flexBefore} onChange={(e) => setV({ ...v, flexBefore: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} /></label>
+          <label className="block w-[150px] text-sm text-ink-3">{t("rules.flexAfter")}<input value={v.flexAfter} onChange={(e) => setV({ ...v, flexAfter: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} /></label>
+        </div>
+      </div>
+      <div className="flex flex-col gap-1.5 border-t border-line-softer pt-4">
+        <span className="text-[15px] font-semibold">{t("rules.surgery")}</span>
+        <span className="text-[13px] text-muted">{t("rules.surgeryHelp")}</span>
+        <HoursEditor value={v.surgery} onChange={(surgery) => setV({ ...v, surgery })} />
+      </div>
+      <p className="rounded-[10px] bg-surface-2 px-3 py-2 text-[13px] text-ink-3">{t("rules.weekend")}</p>
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={pending} className={`${primaryButton} self-start`}>{t("save")}</button>
+        {saved && !pending && <span role="status" className="text-sm font-semibold text-ok-ink">✓ {t("saved")}</span>}
+      </div>
+    </form>
   );
 }

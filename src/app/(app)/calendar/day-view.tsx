@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown } from "@/components/dropdown";
 import { FlagDot } from "@/components/patient-bits";
@@ -12,18 +12,33 @@ import { calColor } from "@/lib/calendar/colors";
 import type { DayAppointment, DayData } from "@/lib/calendar/day";
 import { nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
 import { bookAction, historyAction, moveAction, statusAction, type BookingResult } from "./actions";
+import { ColumnBackground, Folds, GridLines, place, TimeAxis } from "./grid-bits";
+import { NowLine } from "./now-line";
 
-const PX = 96; // pixels per hour (DESIGN §6 day view: room for 15′ appointments)
 type Type = { id: string; label: string; minutes: number; color: string };
-type Panel = { kind: "default" } | { kind: "book"; resourceId?: string; start?: number; minutes?: number } | { kind: "appointment"; id: string };
+type Panel = { kind: "default" } | { kind: "book"; resourceId?: string; start?: number; minutes?: number; flex?: boolean } | { kind: "appointment"; id: string };
 
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 const dmy = (iso: string) => iso.split("-").reverse().join("/");
 const duration = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}ω${min % 60 ? ` ${min % 60}′` : ""}` : `${min}′`);
-const athensNow = () => {
-  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Athens", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date()).map((x) => [x.type, x.value]));
-  return { iso: `${p.year}-${p.month}-${p.day}`, minute: Number(p.hour) * 60 + Number(p.minute) };
-};
+
+// Booking anyway (SPEC §4c hours): a flex zone takes one more click; off-hours and
+// weekends need a written reason (kept in the log); a clash just a second click.
+function Anyway({ r, pending, go, label }: { r: BookingResult; pending: boolean; go: (o: { flex?: boolean; override?: boolean; overrideReason?: string }) => void; label: string }) {
+  const t = useTranslations("calendar");
+  const [why, setWhy] = useState("");
+  if (r.error === "clash" && r.flexOnly) return <button type="button" disabled={pending} onClick={() => go({ flex: true })} className={secondaryButton}>{t("bookFlex")}</button>;
+  if (r.needsReason && (r.error === "clash" || r.error === "reason_needed"))
+    return (
+      <span className="flex w-full flex-col gap-1.5 text-sm text-ink-3">
+        {t("overrideReason")}
+        <input value={why} onChange={(e) => setWhy(e.target.value)} placeholder={t("overrideHint")} aria-label={t("overrideReason")} className={`${inputClass} mt-0`} />
+        <button type="button" disabled={pending || !why.trim()} onClick={() => go({ override: true, overrideReason: why })} className={`${secondaryButton} self-start`}>{label}</button>
+      </span>
+    );
+  if (r.error === "clash") return <button type="button" disabled={pending} onClick={() => go({ override: true })} className={secondaryButton}>{label}</button>;
+  return null;
+}
 
 // Clash warnings and suggested free times, shared by booking and moving.
 function Outcome({ r, pick }: { r: BookingResult; pick: (date: string, time: string) => void }) {
@@ -32,7 +47,7 @@ function Outcome({ r, pick }: { r: BookingResult; pick: (date: string, time: str
   if (!r.error) return null;
   return (
     <div className="flex flex-col gap-2 rounded-[10px] border border-warn-line bg-warn-bg/60 px-3 py-2.5 text-sm text-warn-ink">
-      <span className="font-semibold">{r.error === "clash" ? t("clash") : t(`errors.${r.error}`)}</span>
+      <span className="font-semibold">{r.error === "clash" ? (r.flexOnly ? t("flexZone") : t("clash")) : t(`errors.${r.error}`)}</span>
       {r.problems?.map((p) => <span key={p}>• {p}</span>)}
       {!!r.suggestions?.length && (
         <div className="flex flex-col gap-1.5">
@@ -111,9 +126,9 @@ function BookingPanel({ data, types, initial, close }: { data: DayData; types: T
   });
   const [r, setR] = useState<BookingResult>({});
   const set = (p: Partial<typeof v>) => setV((x) => ({ ...x, ...p }));
-  const submit = (override = false) =>
+  const submit = (o: { flex?: boolean; override?: boolean; overrideReason?: string } = {}) =>
     start(async () => {
-      const res = await bookAction({ patientId: v.patient?.id ?? null, typeId: v.typeId, resourceId: v.resourceId, date: v.date, time: v.time, minutes: v.minutes, reason: v.reason, override });
+      const res = await bookAction({ patientId: v.patient?.id ?? null, typeId: v.typeId, resourceId: v.resourceId, date: v.date, time: v.time, minutes: v.minutes, reason: v.reason, flex: initial.flex, ...o });
       setR(res);
       if (res.ok) {
         router.refresh();
@@ -147,9 +162,10 @@ function BookingPanel({ data, types, initial, close }: { data: DayData; types: T
         {["whatsapp", "reminder", "intake", "deposit"].map((k) => <span key={k}>☐ {t(`switches.${k}`)} · {t("soonGhl")}</span>)}
       </div>
       <Outcome r={r} pick={(date, time) => { set({ date: dmy(date), time }); setR({}); }} />
+      {initial.flex && <p className="rounded-[10px] bg-surface-2 px-3 py-2 text-[13px] text-ink-3">{t("flexNote")}</p>}
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={pending || !v.time} className={primaryButton}>{t("book")}</button>
-        {r.error === "clash" && <button type="button" disabled={pending} onClick={() => submit(true)} className={secondaryButton}>{t("bookAnyway")}</button>}
+        <Anyway r={r} pending={pending} go={submit} label={t("bookAnyway")} />
       </div>
     </form>
   );
@@ -177,9 +193,9 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
       setR(res);
       if (res.ok) router.refresh();
     });
-  const move = (override = false) =>
+  const move = (o: { flex?: boolean; override?: boolean; overrideReason?: string } = {}) =>
     start(async () => {
-      const res = await moveAction(a.id, { ...mv, override });
+      const res = await moveAction(a.id, { ...mv, ...o });
       setR(res);
       if (res.ok) {
         router.refresh();
@@ -231,14 +247,14 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
             <label>{t("minutes")}<input value={mv.minutes} onChange={(e) => setMv({ ...mv, minutes: e.target.value.replace(/\D/g, "") })} className={inputClass} /></label>
           </div>
           <Dropdown value={mv.resourceId} onChange={(x) => x && setMv({ ...mv, resourceId: x })} label={t("with")} placeholder={null} options={data.columns.map((c) => ({ value: c.id, label: c.label }))} />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button type="submit" disabled={pending} className={primaryButton}>{t("saveMove")}</button>
-            {r.error === "clash" && <button type="button" disabled={pending} onClick={() => move(true)} className={secondaryButton}>{t("moveAnyway")}</button>}
+            <Anyway r={r} pending={pending} go={move} label={t("moveAnyway")} />
           </div>
         </form>
       )}
       <Outcome r={r} pick={(date, time) => { setMv({ ...mv, date: dmy(date), time }); setR({}); }} />
-      {r.error && r.error !== "clash" && <ErrorBox>{t(`errors.${r.error}`)}</ErrorBox>}
+      {r.error && r.error !== "clash" && r.error !== "reason_needed" && <ErrorBox>{t(`errors.${r.error}`)}</ErrorBox>}
       {history.length > 0 && (
         <div className="flex flex-col gap-1 border-t border-line-softer pt-2 text-[12.5px] text-muted">
           <span className="font-semibold text-ink-3">{t("history")}</span>
@@ -249,109 +265,97 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
   );
 }
 
-// Secretary day (DESIGN 6a–6f): resource columns, free gaps to click, status chips; side
-// panel for booking, an appointment, or (default) booking requests + tomorrow.
-export function DayView({ data, types, todayIso, startBooking = false }: { data: DayData; types: Type[]; todayIso: string; startBooking?: boolean }) {
+// Secretary day (DESIGN 6a–6g): resource columns on the two-band grid, free gaps to click
+// (white = normal hours, hatched = «εκτός ωραρίου +30′»), status chips. The calendar uses
+// the full width; booking / an appointment open in a panel beside it.
+export function DayView({ data, types, startBooking = false }: { data: DayData; types: Type[]; startBooking?: boolean }) {
   const t = useTranslations("calendar");
   const [panel, setPanel] = useState<Panel>(startBooking ? { kind: "book" } : { kind: "default" });
-  const [now, setNow] = useState<{ iso: string; minute: number } | null>(null);
-  const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const tick = () => setNow(athensNow());
-    tick();
-    const id = setInterval(tick, 30_000);
-    return () => clearInterval(id);
-  }, []);
-  const top = (min: number) => ((min - data.startHour * 60) / 60) * PX;
-  const height = (data.endHour - data.startHour) * PX;
+  const scale = data.scale;
   const selected = panel.kind === "appointment" ? data.appointments.find((a) => a.id === panel.id) : undefined;
+  const office = scale.bands.find((b) => b.kind === "office");
   const statusChip = (a: DayAppointment) => {
     if (a.status === "READY") return <span className="rounded-full bg-primary px-2 py-0.5 text-[11.5px] font-semibold text-white">{a.room ?? t("ready")}</span>;
     if (a.status === "ARRIVED") return <span className="text-[11.5px] font-semibold">{t("arrivedAt", { time: a.arrivedAt ?? "" })}</span>;
     if (a.status === "TO_PAY") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">{t("toPay")}</span>;
     if (a.status === "WITH_DOCTOR") return <span className="text-[11.5px] font-semibold">{t("withDoctor")}</span>;
     if (a.status === "DONE") return <span className="text-[11.5px]">{t("done")}</span>;
-    if (a.status === "BOOKED") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">? {t("unconfirmed")}</span>;
+    if (a.status === "BOOKED") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">?</span>;
     if (a.status === "CONFIRMED") return <span className="text-[12px] text-ok-ink">✓</span>;
     return <span className="text-[11.5px]">{STATUS_LABEL[a.status as AppointmentStatus]}</span>;
   };
+  const cols = `56px repeat(${data.columns.length}, minmax(0, 1fr))`;
+  const open = panel.kind === "book" || (panel.kind === "appointment" && !!selected);
 
   return (
-    <div className="flex flex-wrap items-start gap-5">
-      <section className={`${card} min-w-0 flex-[999_1_620px] overflow-hidden`}>
+    <div className="flex items-start gap-4">
+      <section className={`${card} min-w-0 flex-1 overflow-hidden`}>
         {data.holiday && <div className="bg-warn-bg px-4 py-2 text-sm font-semibold text-warn-ink">{t("holiday", { name: data.holiday })}</div>}
-        <div className="grid border-b border-line-soft" style={{ gridTemplateColumns: `56px repeat(${data.columns.length}, minmax(0, 1fr))` }}>
+        <div className="grid border-b border-line-soft" style={{ gridTemplateColumns: cols }}>
           <span />
           {data.columns.map((c) => (
-            <div key={c.id} className="border-l border-line-soft px-3 py-2">
-              <div className="text-[15px] font-semibold">{c.label}</div>
-              <div className="text-[12.5px] text-muted">{t("columnSummary", { count: c.count, free: duration(c.freeMinutes) })}</div>
+            <div key={c.id} className="flex items-baseline justify-between gap-2 border-l border-line-soft px-3 py-2">
+              <span className="truncate text-[15px] font-semibold">{c.label}</span>
+              <span className="shrink-0 text-[12.5px] text-muted">{c.hours.length ? t("columnSummary", { count: c.count, free: duration(c.freeMinutes) }) : t("closed")}</span>
             </div>
           ))}
         </div>
-        <div ref={scroller} className="max-h-[calc(100vh-230px)] overflow-y-auto">
-          <div className="relative grid" style={{ gridTemplateColumns: `56px repeat(${data.columns.length}, minmax(0, 1fr))`, height }}>
-            <div className="relative">
-              {Array.from({ length: data.endHour - data.startHour }, (_, i) => (
-                <span key={i} className="absolute right-2 text-[12px] text-muted" style={{ top: i * PX - 7 }}>{hhmm((data.startHour + i) * 60)}</span>
-              ))}
-            </div>
+        <div className="max-h-[calc(100vh-250px)] min-h-[420px] overflow-y-auto">
+          <div className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
+            <TimeAxis scale={scale} />
             {data.columns.map((c) => (
-              <div key={c.id} className="relative border-l border-line-soft bg-[repeating-linear-gradient(0deg,transparent_0_95px,var(--color-line-softer)_95px_96px)]">
-                {/* Out of hours: grey; working hours: white. */}
-                <div className="absolute inset-0 bg-line-softer/60" />
-                {c.hours.map((h) => <div key={h.from} className="absolute left-0 right-0 bg-surface" style={{ top: top(h.from), height: top(h.to) - top(h.from) }} />)}
+              <div key={c.id} className="relative border-l border-line-soft">
+                <ColumnBackground scale={scale} surgery={c.surgery} hours={c.hours} flex={c.flex} surgeryLabel={t("bands.surgery")} />
+                <GridLines scale={scale} />
                 {c.blocks.map((b) => (
-                  <div key={b.id} className="absolute left-1 right-1 overflow-hidden rounded-[8px] bg-[repeating-linear-gradient(45deg,var(--color-line-softer)_0_6px,var(--color-line)_6px_8px)] px-2 py-1 text-[12px] text-ink-3" style={{ top: top(b.start), height: top(b.end) - top(b.start) }}>
+                  <div key={b.id} className="absolute left-1 right-1 overflow-hidden rounded-[8px] bg-[repeating-linear-gradient(45deg,var(--color-line-softer)_0_6px,var(--color-line)_6px_8px)] px-2 py-1 text-[12px] text-ink-3" style={place(scale, b.start, b.end)}>
                     {b.label ?? t(`blockKinds.${b.kind}`)} · {hhmm(b.start)}–{hhmm(b.end)}
                   </div>
                 ))}
                 {c.gaps.map((g) => (
                   <button key={g.start} type="button" onClick={() => setPanel({ kind: "book", resourceId: c.id, start: g.start })}
-                    className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-ok/60 bg-ok-bg/40 px-2 py-1 text-left text-[12.5px] font-semibold text-ok-ink hover:bg-ok-bg"
-                    style={{ top: top(g.start) + 1, height: top(g.end) - top(g.start) - 2 }}>
+                    className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-ok/60 bg-ok-bg/40 px-2 py-0.5 text-left text-[12.5px] font-semibold text-ok-ink hover:bg-ok-bg"
+                    style={place(scale, g.start, g.end)}>
                     + {t("free", { minutes: duration(g.end - g.start) })}
                   </button>
                 ))}
-                {data.appointments.filter((a) => a.resourceId === c.id).map((a) => (
-                  <button key={a.id} type="button" onClick={() => setPanel({ kind: "appointment", id: a.id })}
-                    className={`absolute left-1 right-1 flex items-start justify-between gap-2 overflow-hidden rounded-[8px] px-2 py-1 text-left text-[13px] shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""}`}
-                    style={{ top: top(a.start) + 1, height: Math.max(24, top(a.end) - top(a.start) - 2), zIndex: 2 }}>
-                    <span className="min-w-0 truncate">
-                      <b>{a.time}</b> <b>{a.patient?.short ?? t("noPatient")}</b>{a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>} <span className="opacity-80">· {a.type.label}{a.reason && ` · ${a.reason}`}</span>
-                    </span>
-                    <span className="shrink-0">{statusChip(a)}</span>
+                {c.flexGaps.map((g) => (
+                  <button key={`f${g.start}`} type="button" onClick={() => setPanel({ kind: "book", resourceId: c.id, start: g.start, flex: true })}
+                    title={t("flexNote")}
+                    className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-line-strong px-2 py-0.5 text-left text-[11.5px] font-semibold text-muted opacity-70 hover:bg-surface/80 hover:opacity-100"
+                    style={place(scale, g.start, g.end)}>
+                    + {t("flexSlot")}
                   </button>
                 ))}
+                {data.appointments.filter((a) => a.resourceId === c.id).map((a) => {
+                  const box = place(scale, a.start, a.end);
+                  const tight = box.height < 30;
+                  return (
+                    <button key={a.id} type="button" onClick={() => setPanel({ kind: "appointment", id: a.id })}
+                      // Cancelled / no-show: a small chip on the right, so the freed time stays clickable.
+                      className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""}`}
+                      style={{ ...box, zIndex: a.active ? 2 : 3 }}>
+                      <span className="min-w-0 truncate">
+                        <b>{a.time}</b> <b>{a.patient?.short ?? t("noPatient")}</b>{a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>} <span className="opacity-80">· {a.type.label}{a.reason && ` · ${a.reason}`}</span>
+                      </span>
+                      <span className="shrink-0">{statusChip(a)}</span>
+                    </button>
+                  );
+                })}
               </div>
             ))}
-            {now && now.iso === data.date && now.minute >= data.startHour * 60 && now.minute <= data.endHour * 60 && (
-              <div aria-hidden="true" className="pointer-events-none absolute left-[56px] right-0 z-10 border-t-2 border-danger" style={{ top: top(now.minute) }} />
-            )}
+            <Folds scale={scale} left={56} label={t("folded")} />
+            <NowLine dates={[data.date]} scale={scale} left={56} focus={office?.from} />
           </div>
         </div>
       </section>
 
-      <aside className={`${card} flex min-w-0 flex-[1_1_340px] flex-col gap-4 p-5`}>
-        {panel.kind === "book" && <BookingPanel key={`${panel.resourceId}${panel.start}`} data={data} types={types} initial={panel} close={() => setPanel({ kind: "default" })} />}
-        {panel.kind === "appointment" && selected && <AppointmentPanel key={selected.id} a={selected} data={data} close={() => setPanel({ kind: "default" })} />}
-        {(panel.kind === "default" || (panel.kind === "appointment" && !selected)) && (
-          <>
-            <div className="flex flex-col gap-1.5">
-              <h2 className="text-[17px] font-semibold">{t("requests")}</h2>
-              <p className="text-sm text-muted">{t("requestsSoon")}</p>
-            </div>
-            <div className="flex flex-col gap-1.5 border-t border-line-softer pt-4">
-              <h2 className="text-[17px] font-semibold">{t("tomorrow")}</h2>
-              <p className="text-sm">{t("tomorrowConfirmed", { confirmed: data.tomorrow.confirmed, total: data.tomorrow.total })}</p>
-              {data.tomorrow.total > 0 && (
-                <div className="h-2 overflow-hidden rounded-full bg-line-softer"><div className="h-full bg-ok" style={{ width: `${(100 * data.tomorrow.confirmed) / data.tomorrow.total}%` }} /></div>
-              )}
-            </div>
-            {data.date !== todayIso && <p className="text-[13px] text-muted">{t("otherDay")}</p>}
-          </>
-        )}
-      </aside>
+      {open && (
+        <aside className={`${card} sticky top-[88px] flex max-h-[calc(100vh-110px)] w-[380px] shrink-0 flex-col gap-4 overflow-y-auto p-5 max-lg:fixed max-lg:inset-x-3 max-lg:bottom-3 max-lg:top-auto max-lg:z-40 max-lg:w-auto max-lg:shadow-[0_12px_40px_rgba(28,32,36,0.25)]`}>
+          {panel.kind === "book" && <BookingPanel key={`${panel.resourceId}${panel.start}`} data={data} types={types} initial={panel} close={() => setPanel({ kind: "default" })} />}
+          {panel.kind === "appointment" && selected && <AppointmentPanel key={selected.id} a={selected} data={data} close={() => setPanel({ kind: "default" })} />}
+        </aside>
+      )}
     </div>
   );
 }

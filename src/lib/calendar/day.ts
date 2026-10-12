@@ -6,7 +6,9 @@ import type { Actor } from "@/lib/users/manage";
 import { listAppointments } from "./appointments";
 import { holidayOn } from "./holidays";
 import { roomsOf } from "./rooms";
-import { hoursOf, minutesOf } from "./hours";
+import { buildScale } from "./bands";
+import { calendarConfigOf } from "./config";
+import { dayRules, hoursOf, type Span } from "./hours";
 import { ACTIVE_STATUSES } from "./status";
 
 // One calendar day, ready to draw (DESIGN 6a–6f, secretary day). Times are minutes from
@@ -42,12 +44,13 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   const to = athensToUtc(y, m, d + 1);
   const weekday = athensParts(from).weekday || 7;
   const contacts = canSeeContactDetails(actor.level);
-  const [resources, appts, blocks, rooms] = await Promise.all([
+  const [resources, appts, blocks, rooms, cfg] = await Promise.all([
     // Rooms (treatment/conference) are where patients wait for the doctor, not columns.
     db.resource.findMany({ where: { companyId, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     listAppointments(actor, companyId, from, to),
     db.calendarBlock.findMany({ where: { companyId, startsAt: { lt: to }, endsAt: { gt: from } } }),
     roomsOf(companyId),
+    calendarConfigOf(companyId),
   ]);
   if (!appts) return null;
   const minuteIn = (t: Date) => (t <= from ? 0 : t >= to ? 24 * 60 : clockOf(t));
@@ -94,7 +97,11 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
 
   const holiday = holidayOn(isoDate) ?? null;
   const columns = resources.map((r) => {
-    const hours = holiday ? [] : hoursOf(r.hours).filter((h) => h.day === weekday).map((h) => ({ from: minutesOf(h.from), to: minutesOf(h.to) }));
+    // Normal hours, the flex zones around them («εκτός ωραρίου +30′») and, for doctors, the
+    // surgery window. A holiday closes everything.
+    const rules = dayRules(hoursOf(r.hours), cfg, weekday, { surgeryWindow: r.kind === "DOCTOR" });
+    const hours = holiday ? [] : rules.normal;
+    const flex = holiday ? [] : rules.flex;
     const mine = appointments.filter((a) => a.resourceId === r.id);
     const myBlocks = blocks
       .filter((b) => !b.resourceId || b.resourceId === r.id)
@@ -112,22 +119,35 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
       if (cur < h.to) gaps.push({ start: cur, end: h.to });
     }
     const free = gaps.filter((g) => g.end - g.start >= 15);
+    // Free parts of the flex zones (booked with one extra click).
+    const flexGaps: { start: number; end: number }[] = [];
+    for (const f of flex) {
+      let cur = f.from;
+      for (const [s, e] of busy) {
+        if (e <= cur || s >= f.to) continue;
+        if (s > cur) flexGaps.push({ start: cur, end: Math.min(s, f.to) });
+        cur = Math.max(cur, e);
+      }
+      if (cur < f.to) flexGaps.push({ start: cur, end: f.to });
+    }
     return {
       id: r.id,
       label: r.label,
       kind: r.kind,
       hours,
+      flex,
+      surgery: rules.surgery,
       blocks: myBlocks,
       gaps: free,
+      flexGaps: flexGaps.filter((g) => g.end - g.start >= 10),
       count: mine.filter((a) => a.active).length,
       freeMinutes: free.reduce((n, g) => n + g.end - g.start, 0),
     };
   });
 
-  // Visible range: working hours of the day, widened to anything booked outside them.
-  const edges = [...columns.flatMap((c) => c.hours.flatMap((h) => [h.from, h.to])), ...appointments.flatMap((a) => [a.start, a.end])];
-  const startHour = edges.length ? Math.floor(Math.min(...edges) / 60) : 9;
-  const endHour = edges.length ? Math.ceil(Math.max(...edges) / 60) : 21;
+  // Two bands (DESIGN 6a–6g): the same on every day of the practice, so the layout does
+  // not jump between days; widened to anything booked outside them.
+  const scale = buildScale(scaleInput(resources.map((r) => r.hours), resources.map((r) => r.kind), cfg, appointments.filter((a) => a.active)), "day");
 
   // Tomorrow's confirmations (secretary side panel).
   const tFrom = to;
@@ -143,12 +163,26 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   return {
     date: isoDate,
     holiday,
-    startHour: Math.min(startHour, 9),
-    endHour: Math.max(endHour, Math.min(startHour, 9) + 8),
+    scale,
     columns,
     rooms,
     appointments,
     tomorrow: { total: tomorrowTotal, confirmed: tomorrowConfirmed },
     tomorrowDate: new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10),
   };
+}
+
+// What the two bands are built from: the surgery window and office hours (+ flex) of the
+// whole week, so every day of the practice has the same layout.
+export function scaleInput(hoursRaw: unknown[], kinds: string[], cfg: Parameters<typeof dayRules>[1], items: { start: number; end: number }[]) {
+  const surgery: Span[] = [];
+  const office: Span[] = [];
+  hoursRaw.forEach((raw, i) => {
+    for (let wd = 1; wd <= 7; wd++) {
+      const r = dayRules(hoursOf(raw), cfg, wd, { surgeryWindow: kinds[i] === "DOCTOR" });
+      surgery.push(...r.surgery);
+      office.push(...r.normal, ...r.flex);
+    }
+  });
+  return { surgery, office, items: items.map((a) => ({ from: a.start, to: a.end })) };
 }

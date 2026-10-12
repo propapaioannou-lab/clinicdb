@@ -8,6 +8,7 @@ import { calendarDay } from "./day";
 import { createAppointment, freeSlots, linkVisit, moveAppointment, setAppointmentStatus, startVisit } from "./appointments";
 import { greekHolidays, holidayOn, orthodoxEaster } from "./holidays";
 import { checkTransition } from "./status";
+import { SPA_HOURS } from "./hours";
 
 let c: { surgery: string; spa: string };
 let doctor: string;
@@ -19,8 +20,9 @@ const MON = "2030-03-04";
 
 beforeAll(async () => {
   c = await companies();
-  doctor = (await db.resource.create({ data: { companyId: c.surgery, kind: "DOCTOR", label: `Δρ ${tag()}` } })).id;
-  nurse = (await db.resource.create({ data: { companyId: c.surgery, kind: "NURSE", label: `Νοσηλεύτρια ${tag()}` } })).id;
+  // Fixed hours for these tests (Mon–Fri 09–14, 17–21), whatever the defaults become.
+  doctor = (await db.resource.create({ data: { companyId: c.surgery, kind: "DOCTOR", label: `Δρ ${tag()}`, hours: SPA_HOURS } })).id;
+  nurse = (await db.resource.create({ data: { companyId: c.surgery, kind: "NURSE", label: `Νοσηλεύτρια ${tag()}`, hours: SPA_HOURS } })).id;
   first = (await db.appointmentType.create({ data: { companyId: c.surgery, labelEl: `Πρώτη ${tag()}`, labelEn: "First", defaultMinutes: 30 } })).id;
 });
 
@@ -71,8 +73,9 @@ describe("booking", () => {
       return r.ok ? [] : (r.problems ?? []).map((x) => x.kind);
     };
     expect(await at(MON, "15:00")).toEqual(["outside_hours"]); // lunch gap 14:00–17:00
-    expect(await at(MON, "13:45")).toEqual(["outside_hours"]); // runs past 14:00
-    expect(await at("2030-03-09", "10:00")).toEqual(["outside_hours"]); // Saturday
+    expect(await at(MON, "13:45")).toEqual(["flex"]); // runs past 14:00, into the +30′ zone
+    expect(await at(MON, "14:20")).toEqual(["outside_hours"]); // past the +30′ zone
+    expect(await at("2030-03-09", "10:00")).toEqual(["weekend"]); // Saturday
     expect(await at("2030-03-11", "10:00")).toEqual(["holiday"]); // Clean Monday 2030
     await db.calendarBlock.create({ data: { companyId: c.surgery, resourceId: doctor, kind: "CONGRESS", label: "Συνέδριο", startsAt: athensToUtc(2030, 3, 5, 9, 0), endsAt: athensToUtc(2030, 3, 5, 14, 0) } });
     expect(await at("2030-03-05", "11:00")).toEqual(["block"]);

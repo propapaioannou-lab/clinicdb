@@ -6,7 +6,8 @@ import { primaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { freeSlots } from "@/lib/calendar/appointments";
 import { calendarDay } from "@/lib/calendar/day";
-import { addDays, calendarRange, mondayOf, ownResource, patientCard } from "@/lib/calendar/views";
+import { confirmations } from "@/lib/calendar/strip";
+import { addDays, calendarRange, mondayOf, ownResource, patientCard, rangeScale } from "@/lib/calendar/views";
 import { activeCompany } from "@/lib/company";
 import { db } from "@/lib/db";
 import { canEditPatients } from "@/lib/permissions";
@@ -14,7 +15,8 @@ import { athensIsoDate, athensParts } from "@/lib/time";
 import { loadActor } from "@/lib/users/manage";
 import { DayView } from "./day-view";
 import { DeskMonth, DeskWeek } from "./desk-views";
-import { DoctorDay, DoctorMonth, DoctorWeek } from "./doctor-views";
+import { DoctorDay, DoctorMonth, DoctorWeek, doctorTiles } from "./doctor-views";
+import { TopStrip, type Tile } from "./top-strip";
 
 type View = "day" | "week" | "month";
 const VIEWS: View[] = ["day", "week", "month"];
@@ -22,10 +24,19 @@ const fmt = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("el-GR", 
 const at = (iso: string) => new Date(`${iso}T12:00:00Z`);
 const minutesSince = (d: Date) => Math.max(0, Math.round((Date.now() - d.getTime()) / 60e3));
 const daysUntil = (d: Date) => Math.floor((d.getTime() - Date.now()) / 864e5);
+const isWeekend = (iso: string) => [0, 6].includes(at(iso).getUTCDay());
+// Day by day, skipping Sat/Sun unless they are shown.
+const stepDay = (iso: string, dir: 1 | -1, weekend: boolean) => {
+  let d = addDays(iso, dir);
+  while (!weekend && isWeekend(d)) d = addDays(d, dir);
+  return d;
+};
 
-// Ημερολόγιο (Phase 6a): each person sees what they act on (DESIGN 6a–6f). A surgeon gets
-// their own day / week / month (no money, no booking buttons); everyone else the front
-// desk's. The Owner-surgeon can open the front-desk view with ?as=desk.
+// Ημερολόγιο (Phase 6a, calendar v2 — DESIGN 6a–6g): each person sees what they act on.
+// A surgeon gets their own day / week / month (no money, no booking buttons); everyone
+// else the front desk's. The Owner-surgeon can open the front-desk view with ?as=desk.
+// One-line header, a top strip of tiles, then the calendar at full width; Mon–Fri with
+// «+ Σαβ/Κυρ» (?we=1).
 export default async function CalendarPage({ searchParams }: PageProps<"/calendar">) {
   const session = await requireSession();
   const actor = await loadActor(session.user.id);
@@ -37,42 +48,45 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const today = athensIsoDate(new Date());
   const date = typeof sp.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
   const view: View = VIEWS.includes(sp.view as View) ? (sp.view as View) : "day";
+  const weekend = sp.we === "1";
   const doctor = actor.role === "SURGEON" && sp.as !== "desk";
   const own = doctor ? await ownResource(actor, company.id) : null;
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", nurse: sp.nurse as string | undefined, ...over };
+    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", nurse: sp.nurse as string | undefined, we: weekend ? "1" : undefined, ...over };
     for (const [k, v] of Object.entries(all)) if (v && !(k === "view" && v === "day")) p.set(k, v);
     return `/calendar${p.size ? `?${p}` : ""}`;
   };
-  const step = view === "day" ? 1 : view === "week" ? 7 : 0;
   const shiftMonth = (n: number) => {
     const d = at(date);
     d.setUTCDate(1);
     d.setUTCMonth(d.getUTCMonth() + n);
     return d.toISOString().slice(0, 10);
   };
-  const prev = step ? addDays(date, -step) : shiftMonth(-1);
-  const next = step ? addDays(date, step) : shiftMonth(1);
+  const prev = view === "day" ? stepDay(date, -1, weekend) : view === "week" ? addDays(date, -7) : shiftMonth(-1);
+  const next = view === "day" ? stepDay(date, 1, weekend) : view === "week" ? addDays(date, 7) : shiftMonth(1);
   const monday = mondayOf(date);
+  const weekDays = weekend ? 7 : 5;
   const title =
     view === "day" ? fmt({ weekday: "long", day: "numeric", month: "long" }).format(at(date))
-    : view === "week" ? `${Number(monday.slice(8))} – ${fmt({ day: "numeric", month: "long" }).format(at(addDays(monday, 5)))}`
+    : view === "week" ? `${Number(monday.slice(8))} – ${fmt({ day: "numeric", month: "long" }).format(at(addDays(monday, weekDays - 1)))}`
     : fmt({ month: "long", year: "numeric" }).format(at(date));
 
   // Columns: the surgeon's own; the front desk's doctor (+ nurse on demand in week).
-  const resources = await db.resource.findMany({ where: { companyId: company.id, isActive: true, NOT: { kind: "OPERATING_ROOM" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+  // Treatment rooms are where patients wait, not columns.
+  const resources = await db.resource.findMany({ where: { companyId: company.id, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
   const doctorCol = resources.find((r) => r.kind === "DOCTOR" || r.kind === "CABIN") ?? resources[0];
   let body: React.ReactNode = null;
+  let tiles: Tile[] = [];
   if (view === "day" && !doctor) {
     const [data, types] = await Promise.all([
       calendarDay(actor, company.id, date),
       db.appointmentType.findMany({ where: { companyId: company.id, isActive: true, NOT: { layer: "SURGERY" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
     ]);
     if (!data) notFound();
-    body = <DayView key={`${date}${sp.book ?? ""}`} startBooking={sp.book === "1"} data={data} types={types.map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color }))} todayIso={today} />;
+    body = <DayView key={`${date}${sp.book ?? ""}`} startBooking={sp.book === "1"} data={data} types={types.map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color }))} />;
   } else if (view === "day" && own) {
-    const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, addDays(date, 1), 1, [own.id])]);
+    const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, stepDay(date, 1, false), 1, [own.id])]);
     const day = days![0];
     const nowMin = date === today ? (() => { const p = athensParts(new Date()); return p.hour * 60 + p.minute; })() : null;
     const mine = day.appointments.filter((a) => a.resourceId === own.id && a.active);
@@ -89,11 +103,15 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         waiting: arrival ? minutesSince(arrival.at) : null,
       };
     }
-    body = <DoctorDay day={day} resourceId={own.id} now={nowMin} next={nextCard} current={current} tomorrowCount={tomorrow![0].appointments.filter((a) => a.active).length} />;
+    // Same layout every day: the scale comes from the whole week of this column.
+    const week = (await calendarRange(actor, company.id, monday, 7, [own.id]))!;
+    tiles = await doctorTiles({ day, resourceId: own.id, next: nextCard, current, tomorrowCount: tomorrow![0].appointments.filter((a) => a.active).length });
+    body = <DoctorDay day={day} resourceId={own.id} current={current} scale={rangeScale([...week, day], [own.id])} />;
   } else if (view === "week") {
     const cols = doctor ? (own ? [own] : []) : [doctorCol, ...(sp.nurse === "1" ? resources.filter((r) => r.kind === "NURSE") : [])].filter(Boolean);
-    const days = (await calendarRange(actor, company.id, monday, 6, cols.map((c) => c!.id)))!;
-    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} />;
+    const ids = cols.map((c) => c!.id);
+    const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
+    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} />;
   } else if (view === "month") {
     const first = `${date.slice(0, 7)}-01`;
     const gridStart = mondayOf(first);
@@ -101,7 +119,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     const gridDays = Math.ceil((Number(new Date(`${last}T12:00:00Z`)) - Number(new Date(`${gridStart}T12:00:00Z`))) / 864e5 / 7 + 1 / 7) * 7;
     const col = doctor ? own : doctorCol;
     const days = col ? (await calendarRange(actor, company.id, gridStart, gridDays, [col.id]))! : [];
-    if (doctor && own) body = <DoctorMonth days={days} resourceId={own.id} monthIso={first} todayIso={today} />;
+    if (doctor && own) body = <DoctorMonth days={days} resourceId={own.id} monthIso={first} todayIso={today} weekend={weekend} />;
     else {
       // New-patient slots: the first free 30′ for the doctor; banner if more than 10 days away.
       const firstType = await db.appointmentType.findFirst({ where: { companyId: company.id, isActive: true, layer: "OFFICE" }, orderBy: { sortOrder: "asc" } });
@@ -109,67 +127,89 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       const firstFree = slot
         ? { days: daysUntil(slot), label: new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(slot) }
         : null;
-      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} />;
+      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} />;
     }
   }
+  if (!doctor) tiles = await deskTiles(actor, company.id, today);
 
-  const nav = "flex h-11 min-w-11 items-center justify-center rounded-control border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-primary";
+  const nav = "flex h-10 min-w-10 items-center justify-center rounded-control border border-line-strong bg-surface px-2.5 text-sm font-semibold hover:border-primary";
+  const seg = (on: boolean) => `whitespace-nowrap rounded-[9px] px-2.5 py-1.5 text-[13px] ${on ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-3 hover:text-ink"}`;
   return (
-    <main className="mx-auto flex w-full max-w-[1500px] flex-col gap-4 px-4 py-5 md:px-6">
+    <main className="flex w-full flex-col gap-3 px-4 py-4 md:px-6">
       <LiveRefresh companyId={company.id} />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={q({ date: prev })} aria-label={t("prev")} className={nav}>‹</Link>
-          <Link href={q({ date: undefined })} className={nav}>{t("today")}</Link>
-          <Link href={q({ date: next })} aria-label={t("next")} className={nav}>›</Link>
-          <div className="ml-2 flex flex-col">
-            <h1 className="text-[24px] font-semibold first-letter:uppercase">{title}</h1>
-            <span className="text-[13px] text-muted">{doctor ? t(`subtitleDoctor.${view}`) : t(`subtitleDesk.${view}`)}</span>
-          </div>
-          {/* Surgeons switch between their own schedule and the front desk's (same style as Ιατρείο | Spa). */}
-          {actor.role === "SURGEON" && (
-            <nav aria-label={t("whoseView")} className="ml-2 flex gap-[3px] rounded-[10px] bg-line-softer p-[3px]">
-              {([["doctor", false], ["desk", true]] as const).map(([k, desk]) => {
-                const on = desk !== doctor;
-                const href = `/calendar?${new URLSearchParams({ ...(view !== "day" && { view }), date, ...(desk && { as: "desk" }) })}`;
-                return (
-                  <Link key={k} href={href} aria-current={on ? "page" : undefined}
-                    className={`rounded-lg px-3.5 py-2 text-[13px] ${on ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "font-medium text-muted hover:text-ink"}`}>
-                    {t(`whose.${k}`)}
-                  </Link>
-                );
-              })}
-            </nav>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <nav aria-label={t("viewLabel")} className="flex rounded-[12px] bg-line-softer p-1 text-sm">
-            {VIEWS.map((v) => (
-              <Link key={v} href={q({ view: v })} aria-current={v === view ? "page" : undefined}
-                className={`rounded-[9px] px-4 py-2 ${v === view ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-3 hover:text-ink"}`}>
-                {t(`views.${v}`)}
-              </Link>
-            ))}
+      {/* One-line header (DESIGN 6a–6g): ‹ Σήμερα › · title · views · Δευ–Παρ · actions. */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Link href={q({ date: prev })} aria-label={t("prev")} className={nav}>‹</Link>
+        <Link href={q({ date: undefined })} className={nav}>{t("today")}</Link>
+        <Link href={q({ date: next })} aria-label={t("next")} className={nav}>›</Link>
+        <h1 className="mx-1 whitespace-nowrap text-[20px] font-semibold first-letter:uppercase" title={doctor ? t(`subtitleDoctor.${view}`) : t(`subtitleDesk.${view}`)}>{title}</h1>
+        {/* Surgeons switch between their own schedule and the front desk's. */}
+        {actor.role === "SURGEON" && (
+          <nav aria-label={t("whoseView")} className="flex gap-[3px] rounded-[12px] bg-line-softer p-1">
+            {([["doctor", false], ["desk", true]] as const).map(([k, desk]) => {
+              const on = desk !== doctor;
+              const href = `/calendar?${new URLSearchParams({ ...(view !== "day" && { view }), date, ...(desk && { as: "desk" }), ...(weekend && { we: "1" }) })}`;
+              return <Link key={k} href={href} aria-current={on ? "page" : undefined} className={seg(on)}>{t(`whose.${k}`)}</Link>;
+            })}
           </nav>
-          {!doctor && (
-            <>
-              <span title={t("surgerySoon")} className="flex h-11 items-center rounded-control bg-cal-blue/50 px-4 text-sm font-semibold text-white">+ {t("surgery")}</span>
-              <Link href={q({ view: undefined, book: "1" })} className={primaryButton}>+ {t("appointment")}</Link>
-            </>
-          )}
-        </div>
-      </div>
-      {!doctor && view === "week" && resources.some((r) => r.kind === "NURSE") && (
-        <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
-          {t("show")}:
-          <span className="rounded-full border border-primary bg-primary-tint px-3 py-1 font-semibold text-primary">{doctorCol?.label}</span>
-          <Link href={q({ nurse: sp.nurse === "1" ? undefined : "1" })} className={`rounded-full border px-3 py-1 ${sp.nurse === "1" ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong"}`}>
+        )}
+        <nav aria-label={t("viewLabel")} className="flex rounded-[12px] bg-line-softer p-1">
+          {VIEWS.map((v) => <Link key={v} href={q({ view: v })} aria-current={v === view ? "page" : undefined} className={seg(v === view)}>{t(`views.${v}`)}</Link>)}
+        </nav>
+        <nav aria-label={t("daysLabel")} className="flex rounded-[12px] bg-line-softer p-1">
+          <Link href={q({ we: undefined })} aria-current={!weekend ? "page" : undefined} className={seg(!weekend)}>{t("monFri")}</Link>
+          <Link href={q({ we: "1" })} aria-current={weekend ? "page" : undefined} className={seg(weekend)}>+ {t("satSun")}</Link>
+        </nav>
+        {!doctor && view === "week" && resources.some((r) => r.kind === "NURSE") && (
+          <Link href={q({ nurse: sp.nurse === "1" ? undefined : "1" })} className={`whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[13px] ${sp.nurse === "1" ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3"}`}>
             {sp.nurse === "1" ? "✓" : "+"} {resources.find((r) => r.kind === "NURSE")?.label}
           </Link>
-        </div>
-      )}
+        )}
+        {!doctor && (
+          <span className="ml-auto flex gap-2">
+            <span title={t("surgerySoon")} className="flex h-10 items-center whitespace-nowrap rounded-control bg-cal-blue/50 px-3 text-sm font-semibold text-white">+ {t("surgery")}</span>
+            <Link href={q({ view: undefined, book: "1" })} className={`${primaryButton} min-h-10 whitespace-nowrap px-3.5`}>+ {t("appointment")}</Link>
+          </span>
+        )}
+      </div>
+      {tiles.length > 0 && <TopStrip tiles={tiles} label={t("strip.label")} />}
       {doctor && !own && <p className="text-sm text-muted">{t("noOwnColumn")}</p>}
       {body}
     </main>
   );
+}
+
+// The front desk's top strip (DESIGN 6a–6g): Αιτήματα κράτησης · Επιβεβαιώσεις αύριο ·
+// Λίστα αναμονής · Νέες φόρμες · GHL. Those not built yet say when they come.
+async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId: string, today: string): Promise<Tile[]> {
+  const t = await getTranslations("calendar");
+  const conf = await confirmations(actor, companyId, today);
+  const dayLabel = conf ? fmt({ weekday: "long", day: "numeric", month: "numeric" }).format(at(conf.date)) : "";
+  return [
+    { key: "requests", label: t("strip.requests"), value: "—", sub: t("strip.requestsSoon"), tone: "muted" },
+    {
+      key: "confirm",
+      label: t("strip.confirm"),
+      value: conf ? `${conf.confirmed} / ${conf.total}` : "—",
+      sub: conf && <span className="first-letter:uppercase">{dayLabel}{conf.pending.length > 0 && ` · ${t("strip.toCall", { count: conf.pending.length })}`}</span>,
+      tone: conf && conf.total > 0 && conf.pending.length === 0 ? "ok" : conf?.pending.length ? "warn" : "neutral",
+      body: conf ? (
+        conf.pending.length ? (
+          <ul className="flex flex-col divide-y divide-line-softer">
+            {conf.pending.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 py-1.5">
+                <b className="w-12 tabular-nums">{p.time}</b>
+                {p.patientId ? <Link href={`/patients/${p.patientId}`} className="font-semibold hover:text-primary">{p.name}</Link> : <span>{p.name ?? "—"}</span>}
+                <span className="text-muted">{p.type}</span>
+                {p.phone && <a href={`tel:${p.phone.replace(/\s/g, "")}`} className="ml-auto font-semibold text-primary">{p.phone}</a>}
+              </li>
+            ))}
+          </ul>
+        ) : <span className="text-muted">{t("strip.allConfirmed")}</span>
+      ) : undefined,
+    },
+    { key: "waitlist", label: t("strip.waitlist"), value: "—", sub: t("strip.waitlistSoon"), tone: "muted" },
+    { key: "forms", label: t("strip.forms"), value: "—", sub: t("strip.formsSoon"), tone: "muted" },
+    { key: "ghl", label: "GHL", value: t("strip.ghlOff"), sub: t("strip.ghlSoon"), tone: "muted" },
+  ];
 }

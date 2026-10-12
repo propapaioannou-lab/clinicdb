@@ -55,11 +55,11 @@ export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds }: Co
           </div>
           <TodayList rows={mine.map((a) => ({
             id: a.id, start: a.start, end: a.end, time: a.time, name: a.patient?.short ?? null, patientId: a.patient?.id ?? null,
-            type: a.type.label, color: a.type.color, reason: a.reason, status: a.status, room: a.room, visitId: a.visitId, flagged: !!a.patient && a.patient.flag !== "NONE",
+            type: a.type.label, color: a.type.color, reason: a.reason, status: a.status, room: a.room, visitId: a.visitId, flagged: !!a.patient && a.patient.flag !== "NONE", surgery: a.type.layer === "SURGERY",
           }))} />
         </section>
         <div className="flex flex-col gap-4">
-          <Later title={t("chat")} phase="6a-5" />
+          <Later title={t("chat")} phase="6a-10" />
           <Later title={t("tasks")} phase="6f" />
           <Later title={t("toCheck")} phase="4" />
         </div>
@@ -67,6 +67,10 @@ export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds }: Co
     </main>
   );
 }
+
+// The office flow (arrivals, rooms, payments) leaves out surgeries: they happen at the
+// hospital, in the morning window (calendar v2).
+const inOffice = (a: DayData["appointments"][number]) => a.active && a.type.layer !== "SURGERY";
 
 async function Header({ title, sub, aside }: { title: string; sub: string; aside?: React.ReactNode }) {
   return (
@@ -124,7 +128,7 @@ function Name({ a }: { a: DayAppointment }) {
 // show their room) and ONE card for the doctor's office (decided 12 Oct 2026).
 export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) {
   const t = await getTranslations("home");
-  const appts = data.appointments.filter((a) => a.active);
+  const appts = data.appointments.filter(inOffice);
   const waiting = appts.filter((a) => a.status === "ARRIVED" || a.status === "READY");
   const withDoctor = appts.find((a) => a.status === "WITH_DOCTOR");
   const late = withDoctor ? (toMin(withDoctor.statusAt) ?? nowMin) - withDoctor.start : 0;
@@ -168,7 +172,7 @@ export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) 
         <div className="flex flex-col gap-4">
           <Later title={t("pending")} phase="3" />
           <Later title={t("surgeryChecks")} phase="4" />
-          <Later title={t("chatDoctor")} phase="6a-5" />
+          <Later title={t("chatDoctor")} phase="6a-10" />
         </div>
       </div>
     </main>
@@ -177,7 +181,7 @@ export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) 
 
 async function Schedule({ data }: { data: DayData }) {
   const t = await getTranslations("home");
-  const rows = data.appointments.filter((a) => a.active);
+  const rows = data.appointments.filter(inOffice);
   return (
     <section className={`${card} overflow-hidden`}>
       <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
@@ -209,7 +213,7 @@ async function Schedule({ data }: { data: DayData }) {
 // ── 1e · Front desk ─────────────────────────────────────────────────────────────
 export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
   const t = await getTranslations("home");
-  const appts = data.appointments.filter((a) => a.active);
+  const appts = data.appointments.filter(inOffice);
   const tiles = [
     { n: appts.length, label: t("tiles.appointments") },
     { n: appts.filter((a) => a.status === "ARRIVED" || a.status === "READY").length, label: t("tiles.waiting") },
@@ -244,7 +248,7 @@ export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
           </section>
           <Later title={t("waitingList")} phase="6e" />
           <Later title={t("surgeriesAdmin")} phase="4" />
-          <Later title={t("chat")} phase="6a-5" />
+          <Later title={t("chat")} phase="6a-10" />
         </div>
       </div>
     </main>

@@ -3,7 +3,9 @@ import type { Actor } from "@/lib/users/manage";
 import { athensIsoDate, athensParts, athensToUtc } from "@/lib/time";
 import { canEditPatients } from "@/lib/permissions";
 import { holidayOn } from "./holidays";
-import { hoursOf, minutesOf } from "./hours";
+import { buildScale, type Scale } from "./bands";
+import { calendarConfigOf } from "./config";
+import { dayRules, hoursOf } from "./hours";
 import { ACTIVE_STATUSES } from "./status";
 
 // Week and month views (Phase 6a-3, DESIGN 6a–6f): a range of days for some resources,
@@ -30,7 +32,7 @@ export type RangeDay = {
   date: string;
   weekday: number; // Mon=1 … Sun=7
   holiday: string | null;
-  resources: Record<string, { hours: { from: number; to: number }[]; blocks: { start: number; end: number; label: string | null; kind: string }[]; freeMinutes: number }>;
+  resources: Record<string, { hours: { from: number; to: number }[]; flex: { from: number; to: number }[]; surgery: { from: number; to: number }[]; blocks: { start: number; end: number; label: string | null; kind: string }[]; freeMinutes: number }>;
   appointments: RangeAppointment[];
 };
 
@@ -56,7 +58,7 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
   const [y, m, d] = fromIso.split("-").map(Number);
   const from = athensToUtc(y, m, d);
   const to = athensToUtc(y, m, d + days);
-  const [resources, appts, blocks] = await Promise.all([
+  const [resources, appts, blocks, cfg] = await Promise.all([
     db.resource.findMany({ where: { companyId, id: { in: resourceIds } } }),
     db.appointment.findMany({
       where: { companyId, resourceId: { in: resourceIds }, startsAt: { lt: to }, endsAt: { gt: from } },
@@ -64,6 +66,7 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
       include: { patient: { select: { id: true, surname: true, firstName: true } }, type: { select: { labelEl: true, color: true, layer: true } } },
     }),
     db.calendarBlock.findMany({ where: { companyId, startsAt: { lt: to }, endsAt: { gt: from }, OR: [{ resourceId: null }, { resourceId: { in: resourceIds } }] } }),
+    calendarConfigOf(companyId),
   ]);
   // "New patient": no visit and no earlier (kept) appointment before this one.
   const patientIds = [...new Set(appts.flatMap((a) => (a.patientId ? [a.patientId] : [])))];
@@ -85,7 +88,9 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
     const todays = appts.filter((a) => a.startsAt < dayEnd && a.endsAt > dayStart);
     const rs: RangeDay["resources"] = {};
     for (const r of resources) {
-      const hours = holiday ? [] : hoursOf(r.hours).filter((h) => h.day === weekday).map((h) => ({ from: minutesOf(h.from), to: minutesOf(h.to) }));
+      // Free time counts normal hours only (never the flex zones).
+      const rules = dayRules(hoursOf(r.hours), cfg, weekday, { surgeryWindow: r.kind === "DOCTOR" });
+      const hours = holiday ? [] : rules.normal;
       const myBlocks = blocks
         .filter((b) => (!b.resourceId || b.resourceId === r.id) && b.startsAt < dayEnd && b.endsAt > dayStart)
         .map((b) => ({ start: minuteIn(b.startsAt), end: minuteIn(b.endsAt), label: b.label, kind: b.kind }));
@@ -100,7 +105,7 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
         }
         if (h.to - cur >= 15) free += h.to - cur;
       }
-      rs[r.id] = { hours, blocks: myBlocks, freeMinutes: free };
+      rs[r.id] = { hours, flex: holiday ? [] : rules.flex, surgery: rules.surgery, blocks: myBlocks, freeMinutes: free };
     }
     out.push({
       date: iso,
@@ -171,4 +176,12 @@ export async function surgeonResources(userId: string, companyId: string) {
   const anyLinked = await db.resource.count({ where: { companyId, isActive: true, kind: "DOCTOR", userId: { not: null } } });
   if (anyLinked) return [];
   return (await db.resource.findMany({ where: { companyId, isActive: true, kind: "DOCTOR" }, select: { id: true } })).map((r) => r.id);
+}
+
+// The two-band scale of a week (DESIGN 6a–6g): every weekday's surgery window and office
+// hours (+ flex) of the columns shown, widened to what is booked.
+export function rangeScale(days: RangeDay[], resourceIds: string[]): Scale {
+  const pick = (k: "hours" | "flex" | "surgery") => days.flatMap((d) => resourceIds.flatMap((id) => d.resources[id]?.[k] ?? []));
+  const items = days.flatMap((d) => d.appointments.filter((a) => a.active && resourceIds.includes(a.resourceId)).map((a) => ({ from: a.start, to: a.end })));
+  return buildScale({ surgery: pick("surgery"), office: [...pick("hours"), ...pick("flex")], items }, "week");
 }

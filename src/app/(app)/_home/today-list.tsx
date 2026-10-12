@@ -20,6 +20,7 @@ export type TodayRow = {
   room: string | null;
   visitId: string | null;
   flagged: boolean;
+  surgery: boolean; // in the hospital: no visit is started from here
 };
 
 const athensMinute = () => {
@@ -89,7 +90,7 @@ export function TodayList({ rows }: { rows: TodayRow[] }) {
               </span>
               {status(r)}
               <span className="flex w-[170px] justify-end">
-                {r.patientId && !finished && r.status !== "WITH_DOCTOR" && <StartVisitButton id={r.id} label={t("startVisit")} />}
+                {r.patientId && !r.surgery && !finished && r.status !== "WITH_DOCTOR" && <StartVisitButton id={r.id} label={t("startVisit")} />}
                 {r.patientId && r.status === "WITH_DOCTOR" && (
                   <Link href={r.visitId ? `/patients/${r.patientId}/visits/${r.visitId}` : `/patients/${r.patientId}/visits/new?appointment=${r.id}`} className="rounded-control border border-primary px-3 py-2 text-[13.5px] font-semibold text-primary">
                     {t("continueVisit")}

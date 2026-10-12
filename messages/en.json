@@ -99,7 +99,9 @@
     "soon": "soon",
     "today": "Today",
     "search": "Search",
-    "chat": "Chat"
+    "chat": "Chat",
+    "railOpen": "Expand menu",
+    "railClose": "Collapse menu"
   },
   "levels": {
     "OWNER": "Owner",
@@ -1157,12 +1159,14 @@
     "tabs": {
       "types": "Appointment types",
       "resources": "Resources & hours",
-      "blocks": "Blocked time"
+      "blocks": "Blocked time",
+      "hours": "Hours"
     },
     "help": {
       "types": "Colour, length and calendar layer of each type. The length fills in on a new appointment.",
       "resources": "The calendar's columns (doctor, nurse, operating room, cabins) and their hours. Outside the hours the calendar warns.",
-      "blocks": "Congress, leave, break: no appointments. Public holidays are worked out automatically."
+      "blocks": "Congress, leave, break: no appointments. Public holidays are worked out automatically.",
+      "hours": "The calendar's hours rules. Changes apply at once and are logged."
     },
     "labelEl": "Name (Greek)",
     "labelEn": "Name (English)",
@@ -1192,7 +1196,9 @@
       "blue": "Dark blue",
       "rose": "Red",
       "grey": "Grey",
-      "online": "Dashed"
+      "online": "Dashed",
+      "consult": "Petrol",
+      "recheck": "Light petrol"
     },
     "resourceLabel": "Column name",
     "kind": "Kind",
@@ -1240,6 +1246,19 @@
       "not_found": "Not found.",
       "duplicate": "That name already exists.",
       "invalid_value": "Check the details (name, length 5–720′, times HH:MM, dates DD/MM/YYYY)."
+    },
+    "saved": "Saved",
+    "rules": {
+      "office": "Office hours",
+      "officeHelp": "Per doctor / nurse. Only these count as \"free\" and for the \"full >10 days\" rule.",
+      "changeOffice": "Change in Resources & hours",
+      "flex": "Flex zone (outside hours +30′)",
+      "flexHelp": "Minutes before and after office hours that staff can book with one extra click. Online booking never offers them. Anything else outside hours needs a reason.",
+      "flexBefore": "Before (minutes)",
+      "flexAfter": "After (minutes)",
+      "surgery": "Surgery hours (Diavalkaniko)",
+      "surgeryHelp": "Surgeries go in this window; after its end a reason is needed. Shown as the compact top band of the calendar.",
+      "weekend": "Saturday and Sunday: closed and hidden. \"+ Sat/Sun\" in the calendar shows them; a booking there needs a reason."
     }
   },
   "calendar": {
@@ -1327,7 +1346,8 @@
       "not_found": "Not found.",
       "invalid_value": "Check date (DD/MM/YYYY), time (HH:MM) and length.",
       "clash": "This time is not free",
-      "not_allowed": "This step is not possible from the current status."
+      "not_allowed": "This step is not possible from the current status.",
+      "reason_needed": "Write a reason for booking outside office hours."
     },
     "todayShort": "today",
     "freeShort": "free {free}",
@@ -1342,7 +1362,9 @@
       "enough": "Enough time (≥ 2h)",
       "little": "Little (< 2h)",
       "full": "Full",
-      "surgeriesLater": "Surgeries appear with Phase 4/6b."
+      "surgeriesLater": "Surgeries appear with Phase 4/6b.",
+      "flex": "Outside hours +30′",
+      "surgeryWindow": "Surgery hours"
     },
     "fullBanner": "New patients: full for {days} days.",
     "fullBannerText": "Online booking will show no times; new requests come to you (with GHL, 6d).",
@@ -1399,6 +1421,51 @@
     "whose": {
       "doctor": "Doctor",
       "desk": "Front desk"
+    },
+    "problems": {
+      "appointment": "There is an appointment {from}–{to} ({label})",
+      "patient": "The patient already has an appointment {from}–{to} ({label})",
+      "block": "Blocked {from}–{to} ({label})",
+      "holiday": "Holiday: {label}",
+      "flex": "Outside hours +30′ (just before or after hours)",
+      "outside_hours": "Outside office hours",
+      "weekend": "Weekend — closed",
+      "past": "This time has passed"
+    },
+    "bookFlex": "Book outside hours +30′",
+    "overrideReason": "Reason (kept in the appointment's history)",
+    "overrideHint": "e.g. urgent, exception",
+    "flexZone": "Outside hours +30′",
+    "flexNote": "Flex zone just before or after office hours: booked with one extra click. Online booking never offers it.",
+    "flexSlot": "outside hours",
+    "bands": {
+      "surgery": "Surgeries"
+    },
+    "folded": "Closed",
+    "noOffice": "No office",
+    "daysLabel": "Days",
+    "monFri": "Mon–Fri",
+    "satSun": "Sat/Sun",
+    "strip": {
+      "label": "Summary",
+      "now": "Now",
+      "nobody": "Nobody in",
+      "next": "Next",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "count": "{count} appointments",
+      "newCount": "{count} new",
+      "requests": "Booking requests",
+      "requestsSoon": "With online booking (GHL)",
+      "confirm": "Confirmations tomorrow",
+      "toCall": "{count} to call",
+      "allConfirmed": "All confirmed.",
+      "waitlist": "Waiting list",
+      "waitlistSoon": "Step 6a-8",
+      "forms": "New forms",
+      "formsSoon": "With the intake forms",
+      "ghlOff": "Not connected",
+      "ghlSoon": "Connected in phase 6d"
     }
   },
   "live": {

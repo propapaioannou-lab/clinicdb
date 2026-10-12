@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { athensToUtc } from "@/lib/time";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
 import { createAppointment } from "./appointments";
+import { SPA_HOURS } from "./hours";
 import { addDays, calendarRange, mondayOf } from "./views";
 
 let c: { surgery: string; spa: string };
@@ -11,7 +12,7 @@ let type: string;
 const tag = () => Math.random().toString(36).slice(2, 7);
 beforeAll(async () => {
   c = await companies();
-  doctor = (await db.resource.create({ data: { companyId: c.surgery, kind: "DOCTOR", label: `Δρ ${tag()}` } })).id;
+  doctor = (await db.resource.create({ data: { companyId: c.surgery, kind: "DOCTOR", label: `Δρ ${tag()}`, hours: SPA_HOURS } })).id;
   type = (await db.appointmentType.create({ data: { companyId: c.surgery, labelEl: `Τύπος ${tag()}`, labelEn: "T", defaultMinutes: 30 } })).id;
 });
 

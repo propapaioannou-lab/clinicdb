@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { redirect } from "next/navigation";
-import { appointmentHistory, createAppointment, moveAppointment, setAppointmentStatus, startVisit, type CalendarError, type Problem } from "@/lib/calendar/appointments";
+import { getTranslations } from "next-intl/server";
+import { appointmentHistory, createAppointment, moveAppointment, NEEDS_REASON, setAppointmentStatus, startVisit, type CalendarError, type Problem } from "@/lib/calendar/appointments";
 import { STATUS_LABEL } from "@/lib/calendar/status";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
 import { athensIsoDate, athensParts } from "@/lib/time";
@@ -17,6 +18,8 @@ export type BookingResult = {
   problems?: string[];
   suggestions?: { date: string; time: string; label: string }[];
   warned?: string[];
+  flexOnly?: boolean; // only «εκτός ωραρίου +30′»: one more click books it
+  needsReason?: boolean; // off-hours / weekend: booking anyway needs a reason
 };
 
 async function actorNow() {
@@ -31,14 +34,14 @@ const clock = (d: Date) => {
 };
 const dayLabel = new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric" });
 
-function describe(p: Problem): string {
+type T = Awaited<ReturnType<typeof getTranslations<"calendar.problems">>>;
+function describe(t: T, p: Problem): string {
   switch (p.kind) {
-    case "appointment": return `Υπάρχει ραντεβού ${clock(p.startsAt)}–${clock(p.endsAt)} (${p.label})`;
-    case "patient": return `Ο ασθενής έχει ήδη ραντεβού ${clock(p.startsAt)}–${clock(p.endsAt)} (${p.label})`;
-    case "block": return `Αποκλεισμός ${clock(p.startsAt)}–${clock(p.endsAt)} (${p.label})`;
-    case "holiday": return `Αργία: ${p.label}`;
-    case "outside_hours": return "Εκτός ωραρίου";
-    case "past": return "Η ώρα έχει περάσει";
+    case "appointment": return t("appointment", { from: clock(p.startsAt), to: clock(p.endsAt), label: p.label });
+    case "patient": return t("patient", { from: clock(p.startsAt), to: clock(p.endsAt), label: p.label });
+    case "block": return t("block", { from: clock(p.startsAt), to: clock(p.endsAt), label: p.label });
+    case "holiday": return t("holiday", { label: p.label });
+    default: return t(p.kind);
   }
 }
 
@@ -49,14 +52,18 @@ const isoOf = (v: unknown) => {
   return d instanceof Date ? d.toISOString().slice(0, 10) : null;
 };
 
-function result(r: { ok: true; overridden: Problem[] } | { ok: false; error: CalendarError; problems?: Problem[]; suggestions?: Date[] }): BookingResult {
+async function result(r: { ok: true; overridden: Problem[] } | { ok: false; error: CalendarError; problems?: Problem[]; suggestions?: Date[] }): Promise<BookingResult> {
+  const t = await getTranslations("calendar.problems");
   if (r.ok) {
     revalidatePath("/calendar");
-    return { ok: true, warned: r.overridden.map(describe) };
+    // A flex-zone booking is normal enough not to need a warning afterwards.
+    return { ok: true, warned: r.overridden.filter((p) => p.kind !== "flex").map((p) => describe(t, p)) };
   }
   return {
     error: r.error,
-    problems: r.problems?.map(describe),
+    flexOnly: !!r.problems?.length && r.problems.every((p) => p.kind === "flex"),
+    needsReason: !!r.problems?.some((p) => NEEDS_REASON.includes(p.kind)),
+    problems: r.problems?.map((p) => describe(t, p)),
     suggestions: r.suggestions?.map((d) => ({ date: athensIsoDate(d), time: clock(d), label: `${dayLabel.format(d)} ${clock(d)}` })),
   };
 }

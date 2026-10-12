@@ -3,39 +3,23 @@ import { getTranslations } from "next-intl/server";
 import { FlagDot } from "@/components/patient-bits";
 import { Badge, card, primaryButton } from "@/components/ui";
 import { calColor } from "@/lib/calendar/colors";
+import type { Scale } from "@/lib/calendar/bands";
 import type { patientCard, RangeAppointment, RangeDay } from "@/lib/calendar/views";
+import { ColumnBackground, Folds, GridLines, place, TimeAxis } from "./grid-bits";
 import { NowLine } from "./now-line";
+import type { Tile } from "./top-strip";
 
-const PX = 72; // physician day: one wide timeline (DESIGN 6a–6f)
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
 const dayName = new Intl.DateTimeFormat("el-GR", { weekday: "short", day: "numeric", timeZone: "UTC" });
 type Card = NonNullable<Awaited<ReturnType<typeof patientCard>>>;
 
-// Physician day (DESIGN 6a–6f): his own appointments only, no money, no booking buttons.
-export async function DoctorDay({
-  day,
-  resourceId,
-  now,
-  next,
-  current,
-  tomorrowCount,
-}: {
-  day: RangeDay;
-  resourceId: string;
-  now: number | null;
-  next: { a: RangeAppointment; patient: Card | null; waiting: number | null } | null;
-  current: RangeAppointment | null;
-  tomorrowCount: number;
-}) {
+// Physician day (DESIGN 6a–6g): his own appointments only, on the two-band grid; no
+// money, no booking buttons. Τώρα / Επόμενος / Σήμερα / Αύριο are in the top strip.
+export async function DoctorDay({ day, resourceId, current, scale }: { day: RangeDay; resourceId: string; current: RangeAppointment | null; scale: Scale }) {
   const t = await getTranslations("calendar");
-  const th = await getTranslations("history");
   const rr = day.resources[resourceId];
   const appts = day.appointments.filter((a) => a.resourceId === resourceId);
-  const edges = [...(rr?.hours ?? []).flatMap((h) => [h.from, h.to]), ...appts.flatMap((a) => [a.start, a.end])];
-  const startHour = edges.length ? Math.min(9, Math.floor(Math.min(...edges) / 60)) : 9;
-  const endHour = edges.length ? Math.max(startHour + 8, Math.ceil(Math.max(...edges) / 60)) : 19;
-  const top = (min: number) => ((min - startHour * 60) / 60) * PX;
-  const active = appts.filter((a) => a.active);
+  const office = scale.bands.find((b) => b.kind === "office");
   const pill = (a: RangeAppointment) => {
     if (a.id === current?.id) return <span className="rounded-full bg-primary px-2 py-0.5 text-[11.5px] font-semibold text-white">{t("nowPill")}</span>;
     if (a.status === "ARRIVED" || a.status === "READY") return <span className="text-[11.5px] font-semibold text-primary">{t("waiting")}</span>;
@@ -45,76 +29,83 @@ export async function DoctorDay({
     return null;
   };
   return (
-    <div className="flex flex-wrap items-start gap-5">
-      <section className={`${card} min-w-0 flex-[999_1_560px] overflow-hidden p-4`}>
-        {day.holiday && <div className="mb-2 rounded-[8px] bg-warn-bg px-3 py-1.5 text-sm font-semibold text-warn-ink">{t("holiday", { name: day.holiday })}</div>}
-        <div className="relative" style={{ height: (endHour - startHour) * PX }}>
-          {Array.from({ length: endHour - startHour + 1 }, (_, i) => (
-            <div key={i} className="absolute left-0 right-0 border-t border-line-softer" style={{ top: i * PX }}>
-              <span className="absolute -top-2 left-0 w-[46px] text-right text-[12px] text-muted">{hhmm((startHour + i) * 60)}</span>
-            </div>
-          ))}
-          <div className="absolute inset-y-0 left-[58px] right-0">
+    <section className={`${card} overflow-hidden`}>
+      {day.holiday && <div className="bg-warn-bg px-4 py-2 text-sm font-semibold text-warn-ink">{t("holiday", { name: day.holiday })}</div>}
+      <div className="max-h-[calc(100vh-290px)] min-h-[420px] overflow-y-auto">
+        <div className="relative grid grid-cols-[56px_minmax(0,1fr)]" style={{ height: scale.height }}>
+          <TimeAxis scale={scale} />
+          <div className="relative border-l border-line-soft">
+            <ColumnBackground scale={scale} surgery={rr?.surgery ?? []} hours={rr?.hours ?? []} flex={rr?.flex ?? []} surgeryLabel={t("bands.surgery")} />
+            <GridLines scale={scale} />
             {rr?.blocks.map((b, i) => (
-              <div key={i} className="absolute left-0 right-0 rounded-[8px] bg-[repeating-linear-gradient(45deg,var(--color-line-softer)_0_6px,var(--color-line)_6px_8px)] px-2 py-1 text-[12.5px] text-ink-3" style={{ top: top(b.start), height: top(b.end) - top(b.start) }}>
+              <div key={i} className="absolute left-1 right-1 rounded-[8px] bg-[repeating-linear-gradient(45deg,var(--color-line-softer)_0_6px,var(--color-line)_6px_8px)] px-2 py-1 text-[12.5px] text-ink-3" style={place(scale, b.start, b.end)}>
                 {b.label ?? t(`blockKinds.${b.kind}`)} · {hhmm(b.start)}–{hhmm(b.end)}
               </div>
             ))}
-            {appts.map((a) => (
-              <Link key={a.id} href={a.patientId ? `/patients/${a.patientId}` : "#"}
-                className={`absolute left-0 right-0 flex items-start justify-between gap-2 overflow-hidden rounded-[8px] px-3 py-1 text-[14px] ${calColor(a.color).box} ${!a.active ? "line-through opacity-40" : a.status === "DONE" || a.status === "TO_PAY" ? "opacity-60" : ""} ${a.id === current?.id ? "ring-2 ring-primary" : ""}`}
-                style={{ top: top(a.start) + 1, height: Math.max(22, top(a.end) - top(a.start) - 2), zIndex: 2 }}>
-                <span className="min-w-0 truncate"><b>{a.time}</b> <b>{a.name ?? a.typeLabel}</b> <span className="opacity-80">· {a.typeLabel}{a.reason && ` · ${a.reason}`}</span></span>
-                <span className="shrink-0">{pill(a)}</span>
-              </Link>
-            ))}
+            {appts.map((a) => {
+              const box = place(scale, a.start, a.end);
+              return (
+                <Link key={a.id} href={a.patientId ? `/patients/${a.patientId}` : "#"}
+                  className={`absolute left-1 right-1 flex justify-between gap-2 overflow-hidden rounded-[8px] px-3 ${box.height < 30 ? "items-center text-[13px] leading-none" : "items-start py-1 text-[14px]"} ${calColor(a.color).box} ${!a.active ? "line-through opacity-40" : a.status === "DONE" || a.status === "TO_PAY" ? "opacity-60" : ""} ${a.id === current?.id ? "ring-2 ring-primary" : ""}`}
+                  style={{ ...box, zIndex: 2 }}>
+                  <span className="min-w-0 truncate"><b>{a.time}</b> <b>{a.name ?? a.typeLabel}</b> <span className="opacity-80">· {a.typeLabel}{a.reason && ` · ${a.reason}`}</span></span>
+                  <span className="shrink-0">{pill(a)}</span>
+                </Link>
+              );
+            })}
           </div>
-          <NowLine date={day.date} startHour={startHour} endHour={endHour} px={PX} left={58} />
+          <Folds scale={scale} left={56} label={t("folded")} />
+          <NowLine dates={[day.date]} scale={scale} left={56} focus={office?.from} />
         </div>
-      </section>
-
-      <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-4">
-        {current && (
-          <section className={`${card} flex flex-col gap-1 px-5 py-4`}>
-            <span className="text-[15px] font-semibold">{t("nowCard")}</span>
-            <span className="text-sm">{current.name} · {current.typeLabel}</span>
-          </section>
-        )}
-        {next ? (
-          <section className={`${card} flex flex-col gap-2 border-2 border-primary px-5 py-4`}>
-            <span className="text-[15px] font-semibold">{t("nextCard", { time: next.a.time })}{next.waiting !== null && ` · ${t("waitingFor", { minutes: next.waiting })}`}</span>
-            {next.patient ? (
-              <>
-                <span className="text-[19px] font-semibold">{next.patient.name}{next.patient.age !== null && <span className="text-[14px] font-normal text-muted"> · {t("years", { age: next.patient.age })}</span>}</span>
-                <span className="text-sm text-ink-3">{next.a.typeLabel}{next.a.reason && ` · ${next.a.reason}`}</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {next.patient.flag !== "NONE" && (
-                    <Badge tone={next.patient.flag === "RED" ? "red" : "amber"}><FlagDot flag={next.patient.flag} label={t("flagged")} />{next.patient.flagReasons.join(", ") || t("flagged")}</Badge>
-                  )}
-                  {next.patient.riskFactors.length > 0 && <Badge tone="red">{th("risk.title")}: {next.patient.riskFactors.map((r) => th(`risk.factors.${r}` as "risk.factors.thyroxine")).join(", ")}</Badge>}
-                  {next.patient.infectious && <Badge tone="red">{t("infectious")}</Badge>}
-                  <Badge tone={next.patient.history === "VERIFIED" ? "green" : "amber"}>{t(`historyState.${next.patient.history ?? "NONE"}`)}</Badge>
-                </div>
-                <Link href={`/patients/${next.patient.id}`} className={`${primaryButton} self-start`}>{t("openRecord")}</Link>
-              </>
-            ) : (
-              <span className="text-sm">{next.a.typeLabel}</span>
-            )}
-          </section>
-        ) : (
-          <section className={`${card} px-5 py-4 text-sm text-muted`}>{t("noMore")}</section>
-        )}
-        <section className={`${card} grid grid-cols-2 gap-3 px-5 py-4`}>
-          <span className="col-span-2 text-[15px] font-semibold">{t("glance")}</span>
-          <span><b className="text-[20px]">{active.length}</b><br /><span className="text-[13px] text-muted">{t("appointmentsWord")}</span></span>
-          <span><b className="text-[20px]">{active.filter((a) => a.isNew).length}</b><br /><span className="text-[13px] text-muted">{t("newPatients")}</span></span>
-          <span><b className="text-[20px]">{active.filter((a) => a.layer === "ONLINE").length}</b><br /><span className="text-[13px] text-muted">online</span></span>
-          <span><b className="text-[20px]">{active.length ? hhmm(Math.max(...active.map((a) => a.end))) : "—"}</b><br /><span className="text-[13px] text-muted">{t("lastEnds")}</span></span>
-          {now !== null && <span className="col-span-2 text-[12.5px] text-muted">{t("tomorrowCount", { count: tomorrowCount })}</span>}
-        </section>
-      </aside>
-    </div>
+      </div>
+    </section>
   );
+}
+
+// The physician's top strip (DESIGN 6a–6g): Τώρα · Επόμενος (rich) · Σήμερα · Αύριο.
+export async function doctorTiles({ day, resourceId, next, current, tomorrowCount }: {
+  day: RangeDay;
+  resourceId: string;
+  next: { a: RangeAppointment; patient: Card | null; waiting: number | null } | null;
+  current: RangeAppointment | null;
+  tomorrowCount: number;
+}): Promise<Tile[]> {
+  const t = await getTranslations("calendar");
+  const th = await getTranslations("history");
+  const active = day.appointments.filter((a) => a.resourceId === resourceId && a.active);
+  const p = next?.patient;
+  return [
+    { key: "now", label: t("strip.now"), value: current ? current.name ?? current.typeLabel : "—", sub: current ? `${current.time} · ${current.typeLabel}` : t("strip.nobody"), tone: current ? "primary" : "neutral" },
+    {
+      key: "next",
+      label: next ? t("nextCard", { time: next.a.time }) : t("strip.next"),
+      wide: true,
+      tone: next ? "neutral" : "muted",
+      value: next ? (p ? <>{p.name}{p.age !== null && <span className="text-[14px] font-normal text-muted"> · {t("years", { age: p.age })}</span>}</> : next.a.typeLabel) : "—",
+      sub: next ? (
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span>{next.a.typeLabel}{next.a.reason && ` · ${next.a.reason}`}{next.waiting !== null && ` · ${t("waitingFor", { minutes: next.waiting })}`}</span>
+          {p && p.flag !== "NONE" && <Badge tone={p.flag === "RED" ? "red" : "amber"}><FlagDot flag={p.flag} label={t("flagged")} />{p.flagReasons.join(", ") || t("flagged")}</Badge>}
+          {p && p.riskFactors.length > 0 && <Badge tone="red">{th("risk.title")}</Badge>}
+          {p?.infectious && <Badge tone="red">{t("infectious")}</Badge>}
+          {p && <Badge tone={p.history === "VERIFIED" ? "green" : "amber"}>{t(`historyState.${p.history ?? "NONE"}`)}</Badge>}
+        </span>
+      ) : t("noMore"),
+      body: p ? (
+        <div className="flex flex-wrap items-center gap-3">
+          {p.riskFactors.length > 0 && <span>{th("risk.title")}: {p.riskFactors.map((r) => th(`risk.factors.${r}` as "risk.factors.thyroxine")).join(", ")}</span>}
+          <Link href={`/patients/${p.id}`} className={primaryButton}>{t("openRecord")}</Link>
+        </div>
+      ) : undefined,
+    },
+    {
+      key: "today",
+      label: t("strip.today"),
+      value: t("strip.count", { count: active.length }),
+      sub: [t("strip.newCount", { count: active.filter((a) => a.isNew).length }), `${active.filter((a) => a.layer === "ONLINE").length} online`, active.length ? `${t("lastEnds")} ${hhmm(Math.max(...active.map((a) => a.end)))}` : null].filter(Boolean).join(" · "),
+    },
+    { key: "tomorrow", label: t("strip.tomorrow"), value: t("strip.count", { count: tomorrowCount }) },
+  ];
 }
 
 // Physician week (DESIGN 6a–6f): one card per day — type of day, office hours and count,
@@ -130,7 +121,7 @@ export async function DoctorWeek({ days, resourceId, todayIso }: { days: RangeDa
         <span className={`${card} px-4 py-2`}><b>{all.filter((a) => a.layer === "ONLINE").length}</b> online</span>
         <span className={`${card} px-4 py-2 text-muted`}>{t("surgeriesLater")}</span>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className={`grid gap-3 sm:grid-cols-2 lg:grid-cols-3 ${days.length > 5 ? "xl:grid-cols-7" : "xl:grid-cols-5"}`}>
         {days.map((d) => {
           const mine = d.appointments.filter((a) => a.resourceId === resourceId && a.active);
           const rr = d.resources[resourceId];
@@ -162,7 +153,9 @@ export async function DoctorWeek({ days, resourceId, todayIso }: { days: RangeDa
 }
 
 // Physician month (DESIGN 6a–6f): appointments per day and holidays; totals on top.
-export async function DoctorMonth({ days, resourceId, monthIso, todayIso }: { days: RangeDay[]; resourceId: string; monthIso: string; todayIso: string }) {
+export async function DoctorMonth({ days: all, resourceId, monthIso, todayIso, weekend }: { days: RangeDay[]; resourceId: string; monthIso: string; todayIso: string; weekend: boolean }) {
+  const days = weekend ? all : all.filter((d) => d.weekday <= 5);
+  const weekdays = weekend ? [1, 2, 3, 4, 5, 6, 7] : [1, 2, 3, 4, 5];
   const t = await getTranslations("calendar");
   const inMonth = days.filter((d) => d.date.slice(0, 7) === monthIso.slice(0, 7));
   const total = inMonth.reduce((n, d) => n + d.appointments.filter((a) => a.resourceId === resourceId && a.active).length, 0);
@@ -173,10 +166,10 @@ export async function DoctorMonth({ days, resourceId, monthIso, todayIso }: { da
         <span className={`${card} px-4 py-2 text-muted`}>{t("surgeriesLater")}</span>
       </div>
       <section className={`${card} overflow-hidden`}>
-        <div className="grid grid-cols-7 border-b border-line-soft text-[13px] font-semibold text-muted">
-          {[1, 2, 3, 4, 5, 6, 7].map((w) => <div key={w} className="px-3 py-2">{t(`weekdays.${w}`)}</div>)}
+        <div className={`grid ${weekend ? "grid-cols-7" : "grid-cols-5"} border-b border-line-soft text-[13px] font-semibold text-muted`}>
+          {weekdays.map((w) => <div key={w} className="px-3 py-2">{t(`weekdays.${w}`)}</div>)}
         </div>
-        <div className="grid grid-cols-7">
+        <div className={`grid ${weekend ? "grid-cols-7" : "grid-cols-5"}`}>
           {days.map((d) => {
             const mine = d.appointments.filter((a) => a.resourceId === resourceId && a.active).length;
             const inside = d.date.slice(0, 7) === monthIso.slice(0, 7);

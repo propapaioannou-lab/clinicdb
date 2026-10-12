@@ -5,7 +5,8 @@ import { canEditPatients } from "@/lib/permissions";
 import { athensIsoDate, athensParts, athensToUtc } from "@/lib/time";
 import type { Actor } from "@/lib/users/manage";
 import { holidayOn } from "./holidays";
-import { hoursOf, minutesOf } from "./hours";
+import { calendarConfigOf } from "./config";
+import { dayRules, hoursOf, minutesOf, zoneOf } from "./hours";
 import { ACTIVE_STATUSES, checkTransition, type StatusRefusal } from "./status";
 
 // Calendar core (SPEC §4c, Phase 6a): booking, moving, status changes, clash checks and
@@ -16,10 +17,15 @@ export type Problem =
   | { kind: "patient"; id: string; startsAt: Date; endsAt: Date; label: string }
   | { kind: "block"; startsAt: Date; endsAt: Date; label: string }
   | { kind: "holiday"; label: string }
-  | { kind: "outside_hours" }
+  | { kind: "flex" } // just outside office hours: one extra click, no reason
+  | { kind: "outside_hours" } // override with a reason
+  | { kind: "weekend" } // override with a reason
   | { kind: "past" };
 
-export type CalendarError = "forbidden" | "not_found" | "invalid_value" | "clash" | StatusRefusal;
+// Problems that need a written reason before booking anyway (SPEC §4c hours).
+export const NEEDS_REASON: Problem["kind"][] = ["outside_hours", "weekend"];
+
+export type CalendarError = "forbidden" | "not_found" | "invalid_value" | "clash" | "reason_needed" | StatusRefusal;
 type Fail = { ok: false; error: CalendarError; problems?: Problem[]; suggestions?: Date[] };
 const fail = (error: CalendarError, extra: Partial<Fail> = {}): Fail => ({ ok: false, error, ...extra });
 
@@ -49,7 +55,7 @@ export async function checkSlot(
   resourceId: string,
   startsAt: Date,
   endsAt: Date,
-  opts: { exceptId?: string; patientId?: string | null; now?: Date } = {},
+  opts: { exceptId?: string; patientId?: string | null; now?: Date; surgery?: boolean } = {},
 ): Promise<Problem[]> {
   const problems: Problem[] = [];
   const resource = await db.resource.findFirst({ where: { id: resourceId, companyId } });
@@ -58,11 +64,17 @@ export async function checkSlot(
   const day = athensIsoDate(startsAt);
   const holiday = holidayOn(day);
   if (holiday) problems.push({ kind: "holiday", label: holiday });
-  // Office hours: the whole appointment must sit inside one working range of that day.
+  // Office hours (or the surgery window for surgeries): the whole appointment must sit
+  // inside one working range of that day; the flex zones around office hours are a
+  // lighter warning.
   const s = minutesOfDay(startsAt);
   const e = athensIsoDate(endsAt) === day ? minutesOfDay(endsAt) : 24 * 60;
-  const inHours = hoursOf(resource.hours).some((h) => h.day === weekdayOf(startsAt) && minutesOf(h.from) <= s && minutesOf(h.to) >= e);
-  if (!inHours) problems.push({ kind: "outside_hours" });
+  const weekday = weekdayOf(startsAt);
+  const rules = dayRules(hoursOf(resource.hours), await calendarConfigOf(companyId), weekday, { surgeryWindow: true });
+  const zone = zoneOf(rules, weekday, s, e, { surgery: opts.surgery });
+  if (zone === "flex") problems.push({ kind: "flex" });
+  if (zone === "off") problems.push({ kind: "outside_hours" });
+  if (zone === "weekend") problems.push({ kind: "weekend" });
   const [appts, blocks, mine] = await Promise.all([
     db.appointment.findMany({
       where: { companyId, resourceId, status: { in: ACTIVE_STATUSES }, startsAt: { lt: endsAt }, endsAt: { gt: startsAt }, ...(opts.exceptId && { NOT: { id: opts.exceptId } }) },
@@ -125,6 +137,16 @@ export async function freeSlots(
   return out;
 }
 
+// Booking anyway: flex zones need only the extra click (`flex`), other problems need
+// `override`, and off-hours / weekend also a written reason.
+function refusal(problems: Problem[], raw: Record<string, unknown>): CalendarError | null {
+  if (!problems.length) return null;
+  if (problems.every((p) => p.kind === "flex") && (raw.flex === true || raw.override === true)) return null;
+  if (raw.override !== true) return "clash";
+  if (problems.some((p) => NEEDS_REASON.includes(p.kind)) && !text(raw.overrideReason, 200)) return "reason_needed";
+  return null;
+}
+
 async function scoped(actor: Actor, raw: Record<string, unknown>) {
   const [type, resource] = await Promise.all([
     typeof raw.typeId === "string" ? db.appointmentType.findFirst({ where: { id: raw.typeId, companyId: { in: actor.companyIds }, isActive: true } }) : null,
@@ -139,6 +161,9 @@ const minutesFrom = (raw: unknown, fallback: number) => {
   return Number.isInteger(n) && n >= MIN_MINUTES && n <= MAX_MINUTES ? n : null;
 };
 const text = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) || null : null);
+// What was booked anyway, and why — kept in the appointment's history and the audit log.
+const overrideDetails = (problems: Problem[], raw: Record<string, unknown>) =>
+  problems.length ? { override: problems.map((p) => p.kind), ...(text(raw.overrideReason, 200) && { overrideReason: text(raw.overrideReason, 200) }) } : {};
 
 async function log(
   tx: Prisma.TransactionClient,
@@ -184,15 +209,14 @@ export async function createAppointment(actor: Actor, raw: Record<string, unknow
   const minutes = minutesFrom(raw.minutes, s.type.defaultMinutes);
   if (!startsAt || !minutes) return fail("invalid_value");
   const endsAt = new Date(startsAt.getTime() + minutes * 60e3);
-  const problems = await checkSlot(s.companyId, s.resource.id, startsAt, endsAt, { patientId });
-  if (problems.length && raw.override !== true) {
-    return fail("clash", { problems, suggestions: await freeSlots(s.companyId, s.resource.id, startsAt, minutes) });
-  }
+  const problems = await checkSlot(s.companyId, s.resource.id, startsAt, endsAt, { patientId, surgery: s.type.layer === "SURGERY" });
+  const refused = refusal(problems, raw);
+  if (refused) return fail(refused, { problems, suggestions: await freeSlots(s.companyId, s.resource.id, startsAt, minutes) });
   const created = await db.$transaction(async (tx) => {
     const a = await tx.appointment.create({
       data: { companyId: s.companyId, patientId, typeId: s.type.id, resourceId: s.resource.id, startsAt, endsAt, reason: text(raw.reason, 120), createdById: actor.id },
     });
-    await log(tx, actor, a, "created", { toStatus: "BOOKED", details: { startsAt: startsAt.toISOString(), minutes, ...(problems.length && { override: problems.map((p) => p.kind) }) } }, ctx);
+    await log(tx, actor, a, "created", { toStatus: "BOOKED", details: { startsAt: startsAt.toISOString(), minutes, ...overrideDetails(problems, raw) } }, ctx);
     return a;
   });
   return { ok: true, id: created.id, overridden: problems };
@@ -213,16 +237,15 @@ export async function moveAppointment(actor: Actor, id: string, raw: Record<stri
   const minutes = minutesFrom(raw.minutes, Math.round((a.endsAt.getTime() - a.startsAt.getTime()) / 60e3));
   if (!startsAt || !minutes) return fail("invalid_value");
   const endsAt = new Date(startsAt.getTime() + minutes * 60e3);
-  const problems = await checkSlot(a.companyId, resourceId, startsAt, endsAt, { exceptId: id, patientId: a.patientId });
-  if (problems.length && raw.override !== true) {
-    return fail("clash", { problems, suggestions: await freeSlots(a.companyId, resourceId, startsAt, minutes) });
-  }
+  const problems = await checkSlot(a.companyId, resourceId, startsAt, endsAt, { exceptId: id, patientId: a.patientId, surgery: a.type.layer === "SURGERY" });
+  const refused = refusal(problems, raw);
+  if (refused) return fail(refused, { problems, suggestions: await freeSlots(a.companyId, resourceId, startsAt, minutes) });
   await db.$transaction(async (tx) => {
     await tx.appointment.update({ where: { id }, data: { startsAt, endsAt, resourceId } });
     await log(tx, actor, a, "moved", {
       details: {
         from: a.startsAt.toISOString(), to: startsAt.toISOString(), minutes,
-        ...(resourceId !== a.resourceId && { resource: resourceId }), ...(problems.length && { override: problems.map((p) => p.kind) }),
+        ...(resourceId !== a.resourceId && { resource: resourceId }), ...overrideDetails(problems, raw),
       },
     }, ctx);
   });

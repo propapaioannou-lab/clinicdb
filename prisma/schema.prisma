@@ -29,6 +29,8 @@ model Company {
   id               String            @id @default(cuid())
   code             String            @unique
   name             String
+  // Calendar rules (Settings → Ημερολόγιο → Ωράριο): surgery window, flex zones. Empty = defaults.
+  calendarConfig   Json?
   createdAt        DateTime          @default(now())
   memberships      Membership[]
   patients         Patient[]

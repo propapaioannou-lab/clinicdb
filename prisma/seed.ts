@@ -4,6 +4,8 @@ import { Prisma, type ListKind } from "../src/generated/prisma/client";
 import { QUESTION_CHOICES } from "../src/lib/history/question-choices-seed";
 import { HISTORY_QUESTIONS } from "../src/lib/history/questions-seed";
 import { PROCEDURE_AREAS } from "../src/lib/visits/catalog";
+import { audit } from "../src/lib/audit";
+import { SPA_HOURS } from "../src/lib/calendar/hours";
 
 const companies = [
   { code: "surgery", name: "Πλαστική Χειρουργική" },
@@ -31,15 +33,20 @@ const CHARGED_VISIT_TYPES: Record<string, number> = { "Πρώτη επίσκεψ
 
 // Appointment types (SPEC §4c seeds): [Greek, English, minutes, colour, layer].
 type TypeSeed = [string, string, number, string, "OFFICE" | "ONLINE" | "SURGERY" | "SPA"];
+// Calendar v2 (SPEC §4c, 12 Oct 2026). Lengths are only the starting length of a new
+// appointment: editable in Settings and on each appointment.
 const PRACTICE_TYPES: TypeSeed[] = [
   ["Πρώτη επίσκεψη", "First visit", 30, "teal", "OFFICE"],
-  ["Επανέλεγχος", "Follow-up", 15, "tealLight", "OFFICE"],
-  ["Προεγχειρητική εκτίμηση", "Pre-op", 30, "amber", "OFFICE"],
-  ["Μετεγχειρητικός", "Post-op", 15, "tealLight", "OFFICE"],
+  ["Νέα συμβουλευτική", "New consultation", 25, "consult", "OFFICE"],
+  ["Επανέλεγχος", "Follow-up", 10, "recheck", "OFFICE"],
+  ["Botox", "Botox", 10, "purple", "OFFICE"],
+  ["Προεγχειρητική", "Pre-op", 30, "amber", "OFFICE"],
   ["Online", "Online", 30, "online", "ONLINE"],
-  ["Ενέσιμα", "Injectables", 30, "purple", "OFFICE"],
   ["Χειρουργείο", "Surgery", 120, "blue", "SURGERY"],
 ];
+// Types before calendar v2 → the type their appointments move to (the old type is hidden).
+const CONVERT_TYPES: Record<string, string> = { "Μετεγχειρητικός": "Επανέλεγχος", "Ενέσιμα": "Botox" };
+const RENAME_TYPES: Record<string, string> = { "Προεγχειρητική εκτίμηση": "Προεγχειρητική" };
 const SPA_TYPES: TypeSeed[] = [
   ["Laser", "Laser", 60, "purple", "SPA"],
   ["Peeling", "Peel", 45, "amber", "SPA"],
@@ -106,6 +113,7 @@ async function main() {
     }
     // Calendar (SPEC §4c): appointment types and resources — added only if missing.
     const types = c.code === "spa" ? SPA_TYPES : PRACTICE_TYPES;
+    if (c.code !== "spa") await convertTypesV2(company.id);
     await db.appointmentType.createMany({
       data: types.map(([labelEl, labelEn, defaultMinutes, color, layer], i) => ({ companyId: company.id, labelEl, labelEn, defaultMinutes, color, layer, sortOrder: i })),
       skipDuplicates: true,
@@ -122,8 +130,47 @@ async function main() {
             ];
       await db.resource.createMany({ data: resources.map((r, i) => ({ companyId: company.id, sortOrder: i, ...r })) });
     }
+    // Spa cabins without their own hours keep the pre-v2 hours (the new default is the
+    // practice's office hours).
+    if (c.code === "spa") {
+      await db.resource.updateMany({ where: { companyId: company.id, hours: { equals: Prisma.DbNull } }, data: { hours: SPA_HOURS as unknown as Prisma.InputJsonValue } });
+    }
   }
   console.log(`Companies, lists, history questions, procedures and calendar ready: ${companies.map((c) => c.code).join(", ")}`);
+}
+
+// One-time move to the calendar v2 types (decided 12 Oct 2026): runs only while an old
+// type is still active, so later edits in Settings are never undone. Logged.
+async function convertTypesV2(companyId: string) {
+  const old = await db.appointmentType.findMany({ where: { companyId, isActive: true, labelEl: { in: [...Object.keys(CONVERT_TYPES), ...Object.keys(RENAME_TYPES)] } } });
+  if (!old.length) return;
+  const moved: Record<string, number> = {};
+  for (const [from, to] of Object.entries(RENAME_TYPES)) {
+    const t = old.find((x) => x.labelEl === from);
+    if (t && !(await db.appointmentType.findFirst({ where: { companyId, labelEl: to } }))) await db.appointmentType.update({ where: { id: t.id }, data: { labelEl: to } });
+  }
+  for (const [label, en, minutes, color, layer] of PRACTICE_TYPES) {
+    const existing = await db.appointmentType.findFirst({ where: { companyId, labelEl: label } });
+    if (existing) await db.appointmentType.update({ where: { id: existing.id }, data: { defaultMinutes: minutes, color, isActive: true } });
+    else await db.appointmentType.create({ data: { companyId, labelEl: label, labelEn: en, defaultMinutes: minutes, color, layer } });
+  }
+  for (const [from, to] of Object.entries(CONVERT_TYPES)) {
+    const a = old.find((x) => x.labelEl === from);
+    const b = await db.appointmentType.findFirst({ where: { companyId, labelEl: to } });
+    if (!a || !b) continue;
+    moved[from] = (await db.appointment.updateMany({ where: { companyId, typeId: a.id }, data: { typeId: b.id } })).count;
+    await db.appointmentType.update({ where: { id: a.id }, data: { isActive: false } });
+  }
+  // Order as in SPEC §4c; anything else keeps its place after them.
+  const all = await db.appointmentType.findMany({ where: { companyId }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+  const rank = (l: string) => { const i = PRACTICE_TYPES.findIndex((x) => x[0] === l); return i < 0 ? 100 : i; };
+  const sorted = [...all].sort((x, y) => rank(x.labelEl) - rank(y.labelEl) || x.sortOrder - y.sortOrder);
+  await db.$transaction(sorted.map((x, i) => db.appointmentType.update({ where: { id: x.id }, data: { sortOrder: i } })));
+  await audit(
+    { action: "settings.appointmentType.convertedV2", actorEmail: "seed", companyId, entityType: "AppointmentType", details: { moved, types: PRACTICE_TYPES.map((x) => `${x[0]} ${x[2]}′`) } },
+    { ip: null, userAgent: null },
+  );
+  console.log(`Appointment types converted to calendar v2 (${JSON.stringify(moved)}).`);
 }
 
 main().finally(() => db.$disconnect());

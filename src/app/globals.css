@@ -64,6 +64,15 @@
   --color-cal-grey: #9a958b;
   --color-cal-grey-bg: #f1f0ec;
   --color-cal-grey-ink: #3b4249;
+  /* Calendar v2 (DESIGN 6a–6g) */
+  --color-cal-consult: #4e9a95;
+  --color-cal-consult-bg: #e9f3f2;
+  --color-cal-consult-ink: #2b5d59;
+  --color-cal-recheck: #9cc3bf;
+  --color-cal-recheck-bg: #f1f7f6;
+  --color-cal-recheck-ink: #3a5d5a;
+  --color-cal-closed: #eceae5;
+  --color-cal-surgery-tint: #f5f7fa;
 
   /* Older screens use Tailwind's greys; mapped onto the design's warm greys. */
   --color-neutral-50: #fbfaf8;
@@ -93,4 +102,19 @@ body {
   textarea::placeholder {
     color: var(--color-placeholder);
   }
+}
+
+/* Left menu: full (232 px) or icon rail (68 px) — DESIGN 6a–6g. Always a rail under
+   1280 px; above that the person's choice («»» button, kept in a cookie). */
+.side { width: 232px; }
+.side .rail-only { display: none; }
+.side[data-rail="true"] { width: 68px; padding-left: 10px; padding-right: 10px; }
+.side[data-rail="true"] .rail-hide { display: none; }
+.side[data-rail="true"] .rail-only { display: flex; }
+.side[data-rail="true"] .rail-col { flex-direction: column; }
+@media (max-width: 1279.98px) {
+  .side { width: 68px; padding-left: 10px; padding-right: 10px; }
+  .side .rail-hide, .side .rail-toggle { display: none; }
+  .side .rail-only { display: flex; }
+  .side .rail-col { flex-direction: column; }
 }

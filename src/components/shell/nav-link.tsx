@@ -34,10 +34,10 @@ export function NavLink({
 
   if (soon) {
     return (
-      <span aria-disabled="true" className="flex items-center gap-3 rounded-[9px] px-3 py-[11px] text-[14.5px] text-ink-2 opacity-45">
-        {icon}
-        <span className="flex-1">{label}</span>
-        <span className="text-[11px] font-medium">{soon}</span>
+      <span aria-disabled="true" title={`${label} · ${soon}`} className="flex items-center gap-3 rounded-[9px] px-3 py-[11px] text-[14.5px] text-ink-2 opacity-45">
+        <span className="shrink-0">{icon}</span>
+        <span className="rail-hide flex-1">{label}</span>
+        <span className="rail-hide text-[11px] font-medium">{soon}</span>
       </span>
     );
   }
@@ -45,11 +45,12 @@ export function NavLink({
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
+      title={label}
       className={`flex items-center gap-3 rounded-[9px] px-3 py-[11px] text-[14.5px] ${active ? "bg-primary-tint font-semibold text-primary" : "text-ink-2 hover:bg-surface-2"}`}
     >
-      {icon}
-      <span className="flex-1">{label}</span>
-      {badge}
+      <span className="shrink-0">{icon}</span>
+      <span className="rail-hide flex-1">{label}</span>
+      {badge && <span className="rail-hide">{badge}</span>}
     </Link>
   );
 }

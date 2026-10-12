@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { audit, type RequestContext } from "@/lib/audit";
 import type { BlockKind, CalendarLayer, Prisma, ResourceKind } from "@/generated/prisma/client";
 import { athensSlot } from "@/lib/calendar/appointments";
+import { calendarConfigOf } from "@/lib/calendar/config";
 import { cleanHours } from "@/lib/calendar/hours";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
 import { canEditPatients } from "@/lib/permissions";
@@ -11,7 +12,7 @@ import { canManageSettings } from "./lists";
 // Settings → Ημερολόγιο (Phase 6a): appointment types and resources (Admin/Owner);
 // blocked time (any staff member). Types and resources are hidden, never deleted.
 
-export const TYPE_COLORS = ["teal", "tealLight", "amber", "purple", "blue", "rose", "grey", "online"] as const;
+export const TYPE_COLORS = ["teal", "tealLight", "consult", "recheck", "amber", "purple", "blue", "rose", "grey", "online"] as const;
 export const LAYERS: CalendarLayer[] = ["OFFICE", "ONLINE", "SURGERY", "SPA"];
 export const RESOURCE_KINDS: ResourceKind[] = ["DOCTOR", "NURSE", "ROOM", "OPERATING_ROOM", "CABIN"];
 export const BLOCK_KINDS: BlockKind[] = ["BREAK", "CONGRESS", "LEAVE", "OTHER"];
@@ -52,6 +53,24 @@ export async function saveType(actor: Actor, companyId: string, id: string | nul
   const t = await db.appointmentType.create({ data: { ...v, companyId, sortOrder: (last._max.sortOrder ?? -1) + 1 } });
   await log(actor, companyId, "settings.appointmentType.added", "AppointmentType", t.id, { label: v.labelEl }, ctx);
   return { ok: true, id: t.id };
+}
+
+// ── Hours rules (calendar v2): surgery window and flex zones ─────────────────────────
+// raw: { surgery: HoursRange[], flexBefore: minutes, flexAfter: minutes }. The old and the
+// new values are kept in the log.
+export async function saveCalendarConfig(actor: Actor, companyId: string, raw: Record<string, unknown>, ctx: RequestContext): Promise<Result> {
+  if (!canManageSettings(actor)) return fail("forbidden");
+  if (!actor.companyIds.includes(companyId)) return fail("not_found");
+  const surgery = cleanHours(raw.surgery ?? []);
+  const minutes = (v: unknown) => (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 120 && v !== "" ? Number(v) : null);
+  const flexBefore = minutes(raw.flexBefore);
+  const flexAfter = minutes(raw.flexAfter);
+  if (!surgery || flexBefore === null || flexAfter === null) return fail("invalid_value");
+  const before = await calendarConfigOf(companyId);
+  const after = { surgery, flexBefore, flexAfter };
+  await db.company.update({ where: { id: companyId }, data: { calendarConfig: after as unknown as Prisma.InputJsonValue } });
+  await log(actor, companyId, "settings.calendarHours.updated", "Company", companyId, { before, after } as unknown as Prisma.InputJsonValue, ctx);
+  return { ok: true };
 }
 
 // ── Resources ──────────────────────────────────────────────────────────────────────

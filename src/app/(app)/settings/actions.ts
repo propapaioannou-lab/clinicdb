@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { addQuestion, moveQuestion, updateQuestion, type QuestionError } from "@/lib/settings/history-questions";
 import { addProcedure, moveProcedure, updateProcedure, type ProcedureError } from "@/lib/settings/procedures";
-import { addBlock, moveCalendarItem, removeBlock, saveResource, saveType, type CalendarSettingsError } from "@/lib/settings/calendar";
+import { addBlock, moveCalendarItem, removeBlock, saveCalendarConfig, saveResource, saveType, type CalendarSettingsError } from "@/lib/settings/calendar";
 import { addItem, moveItem, renameItem, setItemActive, setVisitFee, type ListError } from "@/lib/settings/lists";
 import { loadActor } from "@/lib/users/manage";
 
@@ -75,4 +75,9 @@ export async function addBlockAction(companyId: string, v: Record<string, unknow
 }
 export async function removeBlockAction(id: string) {
   return run((a, c) => removeBlock(a, id, c), "/settings/calendar");
+}
+export async function saveCalendarConfigAction(companyId: string, v: Record<string, unknown>) {
+  const r = await run((a, c) => saveCalendarConfig(a, companyId, v, c), "/settings/calendar");
+  revalidatePath("/calendar");
+  return r;
 }

@@ -3,6 +3,8 @@
 export const CAL_COLOR: Record<string, { box: string; dot: string }> = {
   teal: { box: "border-l-4 border-cal-teal bg-cal-teal-bg text-cal-teal-ink", dot: "bg-cal-teal" },
   tealLight: { box: "border-l-4 border-cal-light bg-cal-light-bg text-cal-light-ink", dot: "bg-cal-light" },
+  consult: { box: "border-l-4 border-cal-consult bg-cal-consult-bg text-cal-consult-ink", dot: "bg-cal-consult" },
+  recheck: { box: "border-l-4 border-cal-recheck bg-cal-recheck-bg text-cal-recheck-ink", dot: "bg-cal-recheck" },
   amber: { box: "border-l-4 border-cal-amber bg-cal-amber-bg text-cal-amber-ink", dot: "bg-cal-amber" },
   purple: { box: "border-l-4 border-cal-purple bg-cal-purple-bg text-cal-purple-ink", dot: "bg-cal-purple" },
   blue: { box: "border-l-4 border-cal-blue bg-cal-blue text-white", dot: "bg-cal-blue" },

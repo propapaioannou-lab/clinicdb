@@ -2,6 +2,35 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Phase 6a-5: calendar v2 — hours, types, new layout
+
+- **Hours** (change them in Ρυθμίσεις → Ημερολόγιο → **Ωράριο**; every change is logged
+  with the old and new values):
+  - office Mon, Tue, Thu 16:30–20:00 — only these count as "ελεύθερα";
+  - 30′ before and after (hatched) = «εκτός ωραρίου +30′»: booked with one extra click;
+  - any other time, or Sat/Sun: booking needs a **reason**, kept in the appointment's
+    history;
+  - surgery window Mon–Fri 07:30–14:00 (surgeries after 14:00 need a reason).
+- **Appointment types** converted: Πρώτη επίσκεψη 30′ · Νέα συμβουλευτική 25′ ·
+  Επανέλεγχος 10′ (includes post-op) · Botox 10′ · Προεγχειρητική 30′ · Online 30′.
+  Old "Μετεγχειρητικός" → Επανέλεγχος and "Ενέσιμα" → Botox (their appointments moved
+  too; the old types are hidden, not deleted). Lengths are only the starting value.
+- **Layout**:
+  - day and week in **two bands** — surgery hours small on top, office hours large so
+    10′ appointments are readable, 14:30–16:00 folded into a thin strip;
+  - week and month **Mon–Fri**; «+ Σαβ/Κυρ» shows the weekend;
+  - one-line header;
+  - a **top strip of tiles** instead of side boxes (front desk: requests, tomorrow's
+    confirmations with the list to call, waiting list, forms, GHL; you: Τώρα, Επόμενος,
+    Σήμερα, Αύριο);
+  - the left menu folds to icons with «, opens again with », and remembers your choice;
+    below 1280 px it is always folded.
+- **Fake week 12–16 Oct** (development only): morning surgeries, full afternoons on
+  Mon/Tue/Thu, two bookings in the +30′ zone.
+- The 6a–6g / 2b boards are **not in `design/` yet**, so this follows the written change
+  list. I'll adjust it once you add them.
+- Check: see the click list in the reply for this step.
+
 ## 12 Oct 2026 — SPEC v1.10 (calendar v2 plan) and Settings in groups
 
 - **SPEC v1.10 / DESIGN v3**: your calendar change list is now in SPEC §4c and DESIGN

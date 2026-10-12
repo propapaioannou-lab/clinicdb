@@ -1332,8 +1332,11 @@
     "viewLabel": "View",
     "show": "Show",
     "noOwnColumn": "No doctor column found for you: link it in Settings → Calendar → Resources.",
-    "deskView": "Front-desk schedule",
-    "myView": "My schedule",
-    "closed": "closed"
+    "closed": "closed",
+    "whoseView": "Schedule",
+    "whose": {
+      "doctor": "Doctor",
+      "desk": "Front desk"
+    }
   }
 }

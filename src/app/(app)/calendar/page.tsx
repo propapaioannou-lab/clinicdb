@@ -124,6 +124,21 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
             <h1 className="text-[24px] font-semibold first-letter:uppercase">{title}</h1>
             <span className="text-[13px] text-muted">{doctor ? t(`subtitleDoctor.${view}`) : t(`subtitleDesk.${view}`)}</span>
           </div>
+          {/* Surgeons switch between their own schedule and the front desk's (same style as Ιατρείο | Spa). */}
+          {actor.role === "SURGEON" && (
+            <nav aria-label={t("whoseView")} className="ml-2 flex gap-[3px] rounded-[10px] bg-line-softer p-[3px]">
+              {([["doctor", false], ["desk", true]] as const).map(([k, desk]) => {
+                const on = desk !== doctor;
+                const href = `/calendar?${new URLSearchParams({ ...(view !== "day" && { view }), date, ...(desk && { as: "desk" }) })}`;
+                return (
+                  <Link key={k} href={href} aria-current={on ? "page" : undefined}
+                    className={`rounded-lg px-3.5 py-2 text-[13px] ${on ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "font-medium text-muted hover:text-ink"}`}>
+                    {t(`whose.${k}`)}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <nav aria-label={t("viewLabel")} className="flex rounded-[12px] bg-line-softer p-1 text-sm">
@@ -153,11 +168,6 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       )}
       {doctor && !own && <p className="text-sm text-muted">{t("noOwnColumn")}</p>}
       {body}
-      {actor.role === "SURGEON" && (
-        <Link href={doctor ? `/calendar?as=desk${view !== "day" ? `&view=${view}` : ""}&date=${date}` : `/calendar${view !== "day" ? `?view=${view}&date=${date}` : `?date=${date}`}`} className="self-start text-[13px] font-semibold text-muted hover:text-primary">
-          {doctor ? t("deskView") : t("myView")} →
-        </Link>
-      )}
     </main>
   );
 }

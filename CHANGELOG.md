@@ -2,6 +2,12 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Calendar: Ιατρός | Γραμματεία toggle
+
+- The "Πρόγραμμα γραμματείας →" link at the bottom is now a toggle next to the date,
+  styled like Ιατρείο | Spa: **Ιατρός** (your own schedule) | **Γραμματεία** (front desk,
+  with booking). It keeps the day / week / month you are on. Only surgeons see it.
+
 ## 11 Oct 2026 — Phase 6a-3: week, month and your own calendar
 
 - **Ημέρα | Εβδομάδα | Μήνας** switch at the top of Ημερολόγιο.

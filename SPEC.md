@@ -598,8 +598,8 @@ appointment titles; more than one location.
   (flag + reasons, high-risk reasons, infectious alert, history verified / pending /
   none, "Άνοιγμα καρτέλας"), the day at a glance; week = day cards (office hours, count,
   new patients by name + reason, online, blocks; totals); month = appointments per day,
-  holidays. No money, no booking buttons; the Owner-surgeon has a link to the front-desk
-  view. **Front desk**: week = Mon–Sat compact grid (✓/?), "ελεύθερα X" per day ("κλειστά"
+  holidays. No money, no booking buttons; surgeons switch with an **Ιατρός | Γραμματεία**
+  toggle next to the date (same style as Ιατρείο | Spa; decided 12 Oct 2026). **Front desk**: week = Mon–Sat compact grid (✓/?), "ελεύθερα X" per day ("κλειστά"
   on days without hours), "+ Νοσηλεύτρια" adds her lane; month = availability map (green
   ≥ 2 h, amber < 2 h, red full, past, holidays) + banner when the first free new-patient
   slot is > 10 days away. **New patient** = no earlier visit and no earlier kept

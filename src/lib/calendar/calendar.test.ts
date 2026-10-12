@@ -119,7 +119,7 @@ describe("status and moving", () => {
     const p = await makePatient(c.surgery, { surname: `Μετακίνησης ${tag()}` });
     const r = await createAppointment(sec, { patientId: p.id, typeId: first, resourceId: doctor, date: "2030-03-13", time: "11:00" }, ctx);
     if (!r.ok) throw new Error(r.error);
-    expect(await moveAppointment(sec, r.id, { date: "2030-03-13", time: "12:00", minutes: 45 }, ctx)).toEqual({ ok: true, overridden: [] });
+    expect(await moveAppointment(sec, r.id, { date: "2030-03-13", time: "12:00", minutes: 45 }, ctx)).toMatchObject({ ok: true, overridden: [] });
     const a = await db.appointment.findUniqueOrThrow({ where: { id: r.id } });
     expect([a.startsAt, a.endsAt]).toEqual([athensToUtc(2030, 3, 13, 12, 0), athensToUtc(2030, 3, 13, 12, 45)]);
     const other = await createAppointment(sec, { typeId: first, resourceId: doctor, date: "2030-03-13", time: "11:00" }, ctx);

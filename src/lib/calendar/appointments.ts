@@ -173,7 +173,7 @@ async function log(
   extra: { fromStatus?: AppointmentStatus; toStatus?: AppointmentStatus; details?: Record<string, unknown> },
   ctx: RequestContext,
 ) {
-  await tx.appointmentEvent.create({
+  const ev = await tx.appointmentEvent.create({
     data: {
       appointmentId: a.id, companyId: a.companyId, action, fromStatus: extra.fromStatus, toStatus: extra.toStatus,
       byId: actor.id, byName: actor.name, details: extra.details as Prisma.InputJsonValue,
@@ -196,6 +196,7 @@ async function log(
     },
     ctx,
   );
+  return ev.id;
 }
 
 // raw: { patientId?, typeId, resourceId, date: "YYYY-MM-DD", time: "HH:MM", minutes?, reason?, override? }
@@ -229,7 +230,10 @@ async function own(actor: Actor, id: string) {
 }
 
 // New time, length and/or resource. Clashes are refused unless `override`.
-export async function moveAppointment(actor: Actor, id: string, raw: Record<string, unknown>, ctx: RequestContext): Promise<Fail | { ok: true; overridden: Problem[] }> {
+// raw: { date?, time?, minutes?, resourceId?, flex?, override?, overrideReason?, notify? }.
+// The old time, length and column are kept in the log (for «Αναίρεση» and the history);
+// `notify` (default yes) = tell the patient — sent once GHL is connected (6d).
+export async function moveAppointment(actor: Actor, id: string, raw: Record<string, unknown>, ctx: RequestContext): Promise<Fail | { ok: true; overridden: Problem[]; eventId: string }> {
   if (!canEditPatients(actor.level)) return fail("forbidden");
   const a = await own(actor, id);
   if (!a || !ACTIVE_STATUSES.includes(a.status) || a.status === "DONE") return fail("not_found");
@@ -242,16 +246,46 @@ export async function moveAppointment(actor: Actor, id: string, raw: Record<stri
   const problems = await checkSlot(a.companyId, resourceId, startsAt, endsAt, { exceptId: id, patientId: a.patientId, surgery: a.type.layer === "SURGERY" });
   const refused = refusal(problems, raw);
   if (refused) return fail(refused, { problems, suggestions: await freeSlots(a.companyId, resourceId, startsAt, minutes) });
-  await db.$transaction(async (tx) => {
+  const eventId = await db.$transaction(async (tx) => {
     await tx.appointment.update({ where: { id }, data: { startsAt, endsAt, resourceId } });
-    await log(tx, actor, a, "moved", {
+    return log(tx, actor, a, "moved", {
       details: {
         from: a.startsAt.toISOString(), to: startsAt.toISOString(), minutes,
+        fromMinutes: Math.round((a.endsAt.getTime() - a.startsAt.getTime()) / 60e3), fromResource: a.resourceId,
         ...(resourceId !== a.resourceId && { resource: resourceId }), ...overrideDetails(problems, raw),
+        notifyPatient: raw.notify !== false, ...(raw.undoOf ? { undoOf: String(raw.undoOf) } : {}),
       },
     }, ctx);
   });
-  return { ok: true, overridden: problems };
+  return { ok: true, overridden: problems, eventId };
+}
+
+// «Αναίρεση» (the 10″ after a move): puts it back where it was. Only the person who moved
+// it, only the last change, only within 2 minutes. Logged as a move of its own.
+export const UNDO_WINDOW_MS = 2 * 60e3;
+export async function undoMove(actor: Actor, id: string, eventId: string, ctx: RequestContext) {
+  const a = await own(actor, id);
+  if (!a) return fail("not_found");
+  // (a change of the notify tick in between does not count)
+  const last = await db.appointmentEvent.findFirst({ where: { appointmentId: id, action: { not: "notify" } }, orderBy: { at: "desc" } });
+  if (!last || last.id !== eventId || last.action !== "moved" || last.byId !== actor.id || Date.now() - last.at.getTime() > UNDO_WINDOW_MS) return fail("not_allowed");
+  const d = last.details as { from: string; fromMinutes: number; fromResource: string };
+  const p = athensParts(new Date(d.from));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return moveAppointment(actor, id, {
+    date: athensIsoDate(new Date(d.from)), time: `${pad(p.hour)}:${pad(p.minute)}`, minutes: d.fromMinutes, resourceId: d.fromResource,
+    override: true, overrideReason: "Αναίρεση μετακίνησης", notify: false, undoOf: eventId,
+  }, ctx);
+}
+
+// The «☑ Ενημέρωση ασθενούς» tick after a move was changed: logged (sending comes with 6d).
+export async function setMoveNotify(actor: Actor, id: string, eventId: string, notify: boolean, ctx: RequestContext) {
+  const a = await own(actor, id);
+  if (!a || !canEditPatients(actor.level)) return fail("not_found");
+  const ev = await db.appointmentEvent.findFirst({ where: { id: eventId, appointmentId: id, action: "moved" } });
+  if (!ev) return fail("not_found");
+  await db.$transaction((tx) => log(tx, actor, a, "notify", { details: { notifyPatient: notify, forEvent: eventId } }, ctx));
+  return { ok: true as const };
 }
 
 // One step in the status list (SPEC §4c). Pressing the current status again does nothing.

@@ -1320,7 +1320,23 @@
     "suggestions": "Free times:",
     "status": "Status",
     "room": "Room",
-    "move": "Move",
+    "move": {
+      "past": "this time has passed",
+      "clash": "clash with {name}",
+      "closed": "outside hours",
+      "flex": "outside hours +30′",
+      "refused": "this time is not available",
+      "moved": "Moved → {to}",
+      "undo": "Undo",
+      "notify": "Tell the patient (WhatsApp · with GHL, 6d)",
+      "notMoved": "Not moved",
+      "notMovedHint": "For an exception with a reason: open the appointment → \"By hand\".",
+      "undoTooLate": "too late to undo",
+      "cancelCarry": "Cancel the move",
+      "carryHint": "Drop it on a free time (any day, week or month) · Esc = cancel",
+      "carryFrom": "from {from}",
+      "label": "Move"
+    },
     "saveMove": "Move",
     "moveAnyway": "Move anyway",
     "restore": "Restore",
@@ -1569,6 +1585,13 @@
         "forbidden": "Not allowed.",
         "not_found": "Not found."
       }
+    },
+    "moveManual": "By hand",
+    "historyLine": {
+      "moved": "Moved → {to}",
+      "undo": "Move undone",
+      "notifyOn": "Tell the patient: yes",
+      "notifyOff": "Tell the patient: no"
     }
   },
   "live": {

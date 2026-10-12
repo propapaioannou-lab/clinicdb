@@ -2,6 +2,23 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Phase 6a-7: moving appointments
+
+- **Drag and drop** in the day and week views: grab a card and drop it on another time,
+  day or column (doctor ↔ nurse). **Drag the bottom edge** to make it longer or shorter.
+- While dragging, a **ghost** shows where it would go: green = free ("Πεμ 15/10 · 19:55
+  ✓"), amber = «εκτός ωραρίου +30′» (allowed), red = clash / closed / past with the reason
+  ("19:05 × σύγκρουση με Λίνα Σ."). Dropping on red does nothing and says why.
+- **«Μετακίνηση»** (in the appointment panel): the card lifts and floats at the top; go to
+  any day, week or month and click a free time. ✕ or Esc puts it down.
+- **«Χειροκίνητα»**: typing the date and time, as before (with a reason for exceptions).
+- After every move: **«Μετακινήθηκε → …»** with **«Αναίρεση»** for 10 seconds and
+  «☑ Ενημέρωση ασθενούς» (on by default — sending comes with GHL, 6d). Everything is in
+  the appointment's history: "Μετακίνηση → …", "Αναίρεση μετακίνησης", "Ενημέρωση
+  ασθενούς: όχι".
+- On a tablet: hold a card for a moment, then drag (a quick swipe still scrolls).
+- Check: see the click list in the reply for this step.
+
 ## 12 Oct 2026 — Phase 6a-6: quick booking and the arrival check
 
 - **Quick booking**: click a free time (or «+ Ραντεβού», which now jumps to the next free

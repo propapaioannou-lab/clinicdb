@@ -92,3 +92,17 @@ export function ticks(scale: Scale): { min: number; y: number; major: boolean }[
 
 // Which band a minute is in (the now-line and auto-scroll work per band).
 export const bandAt = (scale: Scale, min: number) => scale.bands.find((b) => min >= b.from && min <= b.to) ?? null;
+
+// Pixels from the top → minute of the day (the opposite of yOf; for dragging). In a fold
+// it gives the fold's start or end, whichever is nearer.
+export function minuteAt(scale: Scale, y: number): number {
+  const first = scale.bands[0];
+  if (y <= first.top) return first.from;
+  for (const b of scale.bands) {
+    const h = ((b.to - b.from) / 60) * b.px;
+    if (y >= b.top && y <= b.top + h) return b.from + ((y - b.top) / b.px) * 60;
+  }
+  for (const f of scale.folds) if (y > f.top && y < f.top + f.height) return y - f.top < f.height / 2 ? f.from : f.to;
+  const last = scale.bands[scale.bands.length - 1];
+  return last.to;
+}

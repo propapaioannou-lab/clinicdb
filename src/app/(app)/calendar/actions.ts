@@ -5,7 +5,7 @@ import type { AppointmentStatus } from "@/generated/prisma/client";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { appointmentHistory, createAppointment, moveAppointment, NEEDS_REASON, setAppointmentStatus, startVisit, type CalendarError, type Problem } from "@/lib/calendar/appointments";
+import { appointmentHistory, createAppointment, moveAppointment, NEEDS_REASON, setAppointmentStatus, setMoveNotify, startVisit, undoMove, type CalendarError, type Problem } from "@/lib/calendar/appointments";
 import { arrive, bookingSearch, quickBook, quickDuplicates } from "@/lib/calendar/quick";
 import { STATUS_LABEL } from "@/lib/calendar/status";
 import { activeCompany } from "@/lib/company";
@@ -23,6 +23,7 @@ export type BookingResult = {
   flexOnly?: boolean; // only «εκτός ωραρίου +30′»: one more click books it
   needsReason?: boolean; // off-hours / weekend: booking anyway needs a reason
   patientError?: string; // the new patient's details were refused (e.g. a bad email)
+  eventId?: string; // a move: for «Αναίρεση» and the notify tick
 };
 
 async function actorNow() {
@@ -79,7 +80,22 @@ export async function bookAction(raw: Record<string, unknown>): Promise<BookingR
 
 export async function moveAction(id: string, raw: Record<string, unknown>): Promise<BookingResult> {
   const actor = await actorNow();
-  return result(await moveAppointment(actor, id, { ...raw, date: isoOf(raw.date) }, await requestContext()));
+  const r = await moveAppointment(actor, id, { ...raw, date: isoOf(raw.date) }, await requestContext());
+  revalidatePath("/");
+  return { ...(await result(r)), ...(r.ok && { eventId: r.eventId }) };
+}
+
+export async function undoMoveAction(id: string, eventId: string): Promise<BookingResult> {
+  const actor = await actorNow();
+  const r = await undoMove(actor, id, eventId, await requestContext());
+  revalidatePath("/");
+  return result(r);
+}
+
+export async function moveNotifyAction(id: string, eventId: string, notify: boolean) {
+  const actor = await actorNow();
+  const r = await setMoveNotify(actor, id, eventId, notify, await requestContext());
+  return r.ok ? { ok: true } : { error: r.error };
 }
 
 export async function statusAction(id: string, to: AppointmentStatus, opts: { room?: string; reason?: string } = {}): Promise<BookingResult> {
@@ -104,12 +120,16 @@ export async function historyAction(id: string) {
   const actor = await actorNow();
   const events = await appointmentHistory(actor, id);
   const when = new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
-  return (events ?? []).map((e) => ({
-    id: e.id,
-    at: when.format(e.at),
-    by: e.byName ?? "",
-    what: e.action === "moved" ? "Μετακίνηση" : e.toStatus ? STATUS_LABEL[e.toStatus] : e.action,
-  }));
+  const t = await getTranslations("calendar.historyLine");
+  const slot = new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  return (events ?? []).map((e) => {
+    const d = (e.details ?? {}) as { to?: string; undoOf?: string; notifyPatient?: boolean; overrideReason?: string };
+    const what =
+      e.action === "moved" ? (d.undoOf ? t("undo") : t("moved", { to: d.to ? slot.format(new Date(d.to)) : "" }))
+      : e.action === "notify" ? t(d.notifyPatient ? "notifyOn" : "notifyOff")
+      : e.toStatus ? STATUS_LABEL[e.toStatus] : e.action;
+    return { id: e.id, at: when.format(e.at), by: e.byName ?? "", what: d.overrideReason && !d.undoOf ? `${what} (${d.overrideReason})` : what };
+  });
 }
 
 // ── Quick booking (6a-6) ─────────────────────────────────────────────────────────────

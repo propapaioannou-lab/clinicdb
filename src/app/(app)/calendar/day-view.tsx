@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Dropdown } from "@/components/dropdown";
@@ -14,6 +14,7 @@ import { nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
 import { historyAction, moveAction, statusAction, type BookingResult } from "./actions";
 import { ArrivalButton } from "./arrival";
 import { Anyway, Outcome } from "./booking-bits";
+import { DragSurface, type ApptInfo, type Carry, type ColInfo } from "./drag-surface";
 import { QuickBook, TagChips, type QuickType } from "./quick-book";
 import { CardText, ColumnBackground, Folds, GridLines, Legend, place, TimeAxis } from "./grid-bits";
 import { NowLine } from "./now-line";
@@ -27,6 +28,8 @@ const duration = (min: number) => (min >= 60 ? `${Math.floor(min / 60)}ω${min %
 function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData; close: () => void }) {
   const t = useTranslations("calendar");
   const router = useRouter();
+  const path = usePathname();
+  const params = useSearchParams();
   const [pending, start] = useTransition();
   const [room, setRoom] = useState(a.room ?? data.rooms[0]);
   const [moving, setMoving] = useState(false);
@@ -51,6 +54,7 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
       const res = await moveAction(a.id, { ...mv, ...o });
       setR(res);
       if (res.ok) {
+        if (res.eventId) window.dispatchEvent(new CustomEvent("clinic:moved", { detail: { id: a.id, eventId: res.eventId, label: `${mv.date} · ${mv.time}` } }));
         router.refresh();
         setMoving(false);
       }
@@ -90,7 +94,13 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
         )}
       </div>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-[13.5px] font-semibold">
-        {a.active && a.status !== "DONE" && <button type="button" onClick={() => setMoving((x) => !x)} className="text-primary">{t("move")}</button>}
+        {a.active && a.status !== "DONE" && (
+          <>
+            {/* «Μετακίνηση»: the card is lifted; pick a time in any day, week or month. */}
+            <button type="button" onClick={() => { const q = new URLSearchParams(params.toString()); q.set("carry", a.id); router.push(`${path}?${q}`); close(); }} className="text-primary">{t("move.label")}</button>
+            <button type="button" onClick={() => setMoving((x) => !x)} className="text-primary">{t("moveManual")}</button>
+          </>
+        )}
         {steps.includes("NO_SHOW") && <button type="button" disabled={pending} onClick={() => status("NO_SHOW")} className="text-warn-ink">{t("actions.NO_SHOW")}</button>}
         {steps.includes("CANCELLED") && <button type="button" disabled={pending} onClick={() => { const why = prompt(t("cancelReason")); if (why !== null) status("CANCELLED", { reason: why }); }} className="text-danger">{t("actions.CANCELLED")}</button>}
         {(a.status === "CANCELLED" || a.status === "NO_SHOW") && <button type="button" disabled={pending} onClick={() => status("BOOKED")} className="text-primary">{t("restore")}</button>}
@@ -125,7 +135,7 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
 // Secretary day (DESIGN 6a–6g): resource columns on the two-band grid, free gaps to click
 // (white = normal hours, hatched = «εκτός ωραρίου +30′»), status chips. The calendar uses
 // the full width; booking / an appointment open in a panel beside it.
-export function DayView({ data, types, startAt }: { data: DayData; types: QuickType[]; startAt?: { resourceId: string; start: number } }) {
+export function DayView({ data, types, startAt, carry }: { data: DayData; types: QuickType[]; startAt?: { resourceId: string; start: number }; carry?: Carry | null }) {
   const t = useTranslations("calendar");
   const [panel, setPanel] = useState<Panel>(startAt ? { kind: "book", ...startAt } : { kind: "default" });
   const scale = data.scale;
@@ -142,6 +152,7 @@ export function DayView({ data, types, startAt }: { data: DayData; types: QuickT
     return <span className="text-[11.5px]">{STATUS_LABEL[a.status as AppointmentStatus]}</span>;
   };
   const cols = `64px repeat(${data.columns.length}, minmax(0, 1fr))`;
+  const weekday = new Date(`${data.date}T12:00:00Z`).getUTCDay() || 7;
   const open = panel.kind === "appointment" && !!selected;
 
   return (
@@ -158,10 +169,10 @@ export function DayView({ data, types, startAt }: { data: DayData; types: QuickT
           ))}
         </div>
         <div className="max-h-[calc(100vh-250px)] min-h-[420px] overflow-y-auto">
-          <div className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
+          <DragSurface scale={scale} carry={carry} className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
             <TimeAxis scale={scale} labels={{ surgery: t("bands.surgery"), office: t("bands.office") }} />
             {data.columns.map((c) => (
-              <div key={c.id} className="relative border-l border-line-soft">
+              <div key={c.id} className="relative border-l border-line-soft" data-col={JSON.stringify({ date: data.date, resourceId: c.id, weekday, normal: c.hours, flex: c.flex } satisfies ColInfo)}>
                 <ColumnBackground scale={scale} surgery={c.surgery} hours={c.hours} flex={c.flex} labels={{ overrun: t("overrun", { time: "{time}" }), flex: t("flexLabel") }} />
                 <GridLines scale={scale} />
                 {c.blocks.map((b) => (
@@ -187,10 +198,13 @@ export function DayView({ data, types, startAt }: { data: DayData; types: QuickT
                 {data.appointments.filter((a) => a.resourceId === c.id).map((a) => {
                   const box = place(scale, a.start, a.end);
                   const tight = box.height < 34 || !a.active;
+                  // Surgeries move with Phase 4/6b; done ones stay where they were.
+                  const movable = a.active && a.status !== "DONE" && a.type.layer !== "SURGERY";
                   return (
                     <button key={a.id} type="button" onClick={() => setPanel({ kind: "appointment", id: a.id })}
+                      data-appt={JSON.stringify({ id: a.id, date: data.date, resourceId: a.resourceId, start: a.start, end: a.end, active: a.active, movable, label: `${a.patient?.short ?? a.type.label} · ${a.type.label} ${a.end - a.start}′` } satisfies ApptInfo)}
                       // Cancelled / no-show: a small chip on the right, so the freed time stays clickable.
-                      className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""}`}
+                      className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""} ${movable ? "cursor-grab touch-none active:cursor-grabbing" : ""}`}
                       style={{ ...box, zIndex: a.active ? 2 : 3 }}>
                       <CardText h={a.active ? box.height : 0} time={a.time} end={a.end} name={a.patient?.short ?? t("noPatient")} type={a.type.label} reason={a.reason} surgery={a.type.layer === "SURGERY"}
                         extra={<>
@@ -198,6 +212,7 @@ export function DayView({ data, types, startAt }: { data: DayData; types: QuickT
                           {a.patient && a.patient.tags.length > 0 && <span className="ml-1.5 inline-flex gap-1 align-middle font-normal"><TagChips tags={a.patient.tags} /></span>}
                         </>} />
                       <span className="shrink-0">{statusChip(a)}</span>
+                      {movable && <span data-resize aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize" />}
                     </button>
                   );
                 })}
@@ -205,7 +220,7 @@ export function DayView({ data, types, startAt }: { data: DayData; types: QuickT
             ))}
             <Folds scale={scale} left={64} label={t("folded")} />
             <NowLine dates={[data.date]} scale={scale} left={64} focus={office?.from} />
-          </div>
+          </DragSurface>
         </div>
         <Legend types={[...types.map((ty) => ({ label: ty.label, minutes: ty.minutes, color: ty.color })), { label: t("surgery"), minutes: 0, color: "blue" }]} zones={{ flex: t("legend.flex"), closed: t("legend.closedShort") }} />
       </section>

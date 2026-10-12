@@ -16,6 +16,7 @@ import { loadActor } from "@/lib/users/manage";
 import { DayView } from "./day-view";
 import { DeskMonth, DeskWeek } from "./desk-views";
 import { DoctorDay, DoctorMonth, DoctorWeek, doctorTiles } from "./doctor-views";
+import { CarryBar, MoveToast } from "./move-toast";
 import { TopStrip, type Tile } from "./top-strip";
 
 type View = "day" | "week" | "month";
@@ -51,9 +52,26 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const weekend = sp.we === "1";
   const doctor = actor.role === "SURGEON" && sp.as !== "desk";
   const own = doctor ? await ownResource(actor, company.id) : null;
+  // «Μετακίνηση» (6a-7): the appointment being carried to a new time (?carry=id), kept
+  // while moving between days, weeks and months.
+  const carried = typeof sp.carry === "string" && !doctor
+    ? await db.appointment.findFirst({
+        where: { id: sp.carry, companyId: company.id, status: { in: ["BOOKED", "CONFIRMED", "ARRIVED", "READY", "WITH_DOCTOR", "TO_PAY"] }, type: { layer: { not: "SURGERY" } } },
+        include: { patient: { select: { firstName: true, surname: true } }, type: { select: { labelEl: true } } },
+      })
+    : null;
+  const carry = carried
+    ? {
+        id: carried.id,
+        minutes: Math.round((carried.endsAt.getTime() - carried.startsAt.getTime()) / 60e3),
+        label: `${carried.patient ? `${carried.patient.firstName} ${carried.patient.surname.slice(0, 1)}.` : carried.type.labelEl} · ${carried.type.labelEl}`,
+        name: carried.patient ? `${carried.patient.firstName} ${carried.patient.surname}`.trim() : carried.type.labelEl,
+        from: new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(carried.startsAt),
+      }
+    : null;
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", nurse: sp.nurse as string | undefined, we: weekend ? "1" : undefined, ...over };
+    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", nurse: sp.nurse as string | undefined, we: weekend ? "1" : undefined, carry: carry?.id, ...over };
     for (const [k, v] of Object.entries(all)) if (v && !(k === "view" && v === "day")) p.set(k, v);
     return `/calendar${p.size ? `?${p}` : ""}`;
   };
@@ -100,7 +118,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     // «+ Ραντεβού» opens the quick-booking panel on the next free slot (?book=resource.minute).
     const m = typeof sp.book === "string" ? /^([\w-]+)\.(\d{1,4})$/.exec(sp.book) : null;
     const startAt = m && data.columns.some((c) => c.id === m[1]) ? { resourceId: m[1], start: Number(m[2]) } : undefined;
-    body = <DayView key={`${date}${sp.book ?? ""}`} startAt={startAt} data={data} types={officeTypes} />;
+    body = <DayView key={`${date}${sp.book ?? ""}`} startAt={carry ? undefined : startAt} data={data} types={officeTypes} carry={carry} />;
   } else if (view === "day" && own) {
     const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, stepDay(date, 1, false), 1, [own.id])]);
     const day = days![0];
@@ -127,7 +145,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     const cols = doctor ? (own ? [own] : []) : [doctorCol, ...(sp.nurse === "1" ? resources.filter((r) => r.kind === "NURSE") : [])].filter(Boolean);
     const ids = cols.map((c) => c!.id);
     const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
-    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} />;
+    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} />;
   } else if (view === "month") {
     const first = `${date.slice(0, 7)}-01`;
     const gridStart = mondayOf(first);
@@ -143,7 +161,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       const firstFree = slot
         ? { days: daysUntil(slot), label: new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(slot) }
         : null;
-      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} />;
+      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} carry={carry?.id} />;
     }
   }
   if (!doctor) tiles = await deskTiles(actor, company.id, today);
@@ -191,7 +209,12 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           </span>
         )}
       </div>
-      {tiles.length > 0 && <TopStrip tiles={tiles} label={t("strip.label")} />}
+      {carry ? (
+        <CarryBar name={`${carry.label} ${carry.minutes}′`} sub={t("move.carryFrom", { from: carry.from })} />
+      ) : (
+        tiles.length > 0 && <TopStrip tiles={tiles} label={t("strip.label")} />
+      )}
+      <MoveToast />
       {doctor && !own && <p className="text-sm text-muted">{t("noOwnColumn")}</p>}
       {body}
     </main>

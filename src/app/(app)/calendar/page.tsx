@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { LiveRefresh } from "@/components/live/live-refresh";
 import { primaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { freeSlots } from "@/lib/calendar/appointments";
@@ -115,6 +116,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const nav = "flex h-11 min-w-11 items-center justify-center rounded-control border border-line-strong bg-surface px-3 text-sm font-semibold hover:border-primary";
   return (
     <main className="mx-auto flex w-full max-w-[1500px] flex-col gap-4 px-4 py-5 md:px-6">
+      <LiveRefresh companyId={company.id} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Link href={q({ date: prev })} aria-label={t("prev")} className={nav}>‹</Link>

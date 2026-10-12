@@ -1,5 +1,6 @@
 "use server";
 
+import { linkVisit } from "@/lib/calendar/appointments";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requestContext, requireSession } from "@/lib/auth/current";
@@ -29,12 +30,15 @@ function parse(json: string): Record<string, unknown> | "invalid" | "invalid_dat
   return { ...raw, startedAt };
 }
 
-export async function createVisitAction(patientId: string, json: string): Promise<VisitActionState> {
+// appointmentId: the visit was started from the calendar / home screen ("Έναρξη επίσκεψης").
+export async function createVisitAction(patientId: string, appointmentId: string | null, json: string): Promise<VisitActionState> {
   const actor = await actorNow();
   const raw = parse(json);
   if (typeof raw === "string") return { error: raw };
-  const r = await createVisit(actor, patientId, raw, await requestContext());
+  const ctx = await requestContext();
+  const r = await createVisit(actor, patientId, raw, ctx);
   if (!r.ok) return { error: r.error };
+  if (appointmentId) await linkVisit(actor, appointmentId, r.id, ctx);
   revalidatePath(`/patients/${patientId}`);
   // Back to the patient's visits (decided 11 Oct 2026).
   redirect(`/patients/${patientId}?tab=visits&saved=1`);

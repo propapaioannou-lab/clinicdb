@@ -16,7 +16,7 @@ import { loadCatalog } from "@/lib/visits/catalog-db";
 import { VisitForm } from "../visit-form";
 
 // 3 · New visit (DESIGN.md).
-export default async function NewVisitPage({ params }: PageProps<"/patients/[id]/visits/new">) {
+export default async function NewVisitPage({ params, searchParams }: PageProps<"/patients/[id]/visits/new">) {
   const session = await requireSession();
   const actor = await loadActor(session.user.id);
   const { id } = await params;
@@ -24,6 +24,9 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
   const p = await openPatient(actor, id, await requestContext());
   if (!p) notFound();
   const catalog = await loadCatalog(p.company.id);
+  // Started from the calendar / home ("Έναρξη επίσκεψης"): saving links the appointment.
+  const sp = await searchParams;
+  const appointmentId = typeof sp.appointment === "string" ? sp.appointment : null;
   const [types, last, visits, allergies, t] = await Promise.all([
     visitTypes(p.company.id),
     lastMeasurements(p.id),
@@ -51,7 +54,7 @@ export default async function NewVisitPage({ params }: PageProps<"/patients/[id]
           weightKg: "", heightCm: height ? num1(height) : "",
         }}
         previousWeight={last?.weightKg ? { kg: last.weightKg, date: await shortDate(last.startedAt) } : null}
-        action={createVisitAction.bind(null, p.id)}
+        action={createVisitAction.bind(null, p.id, appointmentId)}
         aside={
           <>
             {canHandleMoney(actor) && <section className={`${card} p-5 text-sm text-muted`}>{t("chargeAfterSave")}</section>}

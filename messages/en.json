@@ -9,7 +9,63 @@
     "today": "Today",
     "placeholder": "Welcome, {name}. Today's appointments and surgeries will appear here once the calendar is connected.",
     "patients": "Patients",
-    "newPatient": "New patient"
+    "newPatient": "New patient",
+    "late": "{minutes}′ late",
+    "nextNow": "next one now",
+    "nextIn": "next in {minutes}′",
+    "now": "Now",
+    "myDay": "My appointments today",
+    "myDaySub": "{count} appointments · {waiting} waiting",
+    "toCalendar": "Calendar",
+    "noAppointments": "No appointments today.",
+    "flagged": "Flagged",
+    "startVisit": "Start visit",
+    "continueVisit": "Continue visit",
+    "pill": {
+      "expected": "Expected",
+      "waiting": "Waiting",
+      "ready": "Ready",
+      "withYou": "With you",
+      "done": "Done"
+    },
+    "later": "Coming in phase {phase}.",
+    "chat": "Chat",
+    "chatDoctor": "Chat with the doctor",
+    "tasks": "Tasks",
+    "toCheck": "To check today",
+    "flow": "Today's flow",
+    "appointmentsCount": "{count} appointments",
+    "doctorWith": "Doctor: {room} with {name} · since {since} ",
+    "behind": "+{minutes}′ behind schedule",
+    "doctorFree": "The doctor is free",
+    "waitingRoom": "Waiting room",
+    "nobodyWaiting": "Nobody waiting.",
+    "arrivedLine": "Arrived {arrived} · appointment {time}",
+    "readyIn": "{room} · notify",
+    "waitsDoctor": "Waiting for the doctor",
+    "collect": "Collect payment",
+    "withDoctorUpper": "with the doctor",
+    "readyUpper": "ready",
+    "since": "since {time}",
+    "roomFree": "Free",
+    "pending": "To handle",
+    "surgeryChecks": "Surgery checks",
+    "todayAppointments": "Today's appointments",
+    "unconfirmed": "unconfirmed",
+    "confirmed": "confirmed",
+    "noShow": "No-show",
+    "reception": "Reception",
+    "newAppointment": "New appointment",
+    "tiles": {
+      "appointments": "appointments today",
+      "waiting": "waiting",
+      "toPay": "to pay",
+      "done": "done"
+    },
+    "tomorrowConf": "Tomorrow · confirmations",
+    "openTomorrow": "Open tomorrow",
+    "waitingList": "Waiting list",
+    "surgeriesAdmin": "Surgeries · admin"
   },
   "login": {
     "title": "Log in",
@@ -1338,5 +1394,13 @@
       "doctor": "Doctor",
       "desk": "Front desk"
     }
+  },
+  "live": {
+    "ready": "{name} is ready",
+    "patient": "Patient",
+    "minutesAgo": "{minutes}′ ago",
+    "justNow": "just now",
+    "open": "Open record",
+    "dismiss": "Dismiss"
   }
 }

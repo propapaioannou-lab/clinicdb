@@ -1,8 +1,8 @@
 # ClinicDB — State of the build
 
-As of **11 Oct 2026** (commit after 6a-2). Details: `SPEC.md` (v1.9, incl. §14 deviations
+As of **12 Oct 2026** (commit after 6a-4). Details: `SPEC.md` (v1.9, incl. §14 deviations
 from DESIGN.md), plain-language history: `CHANGELOG.md`. Development only — no real
-patient data anywhere yet; 15,600 fake patients for testing. 207 automated tests pass.
+patient data anywhere yet; 15,600 fake patients for testing. 210 automated tests pass.
 
 | Phase / step | Status | What changed from the original plan |
 |---|---|---|
@@ -17,7 +17,7 @@ patient data anywhere yet; 15,600 fake patients for testing. 207 automated tests
 | **3 Intake** (tablet, QR, remote link, consents) | Not started | In the order after 6f. |
 | **4 Surgeries, consents, brief** | Not started | Prepared: procedure catalogue with implant/technique details; allergy reminder at booking planned. Next after 6a. |
 | **5 Photo browser** | Not started | Architecture changed: originals on the Synology, compressed copies via the mini PC to the cloud. In the order after 3. |
-| **6a Calendar core** | **Partly done** | **6a-1 done:** data, Greek holidays, clash check + free slots, status rules + history, Settings → Ημερολόγιο. **6a-2 done:** secretary day view, booking and appointment panels. **6a-3 done:** week/month for the front desk, physician day/week/month. **To do:** 6a-4 live home screens + "ready in room" banner, 6a-5 staff chat. |
+| **6a Calendar core** | **Partly done** | **6a-1 done:** data, Greek holidays, clash check + free slots, status rules + history, Settings → Ημερολόγιο. **6a-2 done:** secretary day view, booking and appointment panels. **6a-3 done:** week/month for the front desk, physician day/week/month. **6a-4 done:** live home screens by role (physician / PA / front desk), ready-in-room banner, calendar ↔ visit link. **To do:** 6a-5 staff chat. |
 | 6b–6f Surgery scheduling, schedule e-mails, GHL, front desk, tasks | Not started | 6b–6f defined in SPEC v1.6 (new). |
 | **7 AI assistant** | Not started | Build after go-live and after the lawyer's answer on AI Act scope. |
 | **8c Integrity** (§3b) | Not started | New in v1.6: versions instead of overwriting everywhere, hash-chained audit log, qualified timestamps, evidence export, auto-logout + PIN. |

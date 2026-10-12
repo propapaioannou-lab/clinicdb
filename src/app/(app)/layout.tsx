@@ -9,6 +9,8 @@ import { backupHealth } from "@/lib/backups";
 import { activeCompany, userCompanies } from "@/lib/company";
 import { canManageUsers, canSeeContactDetails } from "@/lib/permissions";
 import { loadActor } from "@/lib/users/manage";
+import { ReadyBanner } from "@/components/live/ready-banner";
+import { surgeonResources } from "@/lib/calendar/views";
 import { logoutAction, switchCompanyAction } from "./actions";
 
 // App shell (DESIGN.md): left menu + top bar with patient search; bottom bar on phones.
@@ -20,6 +22,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const format = await getFormatter();
   // Owners/Admins see a warning on every page if backups are not working.
   const backupProblem = canManageUsers(user.level) && !(await backupHealth()).ok;
+  // Surgeons get the "ready in room" banner for their own column(s) on every page.
+  const readyFor = actor.role === "SURGEON" && current ? await surgeonResources(actor.id, current.id) : [];
   const soon = t("nav.soon");
   const settingsMatch = ["/settings", "/admin"];
 
@@ -98,7 +102,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             {t("backups.banner")} <Link href="/admin/backups" className="underline">{t("backups.bannerLink")}</Link>
           </div>
         )}
-        <div className="flex flex-1 flex-col pb-20 md:pb-0">{children}</div>
+        <div className="flex flex-1 flex-col pb-20 md:pb-0">
+          {readyFor.length > 0 && current && <ReadyBanner companyId={current.id} resourceIds={readyFor} />}
+          {children}
+        </div>
       </div>
 
       <nav aria-label={t("nav.main")} className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">

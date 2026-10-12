@@ -9,7 +9,63 @@
     "today": "Σήμερα",
     "placeholder": "Καλώς ήρθατε, {name}. Τα σημερινά ραντεβού και χειρουργεία θα εμφανίζονται εδώ μόλις συνδεθεί το ημερολόγιο.",
     "patients": "Ασθενείς",
-    "newPatient": "Νέος ασθενής"
+    "newPatient": "Νέος ασθενής",
+    "late": "αργεί {minutes}′",
+    "nextNow": "επόμενος τώρα",
+    "nextIn": "επόμενος σε {minutes}′",
+    "now": "Τώρα",
+    "myDay": "Τα ραντεβού μου σήμερα",
+    "myDaySub": "{count} ραντεβού · {waiting} στην αναμονή",
+    "toCalendar": "Ημερολόγιο",
+    "noAppointments": "Κανένα ραντεβού σήμερα.",
+    "flagged": "Σήμανση",
+    "startVisit": "Έναρξη επίσκεψης",
+    "continueVisit": "Συνέχεια επίσκεψης",
+    "pill": {
+      "expected": "Αναμένεται",
+      "waiting": "Στην αναμονή",
+      "ready": "Έτοιμος",
+      "withYou": "Μαζί σας",
+      "done": "Ολοκληρώθηκε"
+    },
+    "later": "Έρχεται στη φάση {phase}.",
+    "chat": "Συνομιλία",
+    "chatDoctor": "Συνομιλία με γιατρό",
+    "tasks": "Εργασίες",
+    "toCheck": "Για έλεγχο σήμερα",
+    "flow": "Ροή ημέρας",
+    "appointmentsCount": "{count} ραντεβού",
+    "doctorWith": "Γιατρός: {room} με {name} · από {since} ",
+    "behind": "+{minutes}′ από πρόγραμμα",
+    "doctorFree": "Ο γιατρός είναι ελεύθερος",
+    "waitingRoom": "Αναμονή",
+    "nobodyWaiting": "Κανείς στην αναμονή.",
+    "arrivedLine": "Ήρθε {arrived} · ραντεβού {time}",
+    "readyIn": "{room} · ειδοποίηση",
+    "waitsDoctor": "Περιμένει τον γιατρό",
+    "collect": "Είσπραξη",
+    "withDoctorUpper": "με τον γιατρό",
+    "readyUpper": "έτοιμος",
+    "since": "από {time}",
+    "roomFree": "Ελεύθερο",
+    "pending": "Προς διεκπεραίωση",
+    "surgeryChecks": "Έλεγχοι χειρουργείων",
+    "todayAppointments": "Ραντεβού σήμερα",
+    "unconfirmed": "ανεπιβεβαίωτο",
+    "confirmed": "επιβεβαιωμένο",
+    "noShow": "Δεν ήρθε",
+    "reception": "Υποδοχή",
+    "newAppointment": "Νέο ραντεβού",
+    "tiles": {
+      "appointments": "ραντεβού σήμερα",
+      "waiting": "στην αναμονή",
+      "toPay": "προς πληρωμή",
+      "done": "ολοκληρώθηκαν"
+    },
+    "tomorrowConf": "Αύριο · επιβεβαιώσεις",
+    "openTomorrow": "Άνοιγμα αυριανής ημέρας",
+    "waitingList": "Λίστα αναμονής",
+    "surgeriesAdmin": "Χειρουργεία · διοικητικά"
   },
   "login": {
     "title": "Σύνδεση",
@@ -1338,5 +1394,13 @@
       "doctor": "Ιατρός",
       "desk": "Γραμματεία"
     }
+  },
+  "live": {
+    "ready": "{name} είναι έτοιμος/η",
+    "patient": "Ασθενής",
+    "minutesAgo": "πριν {minutes}′",
+    "justNow": "μόλις τώρα",
+    "open": "Άνοιγμα καρτέλας",
+    "dismiss": "Κλείσιμο"
   }
 }

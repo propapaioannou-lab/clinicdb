@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { requestContext, requireSession } from "@/lib/auth/current";
-import { appointmentHistory, createAppointment, moveAppointment, setAppointmentStatus, type CalendarError, type Problem } from "@/lib/calendar/appointments";
+import { redirect } from "next/navigation";
+import { appointmentHistory, createAppointment, moveAppointment, setAppointmentStatus, startVisit, type CalendarError, type Problem } from "@/lib/calendar/appointments";
 import { STATUS_LABEL } from "@/lib/calendar/status";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
 import { athensIsoDate, athensParts } from "@/lib/time";
@@ -76,7 +77,17 @@ export async function statusAction(id: string, to: AppointmentStatus, opts: { ro
   const r = await setAppointmentStatus(actor, id, to, opts, await requestContext());
   if (!r.ok) return { error: r.error };
   revalidatePath("/calendar");
+  revalidatePath("/");
   return { ok: true };
+}
+
+// "Έναρξη επίσκεψης" (physician home): with the doctor, then the new visit for that patient.
+export async function startVisitAction(id: string): Promise<BookingResult> {
+  const actor = await actorNow();
+  const r = await startVisit(actor, id, await requestContext());
+  if (!r.ok) return { error: r.error };
+  if (!r.patientId) return { ok: true };
+  redirect(`/patients/${r.patientId}/visits/new?appointment=${id}`);
 }
 
 export async function historyAction(id: string) {

@@ -2,6 +2,29 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — Phase 6a-4: live home screens and "ready in room"
+
+- The home page now depends on who you are:
+  - **You (surgeon)**: clock with seconds and "επόμενος σε X′" (amber in the last 5′,
+    red when late), a greeting and a daily line, your appointments today with a red
+    "now" line that follows the clock, and **Έναρξη επίσκεψης** on each patient. No money.
+  - **PA / nurse**: "Ροή ημέρας" — waiting room, one card per room, "Δωμάτιο X ·
+    ειδοποίηση", where the doctor is and how late, today's list.
+  - **Front desk**: "Υποδοχή" — counters, today's list with one button per patient
+    (Άφιξη ✓ → Δωμάτιο · ειδοποίηση → Τέλος επίσκεψης → Είσπραξη), "Δεν ήρθε", tomorrow's
+    confirmations.
+- **Live**: when anyone changes an appointment, every open home page and calendar
+  updates by itself within about a second (no reload).
+- **Ready in room**: when the PA or front desk taps "Δωμάτιο X · ειδοποίηση", you get a
+  green banner with a chime on whatever page you are on, with "Άνοιγμα καρτέλας".
+- **Calendar and visits are linked**: Έναρξη επίσκεψης opens a new visit for that
+  appointment; saving it moves the appointment to "Προς πληρωμή" (or "Ολοκληρώθηκε" if
+  there is no fee); the front desk closing the visit after payment finishes it.
+- Check: open the app as yourself in one window and as the secretary in another
+  (private window). Secretary home: press **Άφιξη ✓** on a patient, then **Δωμάτιο 1 ·
+  ειδοποίηση** — your window shows the green banner within a second or two. Then press
+  **Έναρξη επίσκεψης** on that patient on your home page.
+
 ## 12 Oct 2026 — Calendar: Ιατρός | Γραμματεία toggle
 
 - The "Πρόγραμμα γραμματείας →" link at the bottom is now a toggle next to the date,

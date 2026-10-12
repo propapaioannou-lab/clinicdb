@@ -2,7 +2,10 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { athensToUtc } from "@/lib/time";
 import { companies, ctx, makeActor, makePatient } from "../../../test/factories";
-import { createAppointment, freeSlots, moveAppointment, setAppointmentStatus } from "./appointments";
+import { createVisit, setVisitClosed } from "@/lib/visits/visits";
+import { greetingFor } from "@/lib/home/greeting";
+import { calendarDay } from "./day";
+import { createAppointment, freeSlots, linkVisit, moveAppointment, setAppointmentStatus, startVisit } from "./appointments";
 import { greekHolidays, holidayOn, orthodoxEaster } from "./holidays";
 import { checkTransition } from "./status";
 
@@ -125,5 +128,59 @@ describe("status and moving", () => {
   it("refuses Guests and other companies", async () => {
     expect(await createAppointment(await makeActor("GUEST", [c.surgery]), { typeId: first, resourceId: doctor, date: MON, time: "09:00" }, ctx)).toEqual({ ok: false, error: "forbidden" });
     expect(await createAppointment(await makeActor("USER", [c.spa], "SPA_STAFF"), { typeId: first, resourceId: doctor, date: MON, time: "09:00" }, ctx)).toEqual({ ok: false, error: "not_found" });
+  });
+});
+
+describe("calendar ↔ visits (6a-4)", () => {
+  it("'Έναρξη επίσκεψης' goes via 'arrived' to 'with the doctor'; saving a charged visit → 'to pay'; closing it → 'done'", async () => {
+    const sec = await makeActor("USER", [c.surgery], "SECRETARY");
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    const p = await makePatient(c.surgery, { surname: `Έναρξης ${tag()}` });
+    const r = await createAppointment(sec, { patientId: p.id, typeId: first, resourceId: doctor, date: "2030-03-18", time: "09:00" }, ctx);
+    if (!r.ok) throw new Error(r.error);
+    expect(await startVisit(surgeon, r.id, ctx)).toEqual({ ok: true, patientId: p.id });
+    const events = await db.appointmentEvent.findMany({ where: { appointmentId: r.id }, orderBy: { at: "asc" } });
+    expect(events.map((e) => e.toStatus)).toEqual(["BOOKED", "ARRIVED", "WITH_DOCTOR"]);
+
+    const type = await db.listItem.create({ data: { companyId: c.surgery, kind: "VISIT_TYPE", label: `Πρώτη ${tag()}`, chargeable: true, defaultFeeCents: 10000 } });
+    const v = await createVisit(surgeon, p.id, { typeId: type.id }, ctx);
+    if (!v.ok) throw new Error(v.error);
+    expect(await linkVisit(surgeon, r.id, v.id, ctx)).toEqual({ ok: true });
+    expect(await db.appointment.findUniqueOrThrow({ where: { id: r.id } })).toMatchObject({ visitId: v.id, status: "TO_PAY" });
+
+    expect(await setVisitClosed(sec, v.id, true, ctx)).toEqual({ ok: true });
+    expect((await db.appointment.findUniqueOrThrow({ where: { id: r.id } })).status).toBe("DONE");
+
+    // The day data tells when each entered its current status.
+    const day = await calendarDay(sec, c.surgery, "2030-03-18");
+    expect(day?.appointments.find((a) => a.id === r.id)).toMatchObject({ status: "DONE", visitId: v.id, statusAt: expect.stringMatching(/^\d{2}:\d{2}$/) });
+  });
+
+  it("a visit without a fee goes straight to 'done'; another patient's visit is refused", async () => {
+    const sec = await makeActor("USER", [c.surgery], "SECRETARY");
+    const surgeon = await makeActor("USER", [c.surgery], "SURGEON");
+    const p = await makePatient(c.surgery, { surname: `Δωρεάν ${tag()}` });
+    const other = await makePatient(c.surgery, { surname: `Άλλος ${tag()}` });
+    const r = await createAppointment(sec, { patientId: p.id, typeId: first, resourceId: doctor, date: "2030-03-18", time: "10:00" }, ctx);
+    if (!r.ok) throw new Error(r.error);
+    await startVisit(surgeon, r.id, ctx);
+    const free = await db.listItem.create({ data: { companyId: c.surgery, kind: "VISIT_TYPE", label: `Επανέλεγχος ${tag()}` } });
+    const wrong = await createVisit(surgeon, other.id, { typeId: free.id }, ctx);
+    const v = await createVisit(surgeon, p.id, { typeId: free.id }, ctx);
+    if (!v.ok || !wrong.ok) throw new Error("visit");
+    expect(await linkVisit(surgeon, r.id, wrong.id, ctx)).toEqual({ ok: false, error: "not_found" });
+    expect(await linkVisit(surgeon, r.id, v.id, ctx)).toEqual({ ok: true });
+    expect((await db.appointment.findUniqueOrThrow({ where: { id: r.id } })).status).toBe("DONE");
+  });
+});
+
+describe("home greeting", () => {
+  it("by the hour, and one line per day that stays the same all day", () => {
+    expect(greetingFor("2026-10-12", 9).hello).toBe("Καλημέρα, γιατρέ");
+    expect(greetingFor("2026-10-12", 13).hello).toBe("Καλό μεσημέρι, γιατρέ");
+    expect(greetingFor("2026-10-12", 19).hello).toBe("Καλησπέρα, γιατρέ");
+    expect(greetingFor("2026-10-12", 9).line).toBe(greetingFor("2026-10-12", 20).line);
+    expect(greetingFor("2026-10-12", 9).line).not.toBe(greetingFor("2026-10-13", 9).line);
+    expect(greetingFor("2025-12-31", 9).line).toBeTruthy(); // before the start date still works
   });
 });

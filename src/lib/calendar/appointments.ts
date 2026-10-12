@@ -143,7 +143,7 @@ const text = (v: unknown, max: number) => (typeof v === "string" ? v.replace(/\s
 async function log(
   tx: Prisma.TransactionClient,
   actor: Actor,
-  a: { id: string; companyId: string; patientId: string | null },
+  a: { id: string; companyId: string; patientId: string | null; resourceId: string; status?: AppointmentStatus; room?: string | null },
   action: string,
   extra: { fromStatus?: AppointmentStatus; toStatus?: AppointmentStatus; details?: Record<string, unknown> },
   ctx: RequestContext,
@@ -154,6 +154,15 @@ async function log(
       byId: actor.id, byName: actor.name, details: extra.details as Prisma.InputJsonValue,
     },
   });
+  // Live screens learn about it the moment the transaction commits (NOTIFY is sent then).
+  const p = a.patientId ? await tx.patient.findUnique({ where: { id: a.patientId }, select: { surname: true, firstName: true } }) : null;
+  const event = {
+    type: "appointment", companyId: a.companyId, appointmentId: a.id, action,
+    status: extra.toStatus ?? a.status ?? "BOOKED", room: extra.toStatus === "READY" ? ((extra.details?.room as string | undefined) ?? a.room ?? null) : null,
+    resourceId: (extra.details?.resource as string | undefined) ?? a.resourceId, patientId: a.patientId,
+    patientShort: p ? `${p.firstName ? `${p.firstName} ` : ""}${p.surname.slice(0, 1)}.` : null, byName: actor.name, at: new Date().toISOString(),
+  };
+  await tx.$executeRaw`SELECT pg_notify('clinic_live', ${JSON.stringify(event)})`;
   await audit(
     {
       action: `appointment.${action}`, actor, companyId: a.companyId,
@@ -263,4 +272,36 @@ export async function appointmentHistory(actor: Actor, id: string) {
   const a = await own(actor, id);
   if (!a || !canEditPatients(actor.level)) return null;
   return db.appointmentEvent.findMany({ where: { appointmentId: id }, orderBy: { at: "desc" }, take: 30 });
+}
+
+// ── Calendar ↔ visits (Phase 6a-4) ───────────────────────────────────────────────
+// "Έναρξη επίσκεψης": the patient goes to "with the doctor" (via "arrived" if they were
+// not checked in) and the new visit opens.
+export async function startVisit(actor: Actor, id: string, ctx: RequestContext): Promise<Fail | { ok: true; patientId: string | null }> {
+  const a = await own(actor, id);
+  if (!a) return fail("not_found");
+  if (a.status === "BOOKED" || a.status === "CONFIRMED") {
+    const r = await setAppointmentStatus(actor, id, "ARRIVED", {}, ctx);
+    if (!r.ok) return r;
+  }
+  const r = await setAppointmentStatus(actor, id, "WITH_DOCTOR", {}, ctx);
+  if (!r.ok) return r;
+  return { ok: true, patientId: a.patientId };
+}
+
+// The visit was saved from this appointment: link them; "to pay" if the visit has a fee,
+// otherwise straight to "done" (SPEC §4c).
+export async function linkVisit(actor: Actor, id: string, visitId: string, ctx: RequestContext): Promise<Fail | { ok: true }> {
+  const a = await own(actor, id);
+  const v = await db.visit.findFirst({ where: { id: visitId, companyId: { in: actor.companyIds } }, select: { patientId: true, companyId: true, feeCents: true } });
+  if (!a || !v || v.patientId !== a.patientId || v.companyId !== a.companyId) return fail("not_found");
+  await db.appointment.update({ where: { id }, data: { visitId } });
+  if (a.status === "WITH_DOCTOR") return setAppointmentStatus(actor, id, v.feeCents ? "TO_PAY" : "DONE", {}, ctx).then((r) => (r.ok ? { ok: true as const } : r));
+  return { ok: true };
+}
+
+// The front desk closed the visit after payment: its appointment is done.
+export async function visitClosed(actor: Actor, visitId: string, ctx: RequestContext) {
+  const appts = await db.appointment.findMany({ where: { visitId, status: "TO_PAY", companyId: { in: actor.companyIds } }, select: { id: true } });
+  for (const a of appts) await setAppointmentStatus(actor, a.id, "DONE", {}, ctx);
 }

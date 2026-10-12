@@ -162,3 +162,13 @@ export async function patientCard(companyId: string, patientId: string) {
     history: p.history?.status ?? null,
   };
 }
+
+// Columns whose "ready" patients concern this surgeon: those linked to them; if no column
+// is linked to anyone, every doctor column (single-surgeon practice).
+export async function surgeonResources(userId: string, companyId: string) {
+  const linked = await db.resource.findMany({ where: { companyId, isActive: true, userId }, select: { id: true } });
+  if (linked.length) return linked.map((r) => r.id);
+  const anyLinked = await db.resource.count({ where: { companyId, isActive: true, kind: "DOCTOR", userId: { not: null } } });
+  if (anyLinked) return [];
+  return (await db.resource.findMany({ where: { companyId, isActive: true, kind: "DOCTOR" }, select: { id: true } })).map((r) => r.id);
+}

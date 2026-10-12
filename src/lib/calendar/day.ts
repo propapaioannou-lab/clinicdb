@@ -23,7 +23,9 @@ export type DayAppointment = {
   status: string;
   room: string | null;
   arrivedAt: string | null;
+  statusAt: string | null; // when it entered its current status ("από 11:06")
   active: boolean;
+  visitId: string | null;
 };
 export type DayData = NonNullable<Awaited<ReturnType<typeof calendarDay>>>;
 
@@ -46,12 +48,13 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
   ]);
   if (!appts) return null;
   const minuteIn = (t: Date) => (t <= from ? 0 : t >= to ? 24 * 60 : clockOf(t));
-  // "Ήρθε 11:38": when the patient arrived.
-  const arrivals = await db.appointmentEvent.findMany({
-    where: { appointmentId: { in: appts.map((a) => a.id) }, toStatus: "ARRIVED" },
+  // "Ήρθε 11:38": when the patient arrived; and when each entered its current status.
+  const events = await db.appointmentEvent.findMany({
+    where: { appointmentId: { in: appts.map((a) => a.id) }, toStatus: { not: null } },
     orderBy: { at: "desc" },
-    select: { appointmentId: true, at: true },
+    select: { appointmentId: true, at: true, toStatus: true },
   });
+  const arrivals = events.filter((e) => e.toStatus === "ARRIVED");
   const phones = contacts
     ? await db.patientPhone.findMany({ where: { patientId: { in: appts.flatMap((a) => (a.patientId ? [a.patientId] : [])) } }, orderBy: [{ isMain: "desc" }, { sortOrder: "asc" }], select: { patientId: true, number: true } })
     : [];
@@ -80,7 +83,9 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
       status: a.status,
       room: a.room,
       arrivedAt: arrived ? hhmm(clockOf(arrived.at)) : null,
+      statusAt: (() => { const e = events.find((x) => x.appointmentId === a.id && x.toStatus === a.status); return e ? hhmm(clockOf(e.at)) : null; })(),
       active: ACTIVE_STATUSES.includes(a.status),
+      visitId: a.visitId,
     };
   });
 
@@ -140,5 +145,6 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
     columns,
     appointments,
     tomorrow: { total: tomorrowTotal, confirmed: tomorrowConfirmed },
+    tomorrowDate: new Date(Date.UTC(y, m - 1, d + 1)).toISOString().slice(0, 10),
   };
 }

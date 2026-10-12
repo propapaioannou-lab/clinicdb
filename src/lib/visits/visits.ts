@@ -8,6 +8,7 @@ import { loadCatalog } from "./catalog-db";
 import { EXAMS } from "./exams/areas";
 import { cleanExam, type ExamValue, type FindingValue } from "./exams/engine";
 import { cleanProcedureDetails } from "./procedure-details";
+import { visitClosed } from "@/lib/calendar/appointments";
 
 // Visits (SPEC §4 Visit). Clinical part: anyone who may edit patients. Charge part:
 // Secretary or PA/nurse only, and never returned to anyone else.
@@ -223,6 +224,8 @@ export async function setVisitClosed(actor: Actor, visitId: string, closed: bool
     { action: closed ? "visit.closed" : "visit.reopened", actor, companyId: visit.companyId, entityType: "Patient", entityId: visit.patientId, details: { visitId } },
     ctx,
   );
+  // Its calendar appointment (if any) is now done.
+  if (closed) await visitClosed(actor, visitId, ctx);
   return { ok: true };
 }
 

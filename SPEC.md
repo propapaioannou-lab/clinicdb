@@ -692,10 +692,24 @@ reports will be designed later from what the surgeon actually wants to know.
 Bulk SMS/email move to GHL. Prescription statistics dropped.
 
 ## 4e. Home screen and front-desk workflow (from design review)
-- **Built so far:** the home page is a simple "Σήμερα" placeholder; the role home
-  screens (1a/1b/1c/1e), greeting, live clock, ready-in-room banner and chat come in
-  6a-4/6a-5 and 6e. The daily greetings file exists (`content/greetings.el.json`);
-  editing it in Settings is not built yet.
+- **Built (6a-4, 12 Oct 2026):** home by role. **1a physician**: live clock with seconds
+  + countdown to the next patient (amber ≤ 5′, red "αργεί X′"), greeting by the hour +
+  one line per day from `content/greetings.el.json`, own appointments with status pills
+  and a now-line that follows the clock (manual scroll pauses it 30 s), "Έναρξη
+  επίσκεψης" (→ with the doctor, opens a new visit linked to the appointment; saving it
+  → "Προς πληρωμή" if charged, else "Ολοκληρώθηκε"; closing the visit after payment →
+  "Ολοκληρώθηκε"); no money. **1b PA/nurse**: "Ροή ημέρας" — waiting room, one card per
+  room (resources of kind ROOM, else Δωμάτιο 1 / 2), "Δωμάτιο X · ειδοποίηση", doctor
+  status pill ("με … από 11:06 · +4′ από πρόγραμμα"), today's list with one main button.
+  **1e front desk** (and everyone else who edits): "Υποδοχή" — tiles, today's list with
+  one main button (Άφιξη ✓ → Δωμάτιο · ειδοποίηση → Τέλος επίσκεψης → Είσπραξη, which
+  opens the visit's charge panel), "Δεν ήρθε", tomorrow's confirmations. **Live**:
+  PostgreSQL NOTIFY in the same transaction as each appointment change → one listener
+  per server → Server-Sent Events (`/api/live`) → home and calendar redraw themselves;
+  the surgeon gets the green **ready-in-room banner** on every page with a chime,
+  "Άνοιγμα καρτέλας", ✕. Nothing leaves our server. Not yet: 1c (Phase 4), chat (6a-5),
+  side panels for intake/tasks/waiting list (their phases), greetings editable in
+  Settings, "Έναρξη κλήσης" (video service not chosen).
 - **Role-based home screens.** Physician sees only clinical flow (clock, ready-in-room
   banner, today's patients, chat, own tasks) plus a **"Για έλεγχο σήμερα" (today's
   review) list**: follow-up photos waiting for review, new-patient emails/messages asking

@@ -4,6 +4,7 @@ import { athensIsoDate, athensParts, athensToUtc } from "@/lib/time";
 import { canEditPatients } from "@/lib/permissions";
 import { holidayOn } from "./holidays";
 import { buildScale, type Scale } from "./bands";
+import { surgeryLoad, type SurgeryLoad } from "./capacity";
 import { calendarConfigOf } from "./config";
 import { dayRules, hoursOf } from "./hours";
 import { ACTIVE_STATUSES } from "./status";
@@ -25,6 +26,7 @@ export type RangeAppointment = {
   layer: string;
   reason: string | null;
   status: string;
+  room: string | null;
   active: boolean;
   isNew: boolean;
 };
@@ -32,7 +34,7 @@ export type RangeDay = {
   date: string;
   weekday: number; // Mon=1 … Sun=7
   holiday: string | null;
-  resources: Record<string, { hours: { from: number; to: number }[]; flex: { from: number; to: number }[]; surgery: { from: number; to: number }[]; blocks: { start: number; end: number; label: string | null; kind: string }[]; freeMinutes: number }>;
+  resources: Record<string, { hours: { from: number; to: number }[]; flex: { from: number; to: number }[]; surgery: { from: number; to: number }[]; blocks: { start: number; end: number; label: string | null; kind: string }[]; freeMinutes: number; load: SurgeryLoad | null }>;
   appointments: RangeAppointment[];
 };
 
@@ -105,7 +107,10 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
         }
         if (h.to - cur >= 15) free += h.to - cur;
       }
-      rs[r.id] = { hours, flex: holiday ? [] : rules.flex, surgery: rules.surgery, blocks: myBlocks, freeMinutes: free };
+      // Surgery-time bar (DESIGN 6a–6g): the cases of this column that day against the window.
+      const cases = todays.filter((a) => a.resourceId === r.id && a.type.layer === "SURGERY" && ACTIVE_STATUSES.includes(a.status)).map((a) => ({ from: minuteIn(a.startsAt), to: minuteIn(a.endsAt) }));
+      const load = r.kind === "DOCTOR" ? surgeryLoad(cases, holiday ? [] : rules.surgery) : null;
+      rs[r.id] = { hours, flex: holiday ? [] : rules.flex, surgery: rules.surgery, blocks: myBlocks, freeMinutes: free, load };
     }
     out.push({
       date: iso,
@@ -126,6 +131,7 @@ export async function calendarRange(actor: Actor, companyId: string, fromIso: st
         layer: a.type.layer,
         reason: a.reason,
         status: a.status,
+        room: a.room,
         active: ACTIVE_STATUSES.includes(a.status),
         isNew: !!a.patientId && !(firstVisit.get(a.patientId) && firstVisit.get(a.patientId)! < a.startsAt) && firstAppt.get(a.patientId)?.getTime() === a.startsAt.getTime(),
       })),

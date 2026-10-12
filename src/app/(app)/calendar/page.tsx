@@ -76,15 +76,15 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   // Treatment rooms are where patients wait, not columns.
   const resources = await db.resource.findMany({ where: { companyId: company.id, isActive: true, kind: { notIn: ["OPERATING_ROOM", "ROOM"] } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
   const doctorCol = resources.find((r) => r.kind === "DOCTOR" || r.kind === "CABIN") ?? resources[0];
+  // For the colour key under the grid.
+  const officeTypes = (await db.appointmentType.findMany({ where: { companyId: company.id, isActive: true, NOT: { layer: "SURGERY" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }))
+    .map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color }));
   let body: React.ReactNode = null;
   let tiles: Tile[] = [];
   if (view === "day" && !doctor) {
-    const [data, types] = await Promise.all([
-      calendarDay(actor, company.id, date),
-      db.appointmentType.findMany({ where: { companyId: company.id, isActive: true, NOT: { layer: "SURGERY" } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] }),
-    ]);
+    const data = await calendarDay(actor, company.id, date);
     if (!data) notFound();
-    body = <DayView key={`${date}${sp.book ?? ""}`} startBooking={sp.book === "1"} data={data} types={types.map((ty) => ({ id: ty.id, label: ty.labelEl, minutes: ty.defaultMinutes, color: ty.color }))} />;
+    body = <DayView key={`${date}${sp.book ?? ""}`} startBooking={sp.book === "1"} data={data} types={officeTypes} />;
   } else if (view === "day" && own) {
     const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, stepDay(date, 1, false), 1, [own.id])]);
     const day = days![0];
@@ -105,13 +105,13 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     }
     // Same layout every day: the scale comes from the whole week of this column.
     const week = (await calendarRange(actor, company.id, monday, 7, [own.id]))!;
-    tiles = await doctorTiles({ day, resourceId: own.id, next: nextCard, current, tomorrowCount: tomorrow![0].appointments.filter((a) => a.active).length });
-    body = <DoctorDay day={day} resourceId={own.id} current={current} scale={rangeScale([...week, day], [own.id])} />;
+    tiles = await doctorTiles({ day, resourceId: own.id, next: nextCard, current, tomorrow: tomorrow![0].appointments.filter((a) => a.active && a.resourceId === own.id) });
+    body = <DoctorDay day={day} resourceId={own.id} current={current} scale={rangeScale([...week, day], [own.id])} types={officeTypes} />;
   } else if (view === "week") {
     const cols = doctor ? (own ? [own] : []) : [doctorCol, ...(sp.nurse === "1" ? resources.filter((r) => r.kind === "NURSE") : [])].filter(Boolean);
     const ids = cols.map((c) => c!.id);
     const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
-    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} />;
+    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} />;
   } else if (view === "month") {
     const first = `${date.slice(0, 7)}-01`;
     const gridStart = mondayOf(first);
@@ -142,7 +142,10 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         <Link href={q({ date: prev })} aria-label={t("prev")} className={nav}>‹</Link>
         <Link href={q({ date: undefined })} className={nav}>{t("today")}</Link>
         <Link href={q({ date: next })} aria-label={t("next")} className={nav}>›</Link>
-        <h1 className="mx-1 whitespace-nowrap text-[20px] font-semibold first-letter:uppercase" title={doctor ? t(`subtitleDoctor.${view}`) : t(`subtitleDesk.${view}`)}>{title}</h1>
+        <h1 className="mx-1 flex items-baseline gap-2 whitespace-nowrap">
+          <span className="text-[20px] font-semibold first-letter:uppercase">{title}</span>
+          <span className="hidden text-[13px] font-normal text-muted 2xl:inline">{doctor ? t(`subtitleDoctor.${view}`) : t(`subtitleDesk.${view}`)}</span>
+        </h1>
         {/* Surgeons switch between their own schedule and the front desk's. */}
         {actor.role === "SURGEON" && (
           <nav aria-label={t("whoseView")} className="flex gap-[3px] rounded-[12px] bg-line-softer p-1">
@@ -156,10 +159,11 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         <nav aria-label={t("viewLabel")} className="flex rounded-[12px] bg-line-softer p-1">
           {VIEWS.map((v) => <Link key={v} href={q({ view: v })} aria-current={v === view ? "page" : undefined} className={seg(v === view)}>{t(`views.${v}`)}</Link>)}
         </nav>
-        <nav aria-label={t("daysLabel")} className="flex rounded-[12px] bg-line-softer p-1">
-          <Link href={q({ we: undefined })} aria-current={!weekend ? "page" : undefined} className={seg(!weekend)}>{t("monFri")}</Link>
-          <Link href={q({ we: "1" })} aria-current={weekend ? "page" : undefined} className={seg(weekend)}>+ {t("satSun")}</Link>
-        </nav>
+        {/* One pill: Mon–Fri, «+ Σαβ/Κυρ» shows the weekend (and back). */}
+        <Link href={q({ we: weekend ? undefined : "1" })} aria-pressed={weekend} title={t("daysLabel")}
+          className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12.5px] ${weekend ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3 hover:border-primary"}`}>
+          {weekend ? t("weekOn") : t("weekOff")}
+        </Link>
         {!doctor && view === "week" && resources.some((r) => r.kind === "NURSE") && (
           <Link href={q({ nurse: sp.nurse === "1" ? undefined : "1" })} className={`whitespace-nowrap rounded-full border px-2.5 py-1.5 text-[13px] ${sp.nurse === "1" ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3"}`}>
             {sp.nurse === "1" ? "✓" : "+"} {resources.find((r) => r.kind === "NURSE")?.label}
@@ -180,19 +184,18 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 }
 
 // The front desk's top strip (DESIGN 6a–6g): Αιτήματα κράτησης · Επιβεβαιώσεις αύριο ·
-// Λίστα αναμονής · Νέες φόρμες · GHL. Those not built yet say when they come.
+// Λίστα αναμονής · Νέες φόρμες, and the GHL status. Those not built yet say when they come.
 async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId: string, today: string): Promise<Tile[]> {
   const t = await getTranslations("calendar");
   const conf = await confirmations(actor, companyId, today);
-  const dayLabel = conf ? fmt({ weekday: "long", day: "numeric", month: "numeric" }).format(at(conf.date)) : "";
+  const dayLabel = conf ? fmt({ weekday: "short", day: "numeric", month: "numeric" }).format(at(conf.date)) : "";
   return [
-    { key: "requests", label: t("strip.requests"), value: "—", sub: t("strip.requestsSoon"), tone: "muted" },
+    { key: "requests", label: t("strip.requests"), badge: { text: "–", tone: "grey" }, sub: t("strip.requestsSoon"), tone: "muted" },
     {
       key: "confirm",
       label: t("strip.confirm"),
-      value: conf ? `${conf.confirmed} / ${conf.total}` : "—",
-      sub: conf && <span className="first-letter:uppercase">{dayLabel}{conf.pending.length > 0 && ` · ${t("strip.toCall", { count: conf.pending.length })}`}</span>,
-      tone: conf && conf.total > 0 && conf.pending.length === 0 ? "ok" : conf?.pending.length ? "warn" : "neutral",
+      badge: { text: conf ? `${conf.confirmed}/${conf.total}` : "–", tone: conf?.pending.length ? "warn" : conf?.total ? "ok" : "grey" },
+      sub: conf && `${dayLabel}${conf.pending.length > 0 ? ` · ${t("strip.toCall", { count: conf.pending.length })}` : ""}`,
       body: conf ? (
         conf.pending.length ? (
           <ul className="flex flex-col divide-y divide-line-softer">
@@ -208,8 +211,8 @@ async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId
         ) : <span className="text-muted">{t("strip.allConfirmed")}</span>
       ) : undefined,
     },
-    { key: "waitlist", label: t("strip.waitlist"), value: "—", sub: t("strip.waitlistSoon"), tone: "muted" },
-    { key: "forms", label: t("strip.forms"), value: "—", sub: t("strip.formsSoon"), tone: "muted" },
-    { key: "ghl", label: "GHL", value: t("strip.ghlOff"), sub: t("strip.ghlSoon"), tone: "muted" },
+    { key: "waitlist", label: t("strip.waitlist"), badge: { text: "–", tone: "grey" }, sub: t("strip.waitlistSoon"), tone: "muted" },
+    { key: "forms", label: t("strip.forms"), badge: { text: "–", tone: "grey" }, sub: t("strip.formsSoon"), tone: "muted" },
+    { key: "ghl", label: "GHL", status: true, value: t("strip.ghlOff"), sub: t("strip.ghlSoon") },
   ];
 }

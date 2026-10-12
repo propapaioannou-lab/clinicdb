@@ -140,7 +140,8 @@ export async function calendarDay(actor: Actor, companyId: string, isoDate: stri
       blocks: myBlocks,
       gaps: free,
       flexGaps: flexGaps.filter((g) => g.end - g.start >= 10),
-      count: mine.filter((a) => a.active).length,
+      count: mine.filter((a) => a.active && a.type.layer !== "SURGERY").length,
+      surgeries: mine.filter((a) => a.active && a.type.layer === "SURGERY").length,
       freeMinutes: free.reduce((n, g) => n + g.end - g.start, 0),
     };
   });

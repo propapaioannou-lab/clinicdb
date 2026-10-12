@@ -25,14 +25,17 @@ const REASONS: Record<string, string[]> = {
   "Προεγχειρητική": ["Αυξητική μαστού", "Ρινοπλαστική", "Κοιλιοπλαστική"],
   "Επανέλεγχος": ["1η εβδομάδα", "1 μήνας", "3 μήνες", "Ράμματα"],
 };
-// Surgeries per weekday of the mockup week: [start, minutes, procedure]. Friday runs over 14:00.
+// Surgeries per weekday of the mockup week (CalSecWeek): [start, minutes, procedure].
+// Tuesday's 5 h 30′ case closes the day; Friday runs over 14:00.
 const SURGERIES: Record<number, [string, number, string][]> = {
-  1: [["08:00", 150, "Αυξητική μαστού"], ["11:00", 120, "Ρινοπλαστική"]],
-  2: [["08:00", 240, "Κοιλιοπλαστική"]],
-  3: [["08:00", 90, "Βλεφαροπλαστική"], ["10:00", 210, "Μαστοπηξία"]],
-  4: [["08:00", 120, "Λιποαναρρόφηση"], ["10:30", 60, "Αφαίρεση σπίλων"]],
-  5: [["08:00", 390, "Lifting προσώπου"]],
+  1: [["07:30", 180, "Ρινοπλαστική"], ["11:00", 120, "Βλεφαροπλαστική"]],
+  2: [["07:30", 330, "Lifting + βλεφαροπλαστική"]],
+  3: [["07:30", 120, "Αυξητική μαστού"], ["10:00", 120, "Γυναικομαστία"]],
+  4: [["07:30", 270, "Κοιλιοπλαστική + λίπο"]],
+  5: [["07:30", 270, "Lifting (deep plane)"], ["12:30", 120, "Βλεφαροπλαστική"]],
 };
+// Later weeks: a lighter, random mix (month views).
+const PROCEDURES: [string, number][] = [["Ρινοπλαστική", 180], ["Αυξητική μαστού", 120], ["Βλεφαροπλαστική", 120], ["Κοιλιοπλαστική", 240], ["Λιποαναρρόφηση", 150], ["Μαστοπηξία", 210], ["Γυναικομαστία", 120]];
 
 function addDays(iso: string, n: number) {
   const d = new Date(`${iso}T12:00:00Z`);
@@ -90,10 +93,19 @@ async function main() {
       const mockupWeek = day < 7;
       for (const r of resources) {
         const rules = dayRules(hoursOf(r.hours), cfg, weekday, { surgeryWindow: r.kind === "DOCTOR" });
-        // Morning surgeries on the doctor's column (the mockup week only; Phase 4 books them).
+        // Morning surgeries on the doctor's column (Phase 4 books them for real).
         const surgery = byLabel("Χειρουργείο");
-        if (mockupWeek && r.kind === "DOCTOR" && surgery && rules.surgery.length) {
-          for (const [at, minutes, what] of SURGERIES[weekday] ?? []) await add(r.id, iso, Number(at.slice(0, 2)) * 60 + Number(at.slice(3)), minutes, surgery.id, what);
+        if (r.kind === "DOCTOR" && surgery && rules.surgery.length) {
+          if (mockupWeek) {
+            for (const [at, minutes, what] of SURGERIES[weekday] ?? []) await add(r.id, iso, Number(at.slice(0, 2)) * 60 + Number(at.slice(3)), minutes, surgery.id, what);
+          } else if (rand() < 0.85) {
+            const [what, minutes] = pick(PROCEDURES);
+            await add(r.id, iso, rules.surgery[0].from, minutes, surgery.id, what);
+            if (minutes <= 180 && rand() < 0.5) {
+              const [w2, m2] = pick(PROCEDURES.filter((x) => x[1] <= 150));
+              await add(r.id, iso, rules.surgery[0].from + minutes + 30, m2, surgery.id, w2);
+            }
+          }
         }
         // Office hours: packed in the mockup week, about half full after it. The nurse
         // column only gets a few follow-ups.

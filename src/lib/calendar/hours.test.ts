@@ -6,6 +6,7 @@ import { createAppointment, moveAppointment } from "./appointments";
 import { buildScale, ticks, yOf } from "./bands";
 import { calendarConfigOf } from "./config";
 import { calendarDay } from "./day";
+import { surgeryLoad } from "./capacity";
 import { cleanConfig, DEFAULT_CONFIG, DEFAULT_HOURS, dayRules, zoneOf } from "./hours";
 import { confirmations, nextWorkingDay } from "./strip";
 
@@ -45,21 +46,37 @@ describe("two-band scale", () => {
   const surgery = [{ from: 450, to: 840 }];
   it("surgery band compact, office band detailed, 14:30–16:00 folded", () => {
     const s = buildScale({ surgery, office, items: [] }, "day");
-    expect(s.bands.map((b) => [b.kind, b.from, b.to, b.px])).toEqual([["surgery", 450, 870, 52], ["office", 960, 1230, 144]]);
-    expect(s.folds).toEqual([{ from: 870, to: 960, top: 364, height: 26 }]);
-    expect(s.height).toBe(364 + 26 + 648);
-    expect(yOf(s, 450)).toBe(0);
-    expect(yOf(s, 960)).toBe(390); // office starts right after the fold
+    // The surgery band starts on the full hour (07:00), as in the mockups.
+    expect(s.bands.map((b) => [b.kind, b.from, b.to, b.px])).toEqual([["surgery", 420, 870, 52], ["office", 960, 1230, 144]]);
+    expect(s.folds).toEqual([{ from: 870, to: 960, top: 390, height: 26 }]);
+    expect(s.height).toBe(390 + 26 + 648);
+    expect(yOf(s, 420)).toBe(0);
+    expect(yOf(s, 960)).toBe(416); // office starts right after the fold
     expect(yOf(s, 990) - yOf(s, 980)).toBe(24); // 10′ = 24 px: readable
     expect(ticks(s).filter((t) => t.min >= 960).map((t) => t.min).slice(0, 3)).toEqual([960, 990, 1020]); // half hours in the office band
   });
   it("widens a band for anything booked outside it; week is smaller", () => {
     const s = buildScale({ surgery, office, items: [{ from: 880, to: 910 }, { from: 1250, to: 1270 }] }, "week");
-    expect(s.bands.map((b) => [b.from, b.to])).toEqual([[450, 930], [960, 1290]]);
+    expect(s.bands.map((b) => [b.from, b.to])).toEqual([[420, 930], [960, 1290]]);
     expect(s.bands.map((b) => b.px)).toEqual([40, 112]);
     const spa = buildScale({ surgery: [], office: [{ from: 540, to: 1260 }], items: [] }, "day");
     expect(spa.bands).toHaveLength(1);
     expect(spa.bands[0].px).toBe(96); // a long office day is drawn less tall
+  });
+});
+
+describe("surgery time of a day (week and month bars)", () => {
+  const w = [{ from: 450, to: 840 }]; // 07:30–14:00 = 6 h 30′
+  const at = (h: number, m: number, minutes: number) => ({ from: h * 60 + m, to: h * 60 + m + minutes });
+  it("as in the mockup week: full, closes the day, left, only ≤, over-run", () => {
+    expect(surgeryLoad([at(7, 30, 180), at(11, 0, 120)], w)).toMatchObject({ used: 330, state: "full" });
+    expect(surgeryLoad([at(7, 30, 330)], w)).toMatchObject({ used: 330, state: "closes", remaining: 0 });
+    expect(surgeryLoad([at(7, 30, 120), at(10, 0, 120)], w)).toMatchObject({ used: 270, state: "left", remaining: 90 });
+    expect(surgeryLoad([at(7, 30, 270)], w)).toMatchObject({ used: 270, state: "short", remaining: 90 });
+    expect(surgeryLoad([at(7, 30, 270), at(12, 30, 120)], w)).toMatchObject({ used: 420, state: "over" });
+    expect(surgeryLoad([], w)).toMatchObject({ used: 0, state: "free", remaining: 390 });
+    expect(surgeryLoad([at(7, 30, 60), at(9, 0, 60), at(10, 30, 60)], w)).toMatchObject({ ops: 3, state: "full" });
+    expect(surgeryLoad([], [])).toBeNull();
   });
 });
 

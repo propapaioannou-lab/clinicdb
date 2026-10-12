@@ -1275,7 +1275,7 @@
     "surgery": "Surgery",
     "surgerySoon": "With surgeries (6b)",
     "appointment": "Appointment",
-    "columnSummary": "{count, plural, =0 {no appointments} one {1 appointment} other {# appointments}} · free {free}",
+    "columnSummary": "{surgeries, plural, =0 {} one {# surgery · } other {# surgeries · }}{count} appointments · {free} free",
     "free": "free {minutes}",
     "holiday": "Public holiday: {name}",
     "flagged": "Flag",
@@ -1364,7 +1364,9 @@
       "full": "Full",
       "surgeriesLater": "Surgeries appear with Phase 4/6b.",
       "flex": "Outside hours +30′",
-      "surgeryWindow": "Surgery hours"
+      "surgeryWindow": "Surgery hours",
+      "closedShort": "closed",
+      "normalOnly": "Only normal hours count (not the ±30′)."
     },
     "fullBanner": "New patients: full for {days} days.",
     "fullBannerText": "Online booking will show no times; new requests come to you (with GHL, 6d).",
@@ -1404,7 +1406,7 @@
     "dayLink": "Day",
     "officeAppointments": "office appointments",
     "subtitleDoctor": {
-      "day": "My schedule · office",
+      "day": "My schedule · surgery mornings, office afternoons",
       "week": "My schedule · week summary",
       "month": "My schedule · month"
     },
@@ -1439,9 +1441,10 @@
     "flexNote": "Flex zone just before or after office hours: booked with one extra click. Online booking never offers it.",
     "flexSlot": "outside hours",
     "bands": {
-      "surgery": "Surgeries"
+      "surgery": "Surgery",
+      "office": "Office"
     },
-    "folded": "Closed",
+    "folded": "folded",
     "noOffice": "No office",
     "daysLabel": "Days",
     "monFri": "Mon–Fri",
@@ -1465,8 +1468,35 @@
       "forms": "New forms",
       "formsSoon": "With the intake forms",
       "ghlOff": "Not connected",
-      "ghlSoon": "Connected in phase 6d"
-    }
+      "ghlSoon": "Connected in phase 6d",
+      "nowIn": "Now · {room}",
+      "opsCount": "{count} surg.",
+      "tomorrowSurgery": "Tomorrow · surgery"
+    },
+    "overrun": "after {time} = over-run",
+    "flexLabel": "outside hours +30′",
+    "unconfirmedShort": "Unconfirmed",
+    "officeShort": "Office",
+    "closedShort": "closed",
+    "closedOffice": "Office closed",
+    "surgeryShort": "Surg.",
+    "load": {
+      "free": "{x} free",
+      "left": "{x} left",
+      "short": "only ≤ {x}",
+      "full": "full",
+      "closes": "closes the day",
+      "over": "⚠ over-run"
+    },
+    "surgeriesWord": "surgeries",
+    "surgeryWindow": "Surgery {span}",
+    "afternoonClosed": "Afternoon: office closed",
+    "surgeryDays": "surgery days",
+    "overruns": "over-run",
+    "weekendNote": "Weekends hidden (closed). \"+ Sat/Sun\" shows them for exceptions.",
+    "weekOff": "Mon–Fri · + Sat/Sun",
+    "weekOn": "Mon–Sun · ✓ Sat/Sun",
+    "recordShort": "Record"
   },
   "live": {
     "ready": "{name} is ready",

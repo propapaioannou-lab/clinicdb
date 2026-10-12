@@ -12,7 +12,7 @@ import { calColor } from "@/lib/calendar/colors";
 import type { DayAppointment, DayData } from "@/lib/calendar/day";
 import { nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
 import { bookAction, historyAction, moveAction, statusAction, type BookingResult } from "./actions";
-import { ColumnBackground, Folds, GridLines, place, TimeAxis } from "./grid-bits";
+import { CardText, ColumnBackground, Folds, GridLines, Legend, place, TimeAxis } from "./grid-bits";
 import { NowLine } from "./now-line";
 
 type Type = { id: string; label: string; minutes: number; color: string };
@@ -280,11 +280,11 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
     if (a.status === "TO_PAY") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">{t("toPay")}</span>;
     if (a.status === "WITH_DOCTOR") return <span className="text-[11.5px] font-semibold">{t("withDoctor")}</span>;
     if (a.status === "DONE") return <span className="text-[11.5px]">{t("done")}</span>;
-    if (a.status === "BOOKED") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">?</span>;
+    if (a.status === "BOOKED") return <span className="rounded-full bg-warn-bg px-2 py-0.5 text-[11.5px] font-semibold text-warn-ink">? {t("unconfirmedShort")}</span>;
     if (a.status === "CONFIRMED") return <span className="text-[12px] text-ok-ink">✓</span>;
     return <span className="text-[11.5px]">{STATUS_LABEL[a.status as AppointmentStatus]}</span>;
   };
-  const cols = `56px repeat(${data.columns.length}, minmax(0, 1fr))`;
+  const cols = `64px repeat(${data.columns.length}, minmax(0, 1fr))`;
   const open = panel.kind === "book" || (panel.kind === "appointment" && !!selected);
 
   return (
@@ -296,16 +296,16 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
           {data.columns.map((c) => (
             <div key={c.id} className="flex items-baseline justify-between gap-2 border-l border-line-soft px-3 py-2">
               <span className="truncate text-[15px] font-semibold">{c.label}</span>
-              <span className="shrink-0 text-[12.5px] text-muted">{c.hours.length ? t("columnSummary", { count: c.count, free: duration(c.freeMinutes) }) : t("closed")}</span>
+              <span className="shrink-0 text-[12.5px] text-muted">{t("columnSummary", { surgeries: c.surgeries, count: c.count, free: c.hours.length ? duration(c.freeMinutes) : "—" })}</span>
             </div>
           ))}
         </div>
         <div className="max-h-[calc(100vh-250px)] min-h-[420px] overflow-y-auto">
           <div className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
-            <TimeAxis scale={scale} />
+            <TimeAxis scale={scale} labels={{ surgery: t("bands.surgery"), office: t("bands.office") }} />
             {data.columns.map((c) => (
               <div key={c.id} className="relative border-l border-line-soft">
-                <ColumnBackground scale={scale} surgery={c.surgery} hours={c.hours} flex={c.flex} surgeryLabel={t("bands.surgery")} />
+                <ColumnBackground scale={scale} surgery={c.surgery} hours={c.hours} flex={c.flex} labels={{ overrun: t("overrun", { time: "{time}" }), flex: t("flexLabel") }} />
                 <GridLines scale={scale} />
                 {c.blocks.map((b) => (
                   <div key={b.id} className="absolute left-1 right-1 overflow-hidden rounded-[8px] bg-[repeating-linear-gradient(45deg,var(--color-line-softer)_0_6px,var(--color-line)_6px_8px)] px-2 py-1 text-[12px] text-ink-3" style={place(scale, b.start, b.end)}>
@@ -322,32 +322,32 @@ export function DayView({ data, types, startBooking = false }: { data: DayData; 
                 {c.flexGaps.map((g) => (
                   <button key={`f${g.start}`} type="button" onClick={() => setPanel({ kind: "book", resourceId: c.id, start: g.start, flex: true })}
                     title={t("flexNote")}
-                    className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-line-strong px-2 py-0.5 text-left text-[11.5px] font-semibold text-muted opacity-70 hover:bg-surface/80 hover:opacity-100"
+                    className="absolute left-1 right-1 flex items-start rounded-[8px] border border-dashed border-transparent px-2 py-0.5 text-left text-[11.5px] font-semibold text-transparent hover:border-line-strong hover:bg-surface/80 hover:text-muted focus-visible:text-muted"
                     style={place(scale, g.start, g.end)}>
                     + {t("flexSlot")}
                   </button>
                 ))}
                 {data.appointments.filter((a) => a.resourceId === c.id).map((a) => {
                   const box = place(scale, a.start, a.end);
-                  const tight = box.height < 30;
+                  const tight = box.height < 34 || !a.active;
                   return (
                     <button key={a.id} type="button" onClick={() => setPanel({ kind: "appointment", id: a.id })}
                       // Cancelled / no-show: a small chip on the right, so the freed time stays clickable.
                       className={`absolute ${a.active ? "left-1" : "left-auto w-[40%] min-w-[120px]"} right-1 flex justify-between gap-2 overflow-hidden rounded-[7px] px-2 text-left shadow-[0_1px_2px_rgba(0,0,0,0.06)] ${tight ? "items-center text-[12px] leading-none" : "items-start py-1 text-[13px]"} ${calColor(a.type.color).box} ${!a.active ? "line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${panel.kind === "appointment" && panel.id === a.id ? "ring-2 ring-primary" : ""}`}
                       style={{ ...box, zIndex: a.active ? 2 : 3 }}>
-                      <span className="min-w-0 truncate">
-                        <b>{a.time}</b> <b>{a.patient?.short ?? t("noPatient")}</b>{a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>} <span className="opacity-80">· {a.type.label}{a.reason && ` · ${a.reason}`}</span>
-                      </span>
+                      <CardText h={a.active ? box.height : 0} time={a.time} end={a.end} name={a.patient?.short ?? t("noPatient")} type={a.type.label} reason={a.reason} surgery={a.type.layer === "SURGERY"}
+                        extra={a.patient && a.patient.flag !== "NONE" && <span className="ml-1 inline-block align-middle"><FlagDot flag={a.patient.flag as "YELLOW" | "RED"} label={t("flagged")} /></span>} />
                       <span className="shrink-0">{statusChip(a)}</span>
                     </button>
                   );
                 })}
               </div>
             ))}
-            <Folds scale={scale} left={56} label={t("folded")} />
-            <NowLine dates={[data.date]} scale={scale} left={56} focus={office?.from} />
+            <Folds scale={scale} left={64} label={t("folded")} />
+            <NowLine dates={[data.date]} scale={scale} left={64} focus={office?.from} />
           </div>
         </div>
+        <Legend types={[...types.map((ty) => ({ label: ty.label, minutes: ty.minutes, color: ty.color })), { label: t("surgery"), minutes: 0, color: "blue" }]} zones={{ flex: t("legend.flex"), closed: t("legend.closedShort") }} />
       </section>
 
       {open && (

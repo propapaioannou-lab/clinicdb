@@ -2,6 +2,24 @@
 
 Plain-language record of what changed and how to check it.
 
+## 12 Oct 2026 — 6a-5 matched to the new boards
+
+- Your boards (CalSecDay/Week/Month, CalDocDay/Week/Month, CalStates, Patient) are in
+  `design/` and saved with the project.
+- **Surgery time per day**: in the week, each day has a bar and a word — "Χ 5ω 30′ ·
+  πλήρες", "κλείνει την ημέρα", "υπόλ. 1ω 30′", "μόνο ≤ 1ω 30′", "⚠ υπέρβαση" (rules:
+  30′ turnover, max 3 operations, ≥ 4 h leaves only ≤ 2 h, ≥ 5 h closes the day). The
+  secretary's month shows "Χειρ. …" and "Ιατρείο ελεύθερα / πλήρες / κλειστό" per day.
+- **Your week and month** now list the surgeries (time, patient, procedure, length).
+- Grid: ΧΕΙΡΟΥΡΓΕΙΟ / ΙΑΤΡΕΙΟ labels, surgery band from 07:00, "μετά τις 14:00 =
+  υπέρβαση" zone, two-line cards, colour key underneath.
+- Top strip as on the boards: small chips with a number (front desk) and GHL status
+  on the right; Τώρα · Επόμενος (with «Καρτέλα») · Σήμερα · Αύριο for you.
+- Fake week redone like the boards (Tue one 5½ h case, Fri runs past 14:00) plus
+  surgeries in the following weeks.
+- Check: Ημερολόγιο → Εβδομάδα (bars under each day) and Μήνας (Χειρ./Ιατρείο lines);
+  as yourself (Ιατρός) → Εβδομάδα and Μήνας show the surgeries.
+
 ## 12 Oct 2026 — Phase 6a-5: calendar v2 — hours, types, new layout
 
 - **Hours** (change them in Ρυθμίσεις → Ημερολόγιο → **Ωράριο**; every change is logged
@@ -27,8 +45,6 @@ Plain-language record of what changed and how to check it.
     below 1280 px it is always folded.
 - **Fake week 12–16 Oct** (development only): morning surgeries, full afternoons on
   Mon/Tue/Thu, two bookings in the +30′ zone.
-- The 6a–6g / 2b boards are **not in `design/` yet**, so this follows the written change
-  list. I'll adjust it once you add them.
 - Check: see the click list in the reply for this step.
 
 ## 12 Oct 2026 — SPEC v1.10 (calendar v2 plan) and Settings in groups

@@ -30,7 +30,7 @@ describes **what it does**. If they disagree, ask the surgeon.
 | `Calendar.dc.html` | 6 · Calendar functions: booking panel, surgery booking + availability grid, schedule e-mails (layout superseded by 6a–6f) |
 | `CalDocDay/Week/Month.dc.html` | 6a–6c · Physician calendar — day / week / month |
 | `CalSecDay/Week/Month.dc.html` | 6d–6f · Secretary calendar — day / week / month |
-| *(canvas boards 6a–6g, 2b — v3, approved 12 Oct 2026; files to be added to `design/`)* | 6a–6f redrawn for calendar v2 (two bands, top strip, Mon–Fri); **6g** booking, move, cancel, arrival and override states; **2b · booking from the patient record** («+ Ραντεβού ▾» / «+ Χειρουργείο») |
+| `CalSecDay`, `CalSecWeek`, `CalSecMonth`, `CalDocDay`, `CalDocWeek`, `CalDocMonth`, `CalStates` (6g), `Patient` (2b) — v3, approved 12 Oct 2026 | 6a–6f redrawn for calendar v2 (two bands, top strip, Mon–Fri); **6g** booking, move, cancel, arrival and override states; **2b · booking from the patient record** («+ Ραντεβού ▾» / «+ Χειρουργείο») |
 
 ## Design tokens (put them in `tailwind.config` as named colours)
 - Font: **Commissioner** (Google Fonts, has Greek), weights 400/500/600/700; fallback

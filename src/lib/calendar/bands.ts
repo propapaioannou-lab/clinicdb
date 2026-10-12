@@ -26,7 +26,8 @@ export function buildScale(input: { surgery: Span[]; office: Span[]; items: Span
   const lo = (xs: Span[]) => Math.min(...xs.map((x) => x.from));
   const hi = (xs: Span[]) => Math.max(...xs.map((x) => x.to));
   // Surgery band: the window plus 30′ for a case that runs over (14:00 → 14:30).
-  let s = input.surgery.length ? { from: down30(lo(input.surgery)), to: up30(hi(input.surgery)) + 30 } : null;
+  // From the full hour before it (07:30 → 07:00), as in the mockups.
+  let s = input.surgery.length ? { from: Math.floor(lo(input.surgery) / 60) * 60, to: up30(hi(input.surgery)) + 30 } : null;
   let o = input.office.length ? { from: down30(lo(input.office)), to: up30(hi(input.office)) } : null;
   if (!s && !o) o = { from: 9 * 60, to: 21 * 60 };
   if (s && o && s.to >= o.from) {

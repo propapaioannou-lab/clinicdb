@@ -16,8 +16,11 @@ export type LiveAppointment = {
   at: string;
 };
 
+export type LiveChat = { type: "chat"; companyId: string; message: { id: string; senderId: string; senderName: string; senderRole: string; text: string; at: string } };
+
 // One EventSource per tab, shared by every component that listens.
 const listeners = new Set<(e: LiveAppointment) => void>();
+const chatListeners = new Set<(e: LiveChat) => void>();
 let source: EventSource | null = null;
 function ensure() {
   if (source || typeof window === "undefined") return;
@@ -28,6 +31,28 @@ function ensure() {
       for (const l of listeners) l(e);
     } catch {}
   });
+  source.addEventListener("chat", (msg) => {
+    try {
+      const e = JSON.parse((msg as MessageEvent).data) as LiveChat;
+      for (const l of chatListeners) l(e);
+    } catch {}
+  });
+}
+
+// New staff-chat messages (6a-10).
+export function useLiveChat(onMessage: (e: LiveChat) => void) {
+  const ref = useRef(onMessage);
+  useEffect(() => {
+    ref.current = onMessage;
+  });
+  useEffect(() => {
+    ensure();
+    const l = (e: LiveChat) => ref.current(e);
+    chatListeners.add(l);
+    return () => {
+      chatListeners.delete(l);
+    };
+  }, []);
 }
 
 export function useLive(onEvent: (e: LiveAppointment) => void) {

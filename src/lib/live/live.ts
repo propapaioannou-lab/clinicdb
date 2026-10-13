@@ -8,7 +8,10 @@ import { Client } from "pg";
 
 export const CHANNEL = "clinic_live";
 
-export type LiveEvent = {
+export type LiveEvent = LiveAppointmentEvent | LiveChatEvent;
+// A new staff-chat message (6a-10).
+export type LiveChatEvent = { type: "chat"; companyId: string; message: { id: string; senderId: string; senderName: string; senderRole: string; text: string; at: string } };
+export type LiveAppointmentEvent = {
   type: "appointment";
   companyId: string;
   appointmentId: string;

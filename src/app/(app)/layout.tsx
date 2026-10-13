@@ -116,7 +116,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       <nav aria-label={t("nav.main")} className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         <NavLink variant="bottom" href="/" icon={<HomeIcon />} label={t("nav.today")} />
         <NavLink variant="bottom" href="/patients" icon={<SearchIcon size={19} />} label={t("nav.search")} />
-        <NavLink variant="bottom" href="/chat" icon={<ChatIcon />} label={t("nav.chat")} soon={soon} />
+        <NavLink variant="bottom" href="/chat" icon={<ChatIcon />} label={t("nav.chat")} />
         <NavLink variant="bottom" href="/calendar" icon={<CalendarIcon />} label={t("nav.calendar")} />
       </nav>
     </div>

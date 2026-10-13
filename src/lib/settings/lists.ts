@@ -9,7 +9,7 @@ import type { Actor } from "@/lib/users/manage";
 // choices only. Admin/Owner edit the lists; visit-type fees are money, so only the
 // Secretary or PA/nurse set them (the surgeon never sees fees).
 
-export const EDITABLE_KINDS = ["VISIT_TYPE", "FLAG_REASON", "REFERRAL_SOURCE", "MARITAL_STATUS", "TAX_OFFICE"] as const satisfies readonly ListKind[];
+export const EDITABLE_KINDS = ["VISIT_TYPE", "FLAG_REASON", "REFERRAL_SOURCE", "MARITAL_STATUS", "TAX_OFFICE", "CHAT_PRESET_DOCTOR", "CHAT_PRESET_STAFF"] as const satisfies readonly ListKind[];
 export type EditableKind = (typeof EDITABLE_KINDS)[number];
 export const isEditableKind = (k: unknown): k is EditableKind => (EDITABLE_KINDS as readonly unknown[]).includes(k);
 

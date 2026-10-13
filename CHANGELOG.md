@@ -2,6 +2,22 @@
 
 Plain-language record of what changed and how to check it.
 
+## 13 Oct 2026 — Phase 6a-10: staff chat (6a complete)
+
+- **Internal chat** on the home screens: yours («Εσωτερική συνομιλία»), the assistant's
+  («Συνομιλία με γιατρό») and the front desk's («Συνομιλία»). One conversation per
+  practice (Ιατρείο and Spa separate). Messages appear on every open screen within a
+  second; yours on the right, others' on the left with name and time.
+- **One-tap messages**: yours — Φέρε τον επόμενο · Αργώ 10′ · Έλα στο Δωμάτιο 1 · Ετοίμασε
+  botox · Κλείσε επανέλεγχο · Μην με διακόψεις; the staff's — Ήρθε ο επόμενος · Ο ασθενής
+  είναι έτοιμος · Περιμένουν 2 · Τηλέφωνο για εσάς · Καθυστερεί 10′. Change them in
+  Ρυθμίσεις → Λίστες → «Συνομιλία · γιατρός» / «Συνομιλία · προσωπικό».
+- On a phone: **Chat** in the bottom bar opens the chat full screen.
+- Runs on our own server only; messages are kept (not deleted); Guests have no access.
+- The front-desk home now shows how many are on the waiting list (6a-8) instead of
+  "comes later".
+- Check: see the click list in the reply for this step.
+
 ## 13 Oct 2026 — Phase 6a-9: «+ Ραντεβού» from the patient record
 
 - On every patient record (top right of the patient card): **«+ Ραντεβού ▾»** opens the

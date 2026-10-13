@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
         }
       };
       const unsubscribe = await subscribe((e) => {
-        if (actor.companyIds.includes(e.companyId)) send(`event: appointment\ndata: ${JSON.stringify(e)}\n\n`);
+        if (actor.companyIds.includes(e.companyId)) send(`event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`);
       });
       const ping = setInterval(() => send(": ping\n\n"), 25_000);
       stop = () => {

@@ -14,7 +14,8 @@ import { ArrivalButton } from "../calendar/arrival";
 // Home screens (Phase 6a-4, DESIGN 1a / 1b / 1e): each role sees today's work, kept live
 // by <LiveRefresh>. No money on the physician's screen.
 
-type Common = { data: DayData; nowMin: number; dateLabel: string; companyLabel: string };
+// chat: the staff chat box (6a-10), titled for each home.
+type Common = { data: DayData; nowMin: number; dateLabel: string; companyLabel: string; chat: (title: string) => React.ReactNode };
 const toMin = (hm: string | null) => (hm ? Number(hm.slice(0, 2)) * 60 + Number(hm.slice(3, 5)) : null);
 const OPEN = ["BOOKED", "CONFIRMED", "ARRIVED", "READY"];
 
@@ -29,7 +30,7 @@ async function Later({ title, phase }: { title: string; phase: string }) {
 }
 
 // ── 1a · Physician ──────────────────────────────────────────────────────────────
-export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds }: Common & { resourceIds: string[] }) {
+export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds, chat }: Common & { resourceIds: string[] }) {
   const t = await getTranslations("home");
   const mine = data.appointments.filter((a) => a.active && resourceIds.includes(a.resourceId));
   const next = mine.find((a) => OPEN.includes(a.status) && a.end > nowMin);
@@ -60,7 +61,7 @@ export async function PhysicianHome({ data, nowMin, dateLabel, resourceIds }: Co
           }))} />
         </section>
         <div className="flex flex-col gap-4">
-          <Later title={t("chat")} phase="6a-10" />
+          {chat(t("chatInternal"))}
           <Later title={t("tasks")} phase="6f" />
           <Later title={t("toCheck")} phase="4" />
         </div>
@@ -133,7 +134,7 @@ function Name({ a }: { a: DayAppointment }) {
 // ── 1b · PA / nurse ─────────────────────────────────────────────────────────────
 // Board: the waiting room (arrived → pick a room → the doctor is notified; ready ones
 // show their room) and ONE card for the doctor's office (decided 12 Oct 2026).
-export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) {
+export async function PaHome({ data, nowMin, dateLabel, companyLabel, chat }: Common) {
   const t = await getTranslations("home");
   const appts = data.appointments.filter(inOffice);
   const waiting = appts.filter((a) => a.status === "ARRIVED" || a.status === "READY");
@@ -179,7 +180,7 @@ export async function PaHome({ data, nowMin, dateLabel, companyLabel }: Common) 
         <div className="flex flex-col gap-4">
           <Later title={t("pending")} phase="3" />
           <Later title={t("surgeryChecks")} phase="4" />
-          <Later title={t("chatDoctor")} phase="6a-10" />
+          {chat(t("chatDoctor"))}
         </div>
       </div>
     </main>
@@ -218,7 +219,7 @@ async function Schedule({ data }: { data: DayData }) {
 }
 
 // ── 1e · Front desk ─────────────────────────────────────────────────────────────
-export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
+export async function DeskHome({ data, dateLabel, companyLabel, chat, waiting = 0 }: Common & { waiting?: number }) {
   const t = await getTranslations("home");
   const appts = data.appointments.filter(inOffice);
   const tiles = [
@@ -253,9 +254,13 @@ export async function DeskHome({ data, dateLabel, companyLabel }: Common) {
             </div>
             <Link href={`/calendar?date=${data.tomorrowDate}`} className={`${secondaryButton} min-h-10 text-[13.5px]`}>{t("openTomorrow")}</Link>
           </section>
-          <Later title={t("waitingList")} phase="6e" />
+          <section className={`${card} flex flex-col gap-1.5 p-5`}>
+            <h2 className="text-[17px] font-semibold">{t("waitingList")}</h2>
+            <p className="text-[13.5px] text-ink-3">{t("waitingCount", { count: waiting })}</p>
+            <Link href="/calendar" className="text-[13.5px] font-semibold text-primary">{t("toCalendar")} →</Link>
+          </section>
           <Later title={t("surgeriesAdmin")} phase="4" />
-          <Later title={t("chat")} phase="6a-10" />
+          {chat(t("chat"))}
         </div>
       </div>
     </main>

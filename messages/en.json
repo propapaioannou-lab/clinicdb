@@ -65,7 +65,9 @@
     "surgeriesAdmin": "Surgeries · admin",
     "room": "Room",
     "notify": "Ready · notify",
-    "doctorOffice": "Doctor's office"
+    "doctorOffice": "Doctor's office",
+    "chatInternal": "Internal chat",
+    "waitingCount": "{count, plural, =0 {Nobody is waiting.} one {# waiting for an earlier time.} other {# waiting for an earlier time.}} Open it from the \"Waiting list\" tile in the calendar."
   },
   "login": {
     "title": "Log in",
@@ -1043,14 +1045,18 @@
       "FLAG_REASON": "Flag reasons",
       "REFERRAL_SOURCE": "Referral sources",
       "MARITAL_STATUS": "Marital status",
-      "TAX_OFFICE": "Tax offices"
+      "TAX_OFFICE": "Tax offices",
+      "CHAT_PRESET_DOCTOR": "Chat · doctor",
+      "CHAT_PRESET_STAFF": "Chat · staff"
     },
     "help": {
       "VISIT_TYPE": "The \"Visit type\" list. Fees are set by the front desk under \"Visit fees\".",
       "FLAG_REASON": "Reasons in a patient's flag (yellow / red).",
       "REFERRAL_SOURCE": "How the patient found us.",
       "MARITAL_STATUS": "Choices in the patient details.",
-      "TAX_OFFICE": "Tax offices for receipts."
+      "TAX_OFFICE": "Tax offices for receipts.",
+      "CHAT_PRESET_DOCTOR": "The doctor's one-tap chat messages.",
+      "CHAT_PRESET_STAFF": "The assistant's and front desk's one-tap chat messages."
     },
     "errors": {
       "forbidden": "Not allowed.",
@@ -1697,5 +1703,19 @@
     "justNow": "just now",
     "open": "Open record",
     "dismiss": "Dismiss"
+  },
+  "chat": {
+    "title": "Chat",
+    "messages": "Messages",
+    "empty": "No messages yet.",
+    "you": "You",
+    "presets": "Quick messages",
+    "message": "Message",
+    "placeholder": "Write a message…",
+    "send": "Send",
+    "errors": {
+      "forbidden": "You have no access to the chat.",
+      "empty": "Write a message."
+    }
   }
 }

@@ -225,6 +225,8 @@ enum ListKind {
   FLAG_REASON
   VISIT_TYPE
   CONDITION
+  CHAT_PRESET_DOCTOR // one-tap chat messages of the surgeon (6a-10)
+  CHAT_PRESET_STAFF // one-tap chat messages of the assistant / front desk
 }
 
 model ListItem {
@@ -802,4 +804,18 @@ model WaitlistEntry {
 
   @@index([companyId, removedAt])
   @@index([patientId])
+}
+
+// Internal staff chat (6a-10): one live conversation per company between surgeon,
+// assistant and front desk. On our own server only; messages are never deleted.
+model ChatMessage {
+  id         String   @id @default(cuid())
+  companyId  String
+  senderId   String
+  senderName String
+  senderRole String
+  text       String
+  createdAt  DateTime @default(now())
+
+  @@index([companyId, createdAt])
 }

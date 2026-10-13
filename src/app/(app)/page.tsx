@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { PatientsIcon, PlusIcon } from "@/components/icons";
+import { ChatBox } from "@/components/chat/chat-box";
 import { LiveRefresh } from "@/components/live/live-refresh";
+import { presetsFor, recentMessages } from "@/lib/chat/chat";
+import { listWaitlist } from "@/lib/calendar/waitlist";
 import { card, primaryButton, secondaryButton } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { calendarDay } from "@/lib/calendar/day";
@@ -20,7 +23,7 @@ export default async function Home() {
   const company = canEditPatients(actor.level) ? await activeCompany(actor) : null;
   if (company) {
     const today = athensIsoDate(new Date());
-    const data = await calendarDay(actor, company.id, today);
+    const [data, lines, presets] = await Promise.all([calendarDay(actor, company.id, today), recentMessages(actor, company.id), presetsFor(actor, company.id)]);
     if (data) {
       const t = await getTranslations();
       const p = athensParts(new Date());
@@ -29,12 +32,13 @@ export default async function Home() {
         nowMin: p.hour * 60 + p.minute,
         dateLabel: new Intl.DateTimeFormat("el-GR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${today}T12:00:00Z`)),
         companyLabel: t.has(`companies.${company.code}`) ? t(`companies.${company.code}` as "companies.surgery") : company.name,
+        chat: (title: string) => <ChatBox companyId={company.id} meId={actor.id} initial={lines ?? []} presets={presets} title={title} />,
       };
       let body;
       if (actor.role === "SURGEON") {
         body = <PhysicianHome {...common} resourceIds={await surgeonResources(actor.id, company.id)} />;
       } else {
-        body = actor.role === "PA_NURSE" ? <PaHome {...common} /> : <DeskHome {...common} />;
+        body = actor.role === "PA_NURSE" ? <PaHome {...common} /> : <DeskHome {...common} waiting={(await listWaitlist(actor, company.id))?.length ?? 0} />;
       }
       return (
         <>

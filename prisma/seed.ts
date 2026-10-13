@@ -59,9 +59,13 @@ const perCompany: Record<string, Partial<Record<ListKind, string[]>>> = {
   surgery: {
     // Clean list from the approved design; old my-medical types are mapped at import.
     VISIT_TYPE: ["Πρώτη επίσκεψη", "Προεγχειρητική εκτίμηση", "Επανέλεγχος", "Μετεγχειρητικός", "Άλλο"],
+    // One-tap staff-chat messages (DESIGN 1a / 1e; 6a-10), editable in Settings → Λίστες.
+    CHAT_PRESET_DOCTOR: ["Φέρε τον επόμενο", "Αργώ 10′", "Έλα στο Δωμάτιο 1", "Ετοίμασε botox", "Κλείσε επανέλεγχο", "Μην με διακόψεις"],
+    CHAT_PRESET_STAFF: ["Ήρθε ο επόμενος", "Ο ασθενής είναι έτοιμος", "Περιμένουν 2", "Τηλέφωνο για εσάς", "Καθυστερεί 10′"],
   },
   spa: {
     VISIT_TYPE: ["Πρώτη επίσκεψη", "Θεραπεία", "Επανεξέταση"],
+    CHAT_PRESET_STAFF: ["Ήρθε ο επόμενος", "Η καμπίνα είναι έτοιμη", "Τηλέφωνο για εσάς", "Καθυστερεί 10′"],
   },
 };
 

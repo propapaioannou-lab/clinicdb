@@ -1,5 +1,6 @@
 // FAKE patients for development and speed tests. Never run on the real server.
 //   npm run db:fake               adds fake patients if there are none yet
+//   npm run db:fake -- --small    2,000 + 200 instead of 15,000 + 600 (online demo)
 //   npm run db:fake -- --replace  removes ALL patients (and their documents and appointments) first, then adds fake ones
 import { rm } from "node:fs/promises";
 import path from "node:path";
@@ -8,7 +9,8 @@ import type { PatientFlag, PhoneType, Sex } from "../src/generated/prisma/client
 import { normalizeEmail, patientSearchName, patientSortName, phoneDigits, searchKey } from "../src/lib/patients/normalize";
 import { AREAS, CITIES, FEMALE_NAMES, MALE_NAMES, OCCUPATIONS, STREETS, SURNAMES } from "./fake-names";
 
-const COUNTS = { surgery: 15000, spa: 600 };
+// --small: the online demo (a quick build, still enough for search to feel real).
+const COUNTS = process.argv.includes("--small") ? { surgery: 2000, spa: 200 } : { surgery: 15000, spa: 600 };
 const BATCH = 1000;
 
 // Same numbers every run, so "patient 1234" is the same fake person each time.

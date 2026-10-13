@@ -14,8 +14,9 @@ import { athensToUtc } from "../src/lib/time";
 let seed = 7;
 const rand = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
 const pick = <T,>(xs: T[]) => xs[Math.floor(rand() * xs.length)];
-const WEEK = "2026-10-12"; // Monday of the mockup week
-const WEEKS = 4;
+// Monday of the mockup week; the online demo passes the current Monday (FAKE_CALENDAR_WEEK).
+const WEEK = process.env.FAKE_CALENDAR_WEEK ?? "2026-10-12";
+const WEEKS = Number(process.env.FAKE_CALENDAR_WEEKS ?? 4);
 
 // Office mix (type label → weight), as in the mockups: many short follow-ups and Botox.
 const MIX: [string, number][] = [["Επανέλεγχος", 30], ["Botox", 15], ["Νέα συμβουλευτική", 18], ["Πρώτη επίσκεψη", 20], ["Προεγχειρητική", 10], ["Online", 7]];
@@ -138,7 +139,8 @@ async function main() {
         const max = await db.patient.aggregate({ where: { companyId: company.id }, _max: { number: true } });
         ioanna = await db.patient.create({ data: { companyId: company.id, number: (max._max.number ?? 0) + 1, surname: "Ράπη", firstName: "Ιωάννα", searchName: "rapi ioanna", sortName: "ΡΑΠΗ ΙΩΑΝΝΑ", tags: ["to_confirm", "no_phone"] } });
       } else await db.patient.update({ where: { id: ioanna.id }, data: { tags: ["to_confirm", "no_phone"] } });
-      const startsAt = athensToUtc(2026, 10, 13, 19, 0);
+      const [ty, tm, td] = addDays(WEEK, 1).split("-").map(Number); // Tuesday of the mockup week
+      const startsAt = athensToUtc(ty, tm, td, 19, 0);
       const endsAt = new Date(startsAt.getTime() + first.defaultMinutes * 60e3);
       const over = await db.appointment.findMany({ where: { resourceId: doc.id, startsAt: { lt: endsAt }, endsAt: { gt: startsAt }, events: { some: { byName: "seed", action: "created" } } }, select: { id: true } });
       await db.appointmentEvent.deleteMany({ where: { appointmentId: { in: over.map((o) => o.id) } } });

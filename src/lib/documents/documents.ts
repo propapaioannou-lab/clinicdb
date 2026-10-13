@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { db } from "@/lib/db";
+import { isDemo } from "@/lib/demo";
 import { audit, type RequestContext } from "@/lib/audit";
 import type { DocumentType } from "@/generated/prisma/client";
 import { canArchivePatients, canEditPatients } from "@/lib/permissions";
@@ -25,7 +26,7 @@ export const canOpenDocument = (actor: Pick<Actor, "level">, type: DocumentType)
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 export const MAX_FILES = 20;
 
-export type DocumentError = "forbidden" | "not_found" | "no_files" | "too_many" | "too_big" | "bad_type" | "invalid_value";
+export type DocumentError = "forbidden" | "not_found" | "no_files" | "too_many" | "too_big" | "bad_type" | "invalid_value" | "demo";
 type Fail = { ok: false; error: DocumentError; file?: string };
 const fail = (error: DocumentError, file?: string): Fail => ({ ok: false, error, ...(file && { file }) });
 
@@ -103,6 +104,8 @@ export async function uploadDocuments(
   ctx: RequestContext,
 ): Promise<Fail | { ok: true; ids: string[] }> {
   if (!canEditPatients(actor.level)) return fail("forbidden");
+  // The online demo stores no files: nothing real can be uploaded there by mistake.
+  if (isDemo()) return fail("demo");
   const patient = await findPatient(actor, patientId);
   if (!patient) return fail("not_found");
   if (!files.length) return fail("no_files");

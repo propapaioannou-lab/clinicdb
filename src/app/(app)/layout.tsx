@@ -12,6 +12,8 @@ import { activeCompany, userCompanies } from "@/lib/company";
 import { canManageUsers, canSeeContactDetails } from "@/lib/permissions";
 import { loadActor } from "@/lib/users/manage";
 import { ReadyBanner } from "@/components/live/ready-banner";
+import { SuggestButton } from "@/components/demo/suggest-button";
+import { isDemo } from "@/lib/demo";
 import { surgeonResources } from "@/lib/calendar/views";
 import { logoutAction, switchCompanyAction } from "./actions";
 
@@ -23,7 +25,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const t = await getTranslations();
   const format = await getFormatter();
   // Owners/Admins see a warning on every page if backups are not working.
-  const backupProblem = canManageUsers(user.level) && !(await backupHealth()).ok;
+  // (The online demo has no backups of its own: no warning there.)
+  const backupProblem = canManageUsers(user.level) && !isDemo() && !(await backupHealth()).ok;
   // Surgeons get the "ready in room" banner for their own column(s) on every page.
   const readyFor = actor.role === "SURGEON" && current ? await surgeonResources(actor.id, current.id) : [];
   const soon = t("nav.soon");
@@ -113,6 +116,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         </div>
       </div>
 
+      {isDemo() && <SuggestButton />}
       <nav aria-label={t("nav.main")} className="fixed inset-x-0 bottom-0 z-30 flex border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] md:hidden">
         <NavLink variant="bottom" href="/" icon={<HomeIcon />} label={t("nav.today")} />
         <NavLink variant="bottom" href="/patients" icon={<SearchIcon size={19} />} label={t("nav.search")} />

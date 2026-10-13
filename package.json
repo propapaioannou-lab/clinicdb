@@ -10,7 +10,9 @@
     "test": "vitest run",
     "db:migrate": "sh scripts/migrate.sh",
     "db:fake": "tsx scripts/seed-fake-patients.ts",
-    "db:fake-calendar": "tsx scripts/seed-fake-appointments.ts"
+    "db:fake-calendar": "tsx scripts/seed-fake-appointments.ts",
+    "demo:connect": "sh scripts/demo-connect.sh",
+    "demo:update": "sh scripts/demo-update.sh"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",

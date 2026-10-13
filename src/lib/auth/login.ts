@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { isDemo } from "@/lib/demo";
 import { audit, type RequestContext } from "@/lib/audit";
 import { hasExpired } from "@/lib/permissions";
 import { hashPassword, verifyPassword } from "@/lib/password";
@@ -118,6 +119,13 @@ export async function login(
       );
       return { ok: true, token, expiresAt: session.expiresAt, next: "/" };
     }
+  }
+
+  // The online demo (fake data only): password only, so a tester needs just a link and a login.
+  if (isDemo()) {
+    const { token, session } = await createSession(user.id, ctx, now);
+    await audit({ action: "auth.login.success", actor, entityType: "Session", entityId: session.id, details: { method: "demo_password_only" } }, ctx);
+    return { ok: true, token, expiresAt: session.expiresAt, next: "/" };
   }
 
   const stage = user.totpEnabled ? "PENDING_2FA" : "PENDING_ENROLL";

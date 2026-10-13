@@ -2,6 +2,22 @@
 
 Plain-language record of what changed and how to check it.
 
+## 13 Oct 2026 — Online demo for testers (Render + Neon)
+
+- A **separate test copy** on the internet, for your secretary to try from any computer
+  with just a link and a login. **Fake data only**; never connected to real data, GHL,
+  WhatsApp or e-mail (all switched off there).
+- On every page: an orange strip **«ΔΟΚΙΜΑΣΤΙΚΗ ΕΚΔΟΣΗ — ψεύτικα δεδομένα»**.
+- On every screen: **«💬 Πρόταση»** (bottom right). It saves the comment with the screen,
+  who wrote it and when.
+- For you (the Physician demo login): the strip shows **«Προτάσεις (N ανοιχτές)»** →
+  the list (Ανοιχτές / Έγιναν / Όλες), a tick for «Έγινε», and **«Εξαγωγή σε Markdown»**.
+- Two logins: Γραμματεία and Δρ Δοκιμή. Password only there (no 2FA app needed).
+  Document uploads are off in the demo, so no real file can end up there by mistake.
+- Updating the demo after each new step: `npm run demo:update`.
+- Also: live updates now reconnect by themselves if the database connection drops.
+- The real app on the laptop is unchanged (the demo switch is off there).
+
 ## 13 Oct 2026 — Phase 6a-10: staff chat (6a complete)
 
 - **Internal chat** on the home screens: yours («Εσωτερική συνομιλία»), the assistant's

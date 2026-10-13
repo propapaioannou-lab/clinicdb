@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
+import { isDemo } from "@/lib/demo";
 
 // Rule (SPEC §2, §10): emails carry links and names only — never clinical data.
 
@@ -17,11 +18,13 @@ function getTransport() {
 }
 
 export async function sendMail(to: string, subject: string, text: string, html: string) {
+  // The online demo never sends e-mail (to anyone).
+  if (isDemo()) return;
   await getTransport().sendMail({ from: process.env.SMTP_FROM, to, subject, text, html });
 }
 
 export function appUrl(path: string): string {
-  const base = process.env.APP_URL ?? "http://localhost:3000";
+  const base = process.env.APP_URL ?? process.env.RENDER_EXTERNAL_URL ?? "http://localhost:3000";
   return new URL(path, base).toString();
 }
 

@@ -819,3 +819,21 @@ model ChatMessage {
 
   @@index([companyId, createdAt])
 }
+
+// «💬 Πρόταση» on every screen of the online demo: what a tester would change, with the
+// screen, who and when. The owner reads them, ticks them done and exports them to Markdown.
+// No patient data (the demo holds fake data only). Kept, never deleted.
+model Suggestion {
+  id        String    @id @default(cuid())
+  companyId String?
+  userId    String
+  userName  String
+  screen    String // readable screen name, e.g. "Ημερολόγιο"
+  path      String // the address, e.g. /calendar?date=2026-10-13
+  text      String
+  createdAt DateTime  @default(now())
+  doneAt    DateTime?
+  doneById  String?
+
+  @@index([createdAt])
+}

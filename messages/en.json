@@ -1025,7 +1025,8 @@
       "too_many": "Up to 20 files at a time.",
       "too_big": "“{file}” is larger than 25 MB.",
       "bad_type": "“{file}” is not a PDF, image, Word or Excel file.",
-      "invalid_value": "Check the date and the visit."
+      "invalid_value": "Check the date and the visit.",
+      "demo": "The test version does not store files. Uploads work in the real app."
     }
   },
   "settingsLists": {
@@ -1716,6 +1717,41 @@
     "errors": {
       "forbidden": "You have no access to the chat.",
       "empty": "Write a message."
+    }
+  },
+  "demo": {
+    "banner": "TEST VERSION — fake data",
+    "bannerLink": "Suggestions ({count} open)",
+    "suggest": "Suggestion",
+    "suggestTitle": "What would you change here?",
+    "screen": "Screen",
+    "placeholder": "Write what doesn't work or what you'd like done differently…",
+    "send": "Send",
+    "cancel": "Cancel",
+    "saved": "Thank you — saved.",
+    "another": "Another one",
+    "close": "Close",
+    "error": "Not saved. Please try again.",
+    "pageTitle": "Suggestions",
+    "pageIntro": "Everything written with «💬 Suggestion» in the test version: screen, who, when. Tick what is done; export gives one Markdown file.",
+    "show": {
+      "open": "Open",
+      "done": "Done",
+      "all": "All"
+    },
+    "export": "Export to Markdown",
+    "done": "Done",
+    "empty": "No suggestions here.",
+    "screens": {
+      "home": "Home",
+      "patients": "Patients",
+      "patientNew": "New patient",
+      "patient": "Patient record",
+      "calendar": "Calendar",
+      "chat": "Chat",
+      "settings": "Settings",
+      "admin": "Administration",
+      "suggestions": "Suggestions"
     }
   }
 }

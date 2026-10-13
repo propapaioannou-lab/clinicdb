@@ -40,13 +40,17 @@ async function connect() {
         hub.emitter.emit("event", JSON.parse(msg.payload) as LiveEvent);
       } catch {}
     });
-    // On a lost connection, drop it; the next subscriber reconnects.
-    client.on("error", () => {
+    // On a lost connection (database restart; the demo's database sleeps when idle), drop it
+    // and reconnect while screens are still listening; otherwise the next subscriber does.
+    const lost = () => {
+      if (hub.client !== client) return;
       hub.client = null;
-    });
-    client.on("end", () => {
-      hub.client = null;
-    });
+      setTimeout(() => {
+        if (hub.emitter.listenerCount("event") > 0) connect().catch(() => {});
+      }, 3000);
+    };
+    client.on("error", lost);
+    client.on("end", lost);
     await client.connect();
     await client.query(`LISTEN ${CHANNEL}`);
     hub.client = client;

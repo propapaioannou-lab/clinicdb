@@ -1,0 +1,35 @@
+# ONLINE DEMO of ClinicDB on Render (free, Frankfurt) + Neon (free Postgres, Frankfurt).
+# Fake data only. Never point it at real data, and never put a secret in this file: the
+# values marked `sync: false` are typed in Render's dashboard (Render asks for them when
+# the Blueprint is created). Updated by `npm run demo:update` (pushes to GitHub → Render
+# rebuilds by itself).
+services:
+  - type: web
+    name: clinicdb-demo
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    buildCommand: sh scripts/demo-build.sh
+    startCommand: sh scripts/demo-start.sh
+    healthCheckPath: /login
+    envVars:
+      - key: DEMO_MODE
+        value: "1"
+      - key: NODE_VERSION
+        value: "24"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: PRISMA_HIDE_UPDATE_MESSAGE
+        value: "1"
+      # Encrypts 2FA secrets; Render makes a random one.
+      - key: APP_SECRET
+        generateValue: true
+      # Typed in the dashboard (see README "Online demo"):
+      - key: DATABASE_URL
+        sync: false
+      - key: DEMO_SECRETARY_PASSWORD
+        sync: false
+      - key: DEMO_PHYSICIAN_PASSWORD
+        sync: false

@@ -111,3 +111,33 @@ If the whole server is lost: install the app on the new machine, put the backup'
 run the disaster-recovery command above. It also decrypts the documents into
 `~/ClinicDB/backups/restored-documents-…/` and prints the one command that puts them back
 into the app's documents volume.
+
+## Online demo (Render + Neon, fake data only)
+
+A separate copy for testers: <https://dashboard.render.com> (app, free, Frankfurt) +
+<https://console.neon.tech> (database, free, Frankfurt). **Fake data only — never real
+patients, never connected to GHL, WhatsApp or e-mail.**
+
+- **Switch:** `DEMO_MODE=1` (set in `render.yaml`). It turns off e-mail and document
+  uploads, logs in with the password only (no 2FA), hides the backup warning, keeps the
+  site out of search engines, and shows the «ΔΟΚΙΜΑΣΤΙΚΗ ΕΚΔΟΣΗ» banner + «💬 Πρόταση»
+  button. Code: `src/lib/demo.ts` — **every future outside connection (GHL, WhatsApp,
+  myDATA…) must check `isDemo()` and send nothing.**
+- **Settings** (Render → clinicdb-demo → Environment; never in git): `DATABASE_URL`
+  (Neon connection string), `DEMO_SECRETARY_PASSWORD`, `DEMO_PHYSICIAN_PASSWORD`
+  (12+ characters). `APP_SECRET` is made by Render.
+- **Logins:** `grammateia@example.com` (Γραμματεία, User) and `giatros@example.com`
+  (Δρ Δοκιμή, Owner — also sees «Προτάσεις»). Every build sets their passwords from the
+  settings, so changing a password there + «Manual Deploy» is enough.
+- **Build** (`scripts/demo-build.sh`, every deploy): migrations → lists → the two logins →
+  2,000 + 200 fake patients (first time) → fake calendar (first time, and again whenever
+  less than a week of it is left) → app. Start: `scripts/demo-start.sh`.
+- **Update after a new step:** `npm run demo:update` (pushes the last commit to the private
+  GitHub repository; Render rebuilds in 5–10 minutes). One-time link:
+  `npm run demo:connect -- https://github.com/NAME/REPOSITORY` (deploy key
+  `~/.ssh/clinicdb_demo_deploy`).
+- **Suggestions:** banner link «Προτάσεις» (Owner/Admin) → tick done, «Εξαγωγή σε
+  Markdown».
+- Limits: the app sleeps after 15 minutes without visitors (first page then takes about
+  a minute); the database sleeps after 5 minutes (wakes in under a second). Uploaded files
+  are not possible in the demo.

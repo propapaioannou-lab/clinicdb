@@ -22,8 +22,7 @@ export type LiveChat = { type: "chat"; companyId: string; message: { id: string;
 const listeners = new Set<(e: LiveAppointment) => void>();
 const chatListeners = new Set<(e: LiveChat) => void>();
 let source: EventSource | null = null;
-function ensure() {
-  if (source || typeof window === "undefined") return;
+function open() {
   source = new EventSource("/api/live");
   source.addEventListener("appointment", (msg) => {
     try {
@@ -37,6 +36,38 @@ function ensure() {
       for (const l of chatListeners) l(e);
     } catch {}
   });
+}
+
+// The online demo runs on free hosting whose database sleeps when nobody works: a tab left
+// open without anyone touching it for 20′ closes its live line, and opens it again (with a
+// refresh, so nothing is missed) at the next mouse move or key press.
+const IDLE_MS = 20 * 60_000;
+let idleWatch = false;
+function watchIdle() {
+  if (idleWatch || document.documentElement.dataset.demo !== "1") return;
+  idleWatch = true;
+  let last = Date.now();
+  let asleep = false;
+  const wake = () => {
+    last = Date.now();
+    if (!asleep) return;
+    asleep = false;
+    open();
+    window.dispatchEvent(new Event("clinic:live-wake"));
+  };
+  for (const ev of ["pointerdown", "pointermove", "keydown", "focus", "touchstart"]) window.addEventListener(ev, wake, { passive: true });
+  setInterval(() => {
+    if (asleep || Date.now() - last < IDLE_MS) return;
+    asleep = true;
+    source?.close();
+    source = null;
+  }, 60_000);
+}
+
+function ensure() {
+  if (typeof window === "undefined") return;
+  watchIdle();
+  if (!source) open();
 }
 
 // New staff-chat messages (6a-10).

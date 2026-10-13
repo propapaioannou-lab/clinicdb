@@ -240,18 +240,18 @@ export function BlocksSettings({ rows, resources, add, remove }: { rows: BlockRo
 
 // ── Hours rules (calendar v2) ──────────────────────────────────────────────────────
 export function HoursRulesSettings({ initial, columns, save }: {
-  initial: { surgery: HoursRange[]; flexBefore: number; flexAfter: number };
+  initial: { surgery: HoursRange[]; flexBefore: number; flexAfter: number; lateHours: number; lateMonths: number };
   columns: { id: string; label: string; hours: HoursRange[] }[];
   save: (v: Record<string, unknown>) => Promise<CalendarSettingsState>;
 }) {
   const t = useTranslations("settingsCalendar");
   const { act, pending, error } = useAct();
-  const [v, setV] = useState({ surgery: initial.surgery, flexBefore: String(initial.flexBefore), flexAfter: String(initial.flexAfter) });
+  const [v, setV] = useState({ surgery: initial.surgery, flexBefore: String(initial.flexBefore), flexAfter: String(initial.flexAfter), lateHours: String(initial.lateHours), lateMonths: String(initial.lateMonths) });
   const [saved, setSaved] = useState(false);
   const summary = (hours: HoursRange[]) =>
     DAYS.filter((d) => hours.some((h) => h.day === d)).map((d) => `${t(`days.${d}`)} ${hours.filter((h) => h.day === d).map((h) => `${h.from}–${h.to}`).join(", ")}`).join(" · ") || t("closed");
   return (
-    <form onSubmit={(e) => { e.preventDefault(); setSaved(false); act(() => save({ surgery: v.surgery, flexBefore: v.flexBefore, flexAfter: v.flexAfter }), () => setSaved(true)); }} className="flex flex-col gap-5">
+    <form onSubmit={(e) => { e.preventDefault(); setSaved(false); act(() => save({ surgery: v.surgery, flexBefore: v.flexBefore, flexAfter: v.flexAfter, lateHours: v.lateHours, lateMonths: v.lateMonths }), () => setSaved(true)); }} className="flex flex-col gap-5">
       {error}
       <div className="flex flex-col gap-1.5">
         <span className="text-[15px] font-semibold">{t("rules.office")}</span>
@@ -273,6 +273,14 @@ export function HoursRulesSettings({ initial, columns, save }: {
         <span className="text-[15px] font-semibold">{t("rules.surgery")}</span>
         <span className="text-[13px] text-muted">{t("rules.surgeryHelp")}</span>
         <HoursEditor value={v.surgery} onChange={(surgery) => setV({ ...v, surgery })} />
+      </div>
+      <div className="flex flex-col gap-1.5 border-t border-line-softer pt-4">
+        <span className="text-[15px] font-semibold">{t("rules.cancel")}</span>
+        <span className="text-[13px] text-muted">{t("rules.cancelHelp")}</span>
+        <div className="flex flex-wrap gap-3">
+          <label className="block w-[190px] text-sm text-ink-3">{t("rules.lateHours")}<input value={v.lateHours} onChange={(e) => setV({ ...v, lateHours: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} /></label>
+          <label className="block w-[190px] text-sm text-ink-3">{t("rules.lateMonths")}<input value={v.lateMonths} onChange={(e) => setV({ ...v, lateMonths: e.target.value.replace(/\D/g, "") })} inputMode="numeric" className={inputClass} /></label>
+        </div>
       </div>
       <p className="rounded-[10px] bg-surface-2 px-3 py-2 text-[13px] text-ink-3">{t("rules.weekend")}</p>
       <div className="flex items-center gap-3">

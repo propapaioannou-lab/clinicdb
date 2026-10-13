@@ -1258,7 +1258,11 @@
       "flexAfter": "After (minutes)",
       "surgery": "Surgery hours (Diavalkaniko)",
       "surgeryHelp": "Surgeries go in this window; after its end a reason is needed. Shown as the compact top band of the calendar.",
-      "weekend": "Saturday and Sunday: closed and hidden. \"+ Sat/Sun\" in the calendar shows them; a booking there needs a reason."
+      "weekend": "Saturday and Sunday: closed and hidden. \"+ Sat/Sun\" in the calendar shows them; a booking there needs a reason.",
+      "cancel": "Cancellations",
+      "cancelHelp": "Closer than these hours = late cancellation (yellow flag). A second one within these months = red.",
+      "lateHours": "Late if less than (hours)",
+      "lateMonths": "Second within (months)"
     },
     "forNewPatients": "For new patients (set automatically; not offered to existing ones)",
     "forNewPatientsShort": "new patients"
@@ -1495,7 +1499,9 @@
       "tomorrowSurgery": "Tomorrow · surgery",
       "cannotNotify": "{count} can't be notified",
       "noReach": "Can't be notified",
-      "byEmail": "by email"
+      "byEmail": "by email",
+      "waitlistSub": "{count} waiting",
+      "waitlistEmpty": "Nobody"
     },
     "overrun": "after {time} = over-run",
     "flexLabel": "outside hours +30′",
@@ -1598,7 +1604,75 @@
     },
     "parked": "parked",
     "parkedHint": "Overlaps another appointment: make room or change its time.",
-    "parkedCount": "{count} parked"
+    "parkedCount": "{count} parked",
+    "showCancelled": "Show cancelled",
+    "cancel": {
+      "open": "Cancel…",
+      "title": "Cancel — never deleted",
+      "intro": "It leaves the calendar (\"Show cancelled\" brings it back) and stays in the history for good. The flag is set automatically; it is changed on the patient record, with a reason.",
+      "inHours": "in {hours} h",
+      "ago": "{hours} h ago",
+      "kinds": {
+        "cancel": "Cancellation",
+        "late": "Late cancellation",
+        "no_show": "No-show",
+        "error": "Entered in error"
+      },
+      "hints": {
+        "cancel": "in time (≥ {hours} h before) · no flag",
+        "late": "< {hours} h before",
+        "no_show": "only after its time",
+        "error": "front-desk mistake · no flag, hidden"
+      },
+      "yellow": "yellow",
+      "red": "red",
+      "reason": "Reason",
+      "reasonHint": "e.g. ill, will rebook",
+      "lateRule": "A 2nd late one within {months} months → red.",
+      "secondLate": "Already a late cancellation within {months} months → this one gives red.",
+      "matchesNote": "The time is offered to the waiting list ({count} fit).",
+      "submit": "Cancel appointment",
+      "back": "Back",
+      "close": "Done",
+      "done": {
+        "cancel": "Cancelled",
+        "late": "Late cancellation recorded",
+        "no_show": "No-show recorded",
+        "error": "Entered in error · hidden"
+      },
+      "flagYellow": "Yellow flag on the patient",
+      "flagRed": "Red flag on the patient",
+      "offer": "{count} on the waiting list fit the time:",
+      "anyType": "any type",
+      "booked": "booked",
+      "bookThem": "Book",
+      "whatsappLater": "WhatsApp offers to several at once: with GHL (6d/6e).",
+      "noMatches": "Nobody on the waiting list fits this time.",
+      "errors": {
+        "not_found": "Not found.",
+        "invalid_value": "Choose how to cancel.",
+        "reason_needed": "Write a reason.",
+        "not_yet": "\"No-show\" only after the appointment time.",
+        "not_allowed": "Not allowed from the current status.",
+        "forbidden": "Not allowed."
+      }
+    },
+    "waitlist": {
+      "anyDay": "any day",
+      "anyType": "any type",
+      "since": "since {date}",
+      "remove": "take off",
+      "empty": "The list is empty.",
+      "add": "Add to the list",
+      "change": "Change",
+      "search": "Patient: name or phone",
+      "from": "from",
+      "to": "to",
+      "note": "Note (e.g. as early as possible)",
+      "addButton": "Add",
+      "error": "Check the patient, days and times (HH:MM)."
+    },
+    "showCancelledShort": "Cancelled"
   },
   "live": {
     "ready": "{name} is ready",

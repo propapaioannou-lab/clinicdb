@@ -2,6 +2,28 @@
 
 Plain-language record of what changed and how to check it.
 
+## 13 Oct 2026 — Phase 6a-8: cancel without delete, waiting list
+
+- **«Ακύρωση…»** in the appointment panel opens four choices (the right one is
+  pre-selected from how far away the appointment is):
+  - **Ακύρωση** — 48 hours or more before: no flag;
+  - **Εκπρόθεσμη ακύρωση** — less than 48 hours: yellow flag; a second one within
+    12 months: red;
+  - **Δεν ήρθε** — only after its time: red flag;
+  - **Λάθος καταχώριση** — a front-desk mistake: hidden, no flag, needs a reason.
+- Flags are added automatically with their reason ("Ακύρωσε την τελευταία στιγμή",
+  "Δεν ήρθε στο ραντεβού") and are never lowered by the system; you change them on the
+  patient record. Every step is logged. Nothing is deleted.
+- Cancelled appointments leave the calendar; **«+ Ακυρωμένα»** shows them again (crossed
+  out). «Λάθος καταχώριση» stays hidden.
+- **Waiting list** (top-strip tile): add a patient with the type and the days/hours they
+  want; take them off when done. When an appointment is cancelled, the people it fits are
+  listed with «Κλείσιμο» — one click books them into the freed time and takes them off
+  the list. WhatsApp offers to several at once come with GHL (6d/6e).
+- Settings → Ημερολόγιο → Ωράριο → **Ακυρώσεις**: the 48 hours and the 12 months.
+- "Δεν ήρθε" on the front-desk home page uses the same rules (red flag).
+- Check: see the click list in the reply for this step.
+
 ## 12 Oct 2026 — No nurse calendar; parking an appointment
 
 - **Nurse calendar removed**: no Νοσηλεύτρια column in the day or week view, no

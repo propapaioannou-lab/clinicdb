@@ -143,7 +143,7 @@ describe("booking with the v2 hours", () => {
     expect(await saveCalendarConfig(owner, co, { surgery: [{ day: 1, from: "08:00", to: "07:00" }], flexBefore: 30, flexAfter: 30 }, ctx)).toEqual({ ok: false, error: "invalid_value" });
     const surgeryHours = [{ day: 2, from: "08:00", to: "15:00" }];
     expect(await saveCalendarConfig(owner, co, { surgery: surgeryHours, flexBefore: "15", flexAfter: 0 }, ctx)).toEqual({ ok: true });
-    expect(await calendarConfigOf(co)).toEqual({ surgery: surgeryHours, flexBefore: 15, flexAfter: 0 });
+    expect(await calendarConfigOf(co)).toEqual({ surgery: surgeryHours, flexBefore: 15, flexAfter: 0, lateHours: 48, lateMonths: 12 });
     const log = await db.auditLog.findFirstOrThrow({ where: { action: "settings.calendarHours.updated", companyId: co }, orderBy: { at: "desc" } });
     expect(log.details).toMatchObject({ after: { flexBefore: 15 }, before: { flexBefore: 30 } });
   });

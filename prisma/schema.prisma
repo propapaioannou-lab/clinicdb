@@ -348,6 +348,7 @@ model Patient {
   visits          Visit[]
   documents       Document[]
   appointments    Appointment[]
+  waitlist        WaitlistEntry[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -617,8 +618,10 @@ enum AppointmentStatus {
   WITH_DOCTOR // Με τον γιατρό
   TO_PAY // Προς πληρωμή
   DONE // Ολοκληρώθηκε
-  CANCELLED // Ακυρώθηκε
-  NO_SHOW // Δεν ήρθε
+  CANCELLED // Ακυρώθηκε (≥ 48 h before, no flag)
+  NO_SHOW // Δεν ήρθε (red flag)
+  CANCELLED_LATE // Εκπρόθεσμη ακύρωση (< 48 h, yellow flag; 2nd within 12 months → red)
+  ENTERED_IN_ERROR // Λάθος καταχώριση (hidden, no flag)
 }
 
 // Calendar layers that can be switched on and off (DESIGN §6).
@@ -774,4 +777,29 @@ model CalendarBlock {
   resource    Resource? @relation(fields: [resourceId], references: [id], onDelete: Restrict)
 
   @@index([companyId, startsAt])
+}
+
+// Minimal waiting list (6a-8): who wants an earlier time, for what, when. Offered the
+// freed slot on a cancellation (WhatsApp offers come with 6d/6e). Never deleted: taken
+// off the list with `removedAt`.
+model WaitlistEntry {
+  id          String    @id @default(cuid())
+  companyId   String
+  patientId   String
+  typeId      String?
+  // Preferred weekdays (1 = Mon … 7 = Sun); empty = any day.
+  days        Int[]     @default([])
+  // Preferred time window "16:30"–"20:00" (Athens); empty = any time.
+  fromTime    String?
+  toTime      String?
+  note        String?
+  createdAt   DateTime  @default(now())
+  createdById String?
+  removedAt   DateTime?
+  removedById String?
+  removedWhy  String?
+  patient     Patient   @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, removedAt])
+  @@index([patientId])
 }

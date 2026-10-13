@@ -32,14 +32,18 @@ export const hoursOf = (raw: unknown): HoursRange[] => cleanHours(raw) ?? DEFAUL
 // surgery: the surgery window (Διαβαλκανικό) — surgery-type appointments go here.
 // flexBefore / flexAfter: minutes just outside office hours that staff may book with
 // one extra click («εκτός ωραρίου +30′»); online booking never offers them.
-export type CalendarConfig = { surgery: HoursRange[]; flexBefore: number; flexAfter: number };
+// lateHours / lateMonths (6a-8): a cancellation less than `lateHours` before is late
+// (yellow flag); a second late one within `lateMonths` months → red.
+export type CalendarConfig = { surgery: HoursRange[]; flexBefore: number; flexAfter: number; lateHours: number; lateMonths: number };
 
 export const DEFAULT_CONFIG: CalendarConfig = {
   surgery: [1, 2, 3, 4, 5].map((day) => ({ day, from: "07:30", to: "14:00" })),
   flexBefore: 30,
   flexAfter: 30,
+  lateHours: 48,
+  lateMonths: 12,
 };
-const NO_SURGERY: CalendarConfig = { surgery: [], flexBefore: 0, flexAfter: 0 };
+const NO_SURGERY: CalendarConfig = { surgery: [], flexBefore: 0, flexAfter: 0, lateHours: 48, lateMonths: 12 };
 
 const flexMinutes = (v: unknown, fallback: number) => (Number.isInteger(v) && (v as number) >= 0 && (v as number) <= 120 ? (v as number) : fallback);
 
@@ -51,6 +55,8 @@ export function cleanConfig(raw: unknown, companyCode = "surgery"): CalendarConf
     surgery: cleanHours(r.surgery) ?? base.surgery,
     flexBefore: flexMinutes(r.flexBefore, base.flexBefore),
     flexAfter: flexMinutes(r.flexAfter, base.flexAfter),
+    lateHours: Number.isInteger(r.lateHours) && (r.lateHours as number) >= 0 && (r.lateHours as number) <= 24 * 14 ? (r.lateHours as number) : base.lateHours,
+    lateMonths: Number.isInteger(r.lateMonths) && (r.lateMonths as number) >= 1 && (r.lateMonths as number) <= 60 ? (r.lateMonths as number) : base.lateMonths,
   };
 }
 

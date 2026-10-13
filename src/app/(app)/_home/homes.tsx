@@ -7,7 +7,7 @@ import type { DayAppointment, DayData } from "@/lib/calendar/day";
 import { STATUS_LABEL } from "@/lib/calendar/status";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { greetingFor } from "@/lib/home/greeting";
-import { RoomNotify, StepButton } from "./buttons";
+import { NoShowButton, RoomNotify, StepButton } from "./buttons";
 import { TodayList } from "./today-list";
 import { ArrivalButton } from "../calendar/arrival";
 
@@ -208,7 +208,7 @@ async function Schedule({ data }: { data: DayData }) {
             <span className="w-[130px] text-[13px] font-semibold">{STATUS_LABEL[a.status as AppointmentStatus]}</span>
             <span className="flex min-w-[150px] flex-wrap items-center justify-end gap-2">
               <MainAction a={a} data={data} />
-              {(a.status === "BOOKED" || a.status === "CONFIRMED") && <StepButton id={a.id} to="NO_SHOW" kind="link" label={t("noShow")} />}
+              {(a.status === "BOOKED" || a.status === "CONFIRMED") && <NoShowButton id={a.id} label={t("noShow")} />}
             </span>
           </li>
         ))}

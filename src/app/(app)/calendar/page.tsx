@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/current";
 import { freeSlots } from "@/lib/calendar/appointments";
 import { CALENDAR_KINDS, calendarDay } from "@/lib/calendar/day";
 import { confirmations } from "@/lib/calendar/strip";
+import { listWaitlist } from "@/lib/calendar/waitlist";
 import { addDays, calendarRange, mondayOf, ownResource, patientCard, rangeScale } from "@/lib/calendar/views";
 import { activeCompany } from "@/lib/company";
 import { db } from "@/lib/db";
@@ -18,6 +19,7 @@ import { DeskMonth, DeskWeek } from "./desk-views";
 import { DoctorDay, DoctorMonth, DoctorWeek, doctorTiles } from "./doctor-views";
 import { CarryBar, MoveToast } from "./move-toast";
 import { TopStrip, type Tile } from "./top-strip";
+import { WaitlistPanel } from "./waitlist-panel";
 
 type View = "day" | "week" | "month";
 const VIEWS: View[] = ["day", "week", "month"];
@@ -50,6 +52,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
   const date = typeof sp.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.date) ? sp.date : today;
   const view: View = VIEWS.includes(sp.view as View) ? (sp.view as View) : "day";
   const weekend = sp.we === "1";
+  const showCancelled = sp.cx === "1"; // «Εμφάνιση ακυρωμένων»
   const doctor = actor.role === "SURGEON" && sp.as !== "desk";
   const own = doctor ? await ownResource(actor, company.id) : null;
   // «Μετακίνηση» (6a-7): the appointment being carried to a new time (?carry=id), kept
@@ -71,7 +74,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     : null;
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", we: weekend ? "1" : undefined, carry: carry?.id, ...over };
+    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", we: weekend ? "1" : undefined, carry: carry?.id, cx: showCancelled ? "1" : undefined, ...over };
     for (const [k, v] of Object.entries(all)) if (v && !(k === "view" && v === "day")) p.set(k, v);
     return `/calendar${p.size ? `?${p}` : ""}`;
   };
@@ -118,7 +121,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     // «+ Ραντεβού» opens the quick-booking panel on the next free slot (?book=resource.minute).
     const m = typeof sp.book === "string" ? /^([\w-]+)\.(\d{1,4})$/.exec(sp.book) : null;
     const startAt = m && data.columns.some((c) => c.id === m[1]) ? { resourceId: m[1], start: Number(m[2]) } : undefined;
-    body = <DayView key={`${date}${sp.book ?? ""}`} startAt={carry ? undefined : startAt} data={data} types={officeTypes} carry={carry} />;
+    body = <DayView key={`${date}${sp.book ?? ""}`} startAt={carry ? undefined : startAt} data={data} types={officeTypes} carry={carry} showCancelled={showCancelled} />;
   } else if (view === "day" && own) {
     const [days, tomorrow] = await Promise.all([calendarRange(actor, company.id, date, 1, [own.id]), calendarRange(actor, company.id, stepDay(date, 1, false), 1, [own.id])]);
     const day = days![0];
@@ -145,7 +148,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     const cols = doctor ? (own ? [own] : []) : [doctorCol].filter(Boolean);
     const ids = cols.map((c) => c!.id);
     const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
-    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} />;
+    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} showCancelled={showCancelled} />;
   } else if (view === "month") {
     const first = `${date.slice(0, 7)}-01`;
     const gridStart = mondayOf(first);
@@ -164,7 +167,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} carry={carry?.id} />;
     }
   }
-  if (!doctor) tiles = await deskTiles(actor, company.id, today);
+  if (!doctor) tiles = await deskTiles(actor, company.id, today, officeTypes);
   const nav = "flex h-10 min-w-10 items-center justify-center rounded-control border border-line-strong bg-surface px-2.5 text-sm font-semibold hover:border-primary";
   const seg = (on: boolean) => `whitespace-nowrap rounded-[9px] px-2.5 py-1.5 text-[13px] ${on ? "bg-surface font-semibold text-primary shadow-[0_1px_2px_rgba(0,0,0,0.08)]" : "text-ink-3 hover:text-ink"}`;
   return (
@@ -197,6 +200,12 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12.5px] ${weekend ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3 hover:border-primary"}`}>
           {weekend ? t("weekOn") : t("weekOff")}
         </Link>
+        {!doctor && view !== "month" && (
+          <Link href={q({ cx: showCancelled ? undefined : "1" })} aria-pressed={showCancelled} title={t("showCancelled")}
+            className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-[12.5px] ${showCancelled ? "border-primary bg-primary-tint font-semibold text-primary" : "border-line-strong text-ink-3 hover:border-primary"}`}>
+            {showCancelled ? "✓ " : "+ "}{t("showCancelledShort")}
+          </Link>
+        )}
         {!doctor && (
           <span className="ml-auto flex gap-2">
             <span title={t("surgerySoon")} className="flex h-10 items-center whitespace-nowrap rounded-control bg-cal-blue/50 px-3 text-sm font-semibold text-white">+ {t("surgery")}</span>
@@ -218,9 +227,9 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 
 // The front desk's top strip (DESIGN 6a–6g): Αιτήματα κράτησης · Επιβεβαιώσεις αύριο ·
 // Λίστα αναμονής · Νέες φόρμες, and the GHL status. Those not built yet say when they come.
-async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId: string, today: string): Promise<Tile[]> {
+async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId: string, today: string, types: { id: string; label: string; minutes: number; forNewPatients: boolean }[]): Promise<Tile[]> {
   const t = await getTranslations("calendar");
-  const conf = await confirmations(actor, companyId, today);
+  const [conf, waiting] = await Promise.all([confirmations(actor, companyId, today), listWaitlist(actor, companyId)]);
   const dayLabel = conf ? fmt({ weekday: "short", day: "numeric", month: "numeric" }).format(at(conf.date)) : "";
   return [
     { key: "requests", label: t("strip.requests"), badge: { text: "–", tone: "grey" }, sub: t("strip.requestsSoon"), tone: "muted" },
@@ -246,7 +255,13 @@ async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId
         ) : <span className="text-muted">{t("strip.allConfirmed")}</span>
       ) : undefined,
     },
-    { key: "waitlist", label: t("strip.waitlist"), badge: { text: "–", tone: "grey" }, sub: t("strip.waitlistSoon"), tone: "muted" },
+    {
+      key: "waitlist",
+      label: t("strip.waitlist"),
+      badge: { text: String(waiting?.length ?? 0), tone: waiting?.length ? "navy" : "grey" },
+      sub: waiting?.length ? t("strip.waitlistSub", { count: waiting.length }) : t("strip.waitlistEmpty"),
+      body: <WaitlistPanel rows={waiting ?? []} types={types.filter((x) => !x.forNewPatients)} />,
+    },
     { key: "forms", label: t("strip.forms"), badge: { text: "–", tone: "grey" }, sub: t("strip.formsSoon"), tone: "muted" },
     { key: "ghl", label: "GHL", status: true, value: t("strip.ghlOff"), sub: t("strip.ghlSoon") },
   ];

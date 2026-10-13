@@ -10,9 +10,10 @@ import { card, ErrorBox, inputClass, primaryButton } from "@/components/ui";
 import type { AppointmentStatus } from "@/generated/prisma/client";
 import { calColor } from "@/lib/calendar/colors";
 import type { DayAppointment, DayData } from "@/lib/calendar/day";
-import { nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
+import { CANCEL_STATUSES, nextStatuses, STATUS_LABEL } from "@/lib/calendar/status";
 import { historyAction, moveAction, statusAction, type BookingResult } from "./actions";
 import { ArrivalButton } from "./arrival";
+import { CancelPanel } from "./cancel-panel";
 import { Anyway, Outcome } from "./booking-bits";
 import { DragSurface, type ApptInfo, type Carry, type ColInfo } from "./drag-surface";
 import { QuickBook, TagChips, type QuickType } from "./quick-book";
@@ -59,10 +60,13 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
         setMoving(false);
       }
     });
+  const [cancelling, setCancelling] = useState(false);
   const steps = nextStatuses(a.status as AppointmentStatus);
   const order: AppointmentStatus[] = ["BOOKED", "CONFIRMED", "ARRIVED", "READY", "WITH_DOCTOR", "TO_PAY", "DONE"];
-  const forward = steps.filter((s) => order.indexOf(s) > order.indexOf(a.status as AppointmentStatus) && s !== "CANCELLED" && s !== "NO_SHOW");
+  const forward = steps.filter((s) => order.indexOf(s) > order.indexOf(a.status as AppointmentStatus) && !CANCEL_STATUSES.includes(s));
   const back = steps.filter((s) => order.indexOf(s) >= 0 && order.indexOf(s) < order.indexOf(a.status as AppointmentStatus));
+  if (cancelling)
+    return <CancelPanel id={a.id} title={a.patient?.name ?? t("noPatient")} when={`${a.type.label} · ${dmy(data.date)} ${a.time}`} date={data.date} close={() => { setCancelling(false); close(); }} />;
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
@@ -101,9 +105,9 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
             <button type="button" onClick={() => setMoving((x) => !x)} className="text-primary">{t("moveManual")}</button>
           </>
         )}
-        {steps.includes("NO_SHOW") && <button type="button" disabled={pending} onClick={() => status("NO_SHOW")} className="text-warn-ink">{t("actions.NO_SHOW")}</button>}
-        {steps.includes("CANCELLED") && <button type="button" disabled={pending} onClick={() => { const why = prompt(t("cancelReason")); if (why !== null) status("CANCELLED", { reason: why }); }} className="text-danger">{t("actions.CANCELLED")}</button>}
-        {(a.status === "CANCELLED" || a.status === "NO_SHOW") && <button type="button" disabled={pending} onClick={() => status("BOOKED")} className="text-primary">{t("restore")}</button>}
+        {/* Cancel — never delete: four ways, flags, waiting list (6a-8). */}
+        {steps.includes("CANCELLED") && <button type="button" disabled={pending} onClick={() => setCancelling(true)} className="text-danger">{t("cancel.open")}</button>}
+        {CANCEL_STATUSES.includes(a.status as AppointmentStatus) && <button type="button" disabled={pending} onClick={() => status("BOOKED")} className="text-primary">{t("restore")}</button>}
         {back.map((s) => <button key={s} type="button" disabled={pending} onClick={() => status(s)} className="text-muted">↺ {STATUS_LABEL[s]}</button>)}
       </div>
       {moving && (
@@ -135,11 +139,14 @@ function AppointmentPanel({ a, data, close }: { a: DayAppointment; data: DayData
 // Secretary day (DESIGN 6a–6g): resource columns on the two-band grid, free gaps to click
 // (white = normal hours, hatched = «εκτός ωραρίου +30′»), status chips. The calendar uses
 // the full width; booking / an appointment open in a panel beside it.
-export function DayView({ data, types, startAt, carry }: { data: DayData; types: QuickType[]; startAt?: { resourceId: string; start: number }; carry?: Carry | null }) {
+export function DayView({ data: all, types, startAt, carry, showCancelled = false }: { data: DayData; types: QuickType[]; startAt?: { resourceId: string; start: number }; carry?: Carry | null; showCancelled?: boolean }) {
+  // Cancelled ones only with «Εμφάνιση ακυρωμένων»; «Λάθος καταχώριση» never.
+  const data = { ...all, appointments: all.appointments.filter((a) => a.active || (showCancelled && a.status !== "ENTERED_IN_ERROR")) };
   const t = useTranslations("calendar");
   const [panel, setPanel] = useState<Panel>(startAt ? { kind: "book", ...startAt } : { kind: "default" });
   const scale = data.scale;
-  const selected = panel.kind === "appointment" ? data.appointments.find((a) => a.id === panel.id) : undefined;
+  // From all appointments: a just-cancelled one keeps its panel (result, waiting-list offer).
+  const selected = panel.kind === "appointment" ? all.appointments.find((a) => a.id === panel.id) : undefined;
   const office = scale.bands.find((b) => b.kind === "office");
   const statusChip = (a: DayAppointment) => {
     if (a.status === "READY") return <span className="rounded-full bg-primary px-2 py-0.5 text-[11.5px] font-semibold text-white">{a.room ?? t("ready")}</span>;

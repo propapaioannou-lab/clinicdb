@@ -146,6 +146,7 @@ async function main() {
     await db.appointment.deleteMany();
     await db.visit.deleteMany();
     await db.patientFlagReason.deleteMany();
+    await db.waitlistEntry.deleteMany();
     await db.patient.deleteMany();
   }
 

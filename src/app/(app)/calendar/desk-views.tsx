@@ -15,7 +15,7 @@ const freeTone = (min: number) => (min === 0 ? "text-danger-ink" : min < 120 ? "
 // Secretary week (DESIGN 6a–6g): Mon–Fri (Sat/Sun on demand) on the two-band grid, one
 // line per appointment with ✓ / ?, closed hours grey, flex zones hatched, "ελεύθερα" per
 // day (normal hours only); the nurse column on demand.
-export async function DeskWeek({ days, resources, todayIso, scale, types, carry }: { days: RangeDay[]; resources: { id: string; label: string }[]; todayIso: string; scale: Scale; types: { label: string; minutes: number; color: string }[]; carry?: Carry | null }) {
+export async function DeskWeek({ days, resources, todayIso, scale, types, carry, showCancelled = false }: { days: RangeDay[]; resources: { id: string; label: string }[]; todayIso: string; scale: Scale; types: { label: string; minutes: number; color: string }[]; carry?: Carry | null; showCancelled?: boolean }) {
   const t = await getTranslations("calendar");
   const lanes = resources.length;
   const cols = `64px repeat(${days.length}, minmax(0, 1fr))`;
@@ -58,13 +58,13 @@ export async function DeskWeek({ days, resources, todayIso, scale, types, carry 
                         {b.label ?? t(`blockKinds.${b.kind}`)}
                       </div>
                     ))}
-                    {d.appointments.filter((a) => a.resourceId === r.id && a.active).map((a) => {
+                    {d.appointments.filter((a) => a.resourceId === r.id && (a.active || (showCancelled && a.status !== "ENTERED_IN_ERROR"))).map((a) => {
                       const box = place(scale, a.start, a.end, 14);
-                      const movable = a.status !== "DONE" && a.layer !== "SURGERY";
+                      const movable = a.active && a.status !== "DONE" && a.layer !== "SURGERY";
                       return (
                         <Link key={a.id} href={`/calendar?date=${d.date}`} title={`${a.time} ${a.name ?? ""} · ${a.typeLabel}${a.reason ? ` · ${a.reason}` : ""}`} draggable={false}
                           data-appt={JSON.stringify({ id: a.id, date: d.date, resourceId: a.resourceId, start: a.start, end: a.end, active: a.active, movable, label: `${a.name ?? a.typeLabel} · ${a.typeLabel} ${a.end - a.start}′` } satisfies ApptInfo)}
-                          className={`absolute ${a.parked ? "left-[30%]" : "left-0.5"} right-0.5 flex justify-between gap-1 overflow-hidden rounded-[5px] px-1.5 text-[11.5px] ${box.height >= 34 ? "items-start py-1" : "items-center leading-none"} ${calColor(a.color).box} ${a.status === "DONE" ? "opacity-60" : ""} ${movable ? "cursor-grab touch-none" : ""} ${a.parked ? "outline-dashed outline-2 outline-cal-blue shadow-[0_8px_18px_rgba(28,32,36,0.28)]" : ""}`}
+                          className={`absolute ${a.parked ? "left-[30%]" : "left-0.5"} right-0.5 flex justify-between gap-1 overflow-hidden rounded-[5px] px-1.5 text-[11.5px] ${box.height >= 34 ? "items-start py-1" : "items-center leading-none"} ${calColor(a.color).box} ${!a.active ? "left-[45%] line-through opacity-50" : a.status === "DONE" ? "opacity-60" : ""} ${movable ? "cursor-grab touch-none" : ""} ${a.parked ? "outline-dashed outline-2 outline-cal-blue shadow-[0_8px_18px_rgba(28,32,36,0.28)]" : ""}`}
                           style={{ ...box, zIndex: a.parked ? 4 : 2 }}>
                           <CardText h={box.height} time={a.time} end={a.end} name={a.name ?? a.typeLabel} type={a.typeLabel} reason={a.layer === "SURGERY" ? a.reason : null} surgery={a.layer === "SURGERY"} />
                           {a.parked && <span className="shrink-0 font-bold text-cal-blue" title={t("parked")}>⤓</span>}

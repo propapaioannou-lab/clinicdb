@@ -148,6 +148,15 @@ async function main() {
           events: { create: { companyId: company.id, action: "created", toStatus: "BOOKED", byName: "seed" } } },
       });
     }
+    // Two fake people on the waiting list (6a-8), so a cancellation shows matches.
+    if (company.code !== "spa") {
+      await db.waitlistEntry.deleteMany({ where: { companyId: company.id, note: { startsWith: "Δοκιμή:" } } });
+      const botox = byLabel("Botox");
+      const recheck = byLabel("Επανέλεγχος");
+      const [w1, w2] = [pick(patients), pick(patients)];
+      await db.waitlistEntry.create({ data: { companyId: company.id, patientId: w1.id, typeId: botox?.id, days: [1, 2, 4], fromTime: "16:30", toTime: "20:00", note: "Δοκιμή: ό,τι πιο νωρίς" } });
+      await db.waitlistEntry.create({ data: { companyId: company.id, patientId: w2.id, typeId: recheck?.id, days: [], note: "Δοκιμή: οποιαδήποτε ώρα" } });
+    }
     console.log(`${company.code}: ${n} fake appointments`);
   }
 }

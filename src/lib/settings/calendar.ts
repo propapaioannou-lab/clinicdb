@@ -66,9 +66,12 @@ export async function saveCalendarConfig(actor: Actor, companyId: string, raw: R
   const minutes = (v: unknown) => (Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 120 && v !== "" ? Number(v) : null);
   const flexBefore = minutes(raw.flexBefore);
   const flexAfter = minutes(raw.flexAfter);
-  if (!surgery || flexBefore === null || flexAfter === null) return fail("invalid_value");
   const before = await calendarConfigOf(companyId);
-  const after = { surgery, flexBefore, flexAfter };
+  const whole = (v: unknown, min: number, max: number, fallback: number) => (v === undefined ? fallback : Number.isInteger(Number(v)) && v !== "" && Number(v) >= min && Number(v) <= max ? Number(v) : null);
+  const lateHours = whole(raw.lateHours, 0, 24 * 14, before.lateHours);
+  const lateMonths = whole(raw.lateMonths, 1, 60, before.lateMonths);
+  if (!surgery || flexBefore === null || flexAfter === null || lateHours === null || lateMonths === null) return fail("invalid_value");
+  const after = { surgery, flexBefore, flexAfter, lateHours, lateMonths };
   await db.company.update({ where: { id: companyId }, data: { calendarConfig: after as unknown as Prisma.InputJsonValue } });
   await log(actor, companyId, "settings.calendarHours.updated", "Company", companyId, { before, after } as unknown as Prisma.InputJsonValue, ctx);
   return { ok: true };

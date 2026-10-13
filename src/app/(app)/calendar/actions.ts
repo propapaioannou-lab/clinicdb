@@ -7,7 +7,10 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { appointmentHistory, createAppointment, moveAppointment, NEEDS_REASON, setAppointmentStatus, setMoveNotify, startVisit, undoMove, type CalendarError, type Problem } from "@/lib/calendar/appointments";
 import { arrive, bookingSearch, quickBook, quickDuplicates } from "@/lib/calendar/quick";
-import { STATUS_LABEL } from "@/lib/calendar/status";
+import { cancelAppointment, cancelPreview, type CancelKind } from "@/lib/calendar/cancel";
+import { CANCEL_STATUSES, STATUS_LABEL } from "@/lib/calendar/status";
+import { addToWaitlist, removeFromWaitlist, type WaitlistMatch } from "@/lib/calendar/waitlist";
+import { db } from "@/lib/db";
 import { activeCompany } from "@/lib/company";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
 import { athensIsoDate, athensParts } from "@/lib/time";
@@ -99,6 +102,8 @@ export async function moveNotifyAction(id: string, eventId: string, notify: bool
 }
 
 export async function statusAction(id: string, to: AppointmentStatus, opts: { room?: string; reason?: string } = {}): Promise<BookingResult> {
+  // Cancelling goes through cancelAction (flags, waiting list).
+  if (CANCEL_STATUSES.includes(to)) return { error: "not_allowed" };
   const actor = await actorNow();
   const r = await setAppointmentStatus(actor, id, to, opts, await requestContext());
   if (!r.ok) return { error: r.error };
@@ -170,4 +175,50 @@ export async function arriveAction(id: string, raw: { confirm?: { firstName?: st
   revalidatePath("/calendar");
   revalidatePath("/");
   return { ok: true };
+}
+
+// ── Cancel — never delete (6a-8) ─────────────────────────────────────────────────────
+export async function cancelPreviewAction(id: string) {
+  const actor = await actorNow();
+  return cancelPreview(actor, id);
+}
+
+export async function cancelAction(id: string, raw: { kind: CancelKind; reason?: string }): Promise<{ ok?: boolean; error?: string; flag?: string | null; matches?: WaitlistMatch[]; resourceId?: string }> {
+  const actor = await actorNow();
+  const r = await cancelAppointment(actor, id, raw, await requestContext());
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/calendar");
+  revalidatePath("/");
+  return { ok: true, flag: r.flag, matches: r.matches, resourceId: r.resourceId };
+}
+
+// ── Waiting list ─────────────────────────────────────────────────────────────────────
+export async function waitlistAddAction(raw: Record<string, unknown>) {
+  const actor = await actorNow();
+  const company = await activeCompany(actor);
+  if (!company) return { error: "not_found" };
+  const r = await addToWaitlist(actor, company.id, raw, await requestContext());
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/calendar");
+  return { ok: true };
+}
+
+export async function waitlistRemoveAction(id: string, why: string) {
+  const actor = await actorNow();
+  const r = await removeFromWaitlist(actor, id, why, await requestContext());
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/calendar");
+  return { ok: true };
+}
+
+// «Κλείσιμο» for someone on the list: their type at the freed time; they leave the list.
+export async function bookFromWaitlistAction(entryId: string, slot: { resourceId: string; date: string; time: string }): Promise<BookingResult> {
+  const actor = await actorNow();
+  const e = await db.waitlistEntry.findFirst({ where: { id: entryId, companyId: { in: actor.companyIds }, removedAt: null } });
+  if (!e) return { error: "not_found" };
+  const typeId = e.typeId ?? (await db.appointmentType.findFirst({ where: { companyId: e.companyId, isActive: true, layer: "OFFICE", forNewPatients: false }, orderBy: { sortOrder: "asc" } }))?.id;
+  const ctx = await requestContext();
+  const r = await createAppointment(actor, { patientId: e.patientId, typeId, resourceId: slot.resourceId, date: isoOf(slot.date), time: slot.time, reason: e.note ?? undefined }, ctx);
+  if (r.ok) await removeFromWaitlist(actor, entryId, "booked", ctx);
+  return result(r.ok ? { ok: true, overridden: r.overridden } : r);
 }

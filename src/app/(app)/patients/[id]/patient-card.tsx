@@ -26,8 +26,11 @@ export function PatientCard({
   archiveAction,
   widgets,
   alerts = [],
+  actions,
 }: {
   widgets: React.ReactNode;
+  // «+ Ραντεβού ▾» / «+ Χειρουργείο» (6a-9), top right of the card.
+  actions?: React.ReactNode;
   // Chips from the medical history (allergy, smoking).
   alerts?: { text: string; tone: "danger" | "neutral" }[];
   p: PatientView;
@@ -125,6 +128,7 @@ export function PatientCard({
                 </div>
               )}
             </div>
+            {actions && <div className="self-start">{actions}</div>}
           </div>
 
           <button

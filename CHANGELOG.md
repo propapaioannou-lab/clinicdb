@@ -2,6 +2,21 @@
 
 Plain-language record of what changed and how to check it.
 
+## 13 Oct 2026 — Phase 6a-9: «+ Ραντεβού» from the patient record
+
+- On every patient record (top right of the patient card): **«+ Ραντεβού ▾»** opens the
+  appointment types with their length. A patient who has never been seen gets
+  «Πρώτη επίσκεψη» first; any upcoming appointment is shown («Έχει ήδη: Τρί 13/10, 16:30 ·
+  Επανέλεγχος»). «+ Χειρουργείο» is there too, greyed out until 6b.
+- Choosing a type opens the calendar on the **first week with a free slot of that
+  length**. The patient's card floats at the top; a ghost of exactly that length follows
+  the mouse (green free, amber +30′, red taken/closed). Go to other weeks or months freely.
+- Click a free time → a strip at the bottom: «Δήμητρα Π. · Νέα συμβουλευτική 25′ → Πέμ 15/10
+  · 19:35–20:00» with **Κλείσιμο** / **Άλλη ώρα**. Booked → that day opens with
+  «✓ Κλείστηκε … · ← Καρτέλα ασθενούς».
+- ✕ or Esc: back to the record, nothing booked.
+- Check: see the click list in the reply for this step.
+
 ## 13 Oct 2026 — Phase 6a-8: cancel without delete, waiting list
 
 - **«Ακύρωση…»** in the appointment panel opens four choices (the right one is

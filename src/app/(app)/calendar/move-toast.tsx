@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { moveNotifyAction, undoMoveAction } from "./actions";
 import type { MovedEvent } from "./drag-surface";
@@ -85,26 +85,23 @@ export function MoveToast() {
 
 // «Μετακίνηση» (carry mode): the lifted card floats at the top while you go to any day,
 // week or month; ✕ or Esc puts it down again.
-export function CarryBar({ name, sub }: { name: string; sub: string }) {
+export function CarryBar({ name, sub, extra, cancelHref }: { name: string; sub: string; extra?: string | null; cancelHref?: string }) {
   const t = useTranslations("calendar.move");
   const router = useRouter();
   const path = usePathname();
   const params = useSearchParams();
-  useEffect(() => {
-    const drop = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      const q = new URLSearchParams(params.toString());
-      q.delete("carry");
-      router.replace(`${path}${q.size ? `?${q}` : ""}`);
-    };
-    window.addEventListener("keydown", drop);
-    return () => window.removeEventListener("keydown", drop);
-  }, [params, path, router]);
-  const cancel = () => {
+  // ✕ / Esc: put it down (a move), or back to the patient record (a new booking).
+  const cancel = useCallback(() => {
+    if (cancelHref) return router.push(cancelHref);
     const q = new URLSearchParams(params.toString());
     q.delete("carry");
     router.replace(`${path}${q.size ? `?${q}` : ""}`);
-  };
+  }, [cancelHref, params, path, router]);
+  useEffect(() => {
+    const drop = (e: KeyboardEvent) => e.key === "Escape" && cancel();
+    window.addEventListener("keydown", drop);
+    return () => window.removeEventListener("keydown", drop);
+  }, [cancel]);
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex items-center gap-3 rounded-[12px] border-2 border-primary bg-surface px-3.5 py-2 shadow-[0_8px_24px_rgba(28,32,36,0.18)]">
@@ -112,10 +109,11 @@ export function CarryBar({ name, sub }: { name: string; sub: string }) {
         <span className="flex flex-col">
           <b className="text-[14px]">{name}</b>
           <span className="text-[12px] text-muted">{sub}</span>
+          {extra && <span className="text-[12px] font-semibold text-warn-ink">{extra}</span>}
         </span>
         <button type="button" onClick={cancel} aria-label={t("cancelCarry")} className="ml-2 flex h-7 w-7 items-center justify-center rounded-full bg-line-softer text-muted hover:text-ink">✕</button>
       </div>
-      <span className="text-[13px] text-ink-3">{t("carryHint")}</span>
+      {!cancelHref && <span className="text-[13px] text-ink-3">{t("carryHint")}</span>}
     </div>
   );
 }

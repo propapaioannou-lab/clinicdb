@@ -5,6 +5,8 @@ import { ageToday } from "@/components/patient-bits";
 import { Badge, card } from "@/components/ui";
 import { requestContext, requireSession } from "@/lib/auth/current";
 import { canArchivePatients, canEditPatients } from "@/lib/permissions";
+import { bookingMenu } from "@/lib/calendar/from-record";
+import { BookMenu } from "./book-menu";
 import { patientFormOptions } from "@/lib/patients/options";
 import { openPatient, type PatientView } from "@/lib/patients/record";
 import { loadActor } from "@/lib/users/manage";
@@ -158,6 +160,9 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
     loadCatalog(p.company.id),
   ]);
   const names = procedureNames(catalog);
+  // «+ Ραντεβού ▾» (6a-9): staff only, not for archived patients. A patient never seen
+  // gets the new-patient type; others the rest.
+  const booking = canEditPatients(actor.level) && !p.archivedAt ? await bookingMenu(p.company.id, p.id) : null;
   const heightForBmi = lastMeas?.heightCm ?? hd?.heightCm ?? null;
   const viewNumber = typeof sp.v === "string" ? Number(sp.v) : null;
   const oldVersion = tab === "history" && viewNumber ? await loadHistoryVersion(actor, p.id, viewNumber) : null;
@@ -186,6 +191,7 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
         flagAction={setFlagAction.bind(null, p.id)}
         archiveAction={archiveAction}
         alerts={alerts}
+        actions={booking && <BookMenu patientId={p.id} types={booking.types} upcoming={booking.upcoming} desk={actor.role === "SURGEON"} />}
         widgets={
           <>
             <WeightCard series={series} historyWeight={hd?.weightKg ?? null} heightCm={heightForBmi} maxWeightKg={hd?.maxWeightKg ?? null} />
@@ -302,3 +308,4 @@ export default async function PatientPage({ params, searchParams }: PageProps<"/
     </main>
   );
 }
+

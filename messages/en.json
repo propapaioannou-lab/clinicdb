@@ -1672,7 +1672,23 @@
       "addButton": "Add",
       "error": "Check the patient, days and times (HH:MM)."
     },
-    "showCancelledShort": "Cancelled"
+    "showCancelledShort": "Cancelled",
+    "fromRecord": {
+      "button": "Appointment",
+      "surgery": "Surgery",
+      "surgerySoon": "With phase 6b",
+      "menu": "Appointment type",
+      "menuHint": "Type → opens the calendar with the card \"in hand\"",
+      "already": "Already has: {what}",
+      "hint": "Click a free time (any week or month) · Esc = back to the record",
+      "confirm": "Confirm appointment",
+      "book": "Book",
+      "other": "Another time",
+      "flex": "outside hours +30′",
+      "refused": "This time is not available",
+      "booked": "Booked for {name}",
+      "back": "Patient record"
+    }
   },
   "live": {
     "ready": "{name} is ready",

@@ -17,6 +17,8 @@ import { loadActor } from "@/lib/users/manage";
 import { DayView } from "./day-view";
 import { DeskMonth, DeskWeek } from "./desk-views";
 import { DoctorDay, DoctorMonth, DoctorWeek, doctorTiles } from "./doctor-views";
+import { bookingFor } from "@/lib/calendar/from-record";
+import { BookConfirm } from "./book-confirm";
 import { CarryBar, MoveToast } from "./move-toast";
 import { TopStrip, type Tile } from "./top-strip";
 import { WaitlistPanel } from "./waitlist-panel";
@@ -63,7 +65,19 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         include: { patient: { select: { firstName: true, surname: true } }, type: { select: { labelEl: true } } },
       })
     : null;
-  const carry = carried
+  // «+ Ραντεβού» from the patient record (6a-9): ?bookFor=patient&type=type — the patient
+  // floats at the top, a ghost of the type's length follows the mouse, a click asks to
+  // confirm. Without a date: the first week with a free slot of that length.
+  const booking = typeof sp.bookFor === "string" && typeof sp.type === "string" && !doctor ? await bookingFor(company.id, sp.bookFor, sp.type) : null;
+  if (booking && !sp.date) {
+    const col = await db.resource.findFirst({ where: { companyId: company.id, isActive: true, kind: { in: CALENDAR_KINDS } }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+    const slot = col ? (await freeSlots(company.id, col.id, new Date(), booking.minutes, { days: 120, limit: 1, step: 5 }))[0] : undefined;
+    const p = new URLSearchParams({ view: typeof sp.view === "string" ? sp.view : "week", date: slot ? athensIsoDate(slot) : today, bookFor: booking.patientId, type: booking.typeId, ...(sp.as === "desk" && { as: "desk" }) });
+    redirect(`/calendar?${p}`);
+  }
+  const carry = booking
+    ? { id: `book:${booking.patientId}`, minutes: booking.minutes, label: booking.who, name: booking.name, from: "", kind: "book" as const }
+    : carried
     ? {
         id: carried.id,
         minutes: Math.round((carried.endsAt.getTime() - carried.startsAt.getTime()) / 60e3),
@@ -72,9 +86,14 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
         from: new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(carried.startsAt),
       }
     : null;
+  // What a link to another day must keep: the move or the booking in progress.
+  const keep = booking ? `&bookFor=${booking.patientId}&type=${booking.typeId}` : carry ? `&carry=${carry.id}` : "";
   const q = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
-    const all = { view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", we: weekend ? "1" : undefined, carry: carry?.id, cx: showCancelled ? "1" : undefined, ...over };
+    const all = {
+      view, date, as: doctor || sp.as !== "desk" ? undefined : "desk", we: weekend ? "1" : undefined, cx: showCancelled ? "1" : undefined,
+      ...(booking ? { bookFor: booking.patientId, type: booking.typeId } : { carry: carry?.id }), ...over,
+    };
     for (const [k, v] of Object.entries(all)) if (v && !(k === "view" && v === "day")) p.set(k, v);
     return `/calendar${p.size ? `?${p}` : ""}`;
   };
@@ -113,6 +132,10 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     }
   }
   if (sp.book === "next" && nextFree) redirect(nextFree);
+  // Just booked from the record: "✓ Κλείστηκε για … · ← Καρτέλα".
+  const booked = typeof sp.booked === "string"
+    ? await db.patient.findFirst({ where: { id: sp.booked, companyId: company.id }, select: { id: true, firstName: true, surname: true } }).then((p) => p && { id: p.id, name: `${p.firstName} ${p.surname}`.trim() })
+    : null;
   let body: React.ReactNode = null;
   let tiles: Tile[] = [];
   if (view === "day" && !doctor) {
@@ -148,7 +171,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
     const cols = doctor ? (own ? [own] : []) : [doctorCol].filter(Boolean);
     const ids = cols.map((c) => c!.id);
     const days = (await calendarRange(actor, company.id, monday, weekDays, ids))!;
-    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} showCancelled={showCancelled} />;
+    body = doctor && own ? <DoctorWeek days={days} resourceId={own.id} todayIso={today} /> : <DeskWeek days={days} resources={cols.map((c) => ({ id: c!.id, label: c!.label }))} todayIso={today} scale={rangeScale(days, ids)} types={officeTypes} carry={carry} showCancelled={showCancelled} keep={keep} />;
   } else if (view === "month") {
     const first = `${date.slice(0, 7)}-01`;
     const gridStart = mondayOf(first);
@@ -164,7 +187,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       const firstFree = slot
         ? { days: daysUntil(slot), label: new Intl.DateTimeFormat("el-GR", { timeZone: "Europe/Athens", weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(slot) }
         : null;
-      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} carry={carry?.id} />;
+      body = <DeskMonth days={days} monthIso={first} todayIso={today} firstFree={firstFree} weekend={weekend} keep={keep} />;
     }
   }
   if (!doctor) tiles = await deskTiles(actor, company.id, today, officeTypes);
@@ -213,7 +236,18 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
           </span>
         )}
       </div>
-      {carry ? (
+      {booked && (
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-card border border-ok/50 bg-ok-bg/60 px-4 py-2.5 text-sm text-ok-ink">
+          <b>✓ {t("fromRecord.booked", { name: booked.name })}</b>
+          <Link href={`/patients/${booked.id}`} className="font-semibold text-primary">← {t("fromRecord.back")}</Link>
+        </div>
+      )}
+      {booking ? (
+        <>
+          <CarryBar name={`${booking.who}`} sub={t("fromRecord.hint")} extra={booking.upcoming && t("fromRecord.already", { what: booking.upcoming })} cancelHref={`/patients/${booking.patientId}`} />
+          <BookConfirm patientId={booking.patientId} typeId={booking.typeId} who={booking.who} columns={Object.fromEntries(resources.map((r) => [r.id, r.label]))} />
+        </>
+      ) : carry ? (
         <CarryBar name={`${carry.label} ${carry.minutes}′`} sub={t("move.carryFrom", { from: carry.from })} />
       ) : (
         tiles.length > 0 && <TopStrip tiles={tiles} label={t("strip.label")} />
@@ -266,3 +300,4 @@ async function deskTiles(actor: Awaited<ReturnType<typeof loadActor>>, companyId
     { key: "ghl", label: "GHL", status: true, value: t("strip.ghlOff"), sub: t("strip.ghlSoon") },
   ];
 }
+

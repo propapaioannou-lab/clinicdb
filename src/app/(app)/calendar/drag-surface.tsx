@@ -23,7 +23,10 @@ import { moveAction } from "./actions";
 
 export type ColInfo = { date: string; resourceId: string; weekday: number; normal: Span[]; flex: Span[] };
 export type ApptInfo = { id: string; date: string; resourceId: string; start: number; end: number; active: boolean; movable: boolean; label: string };
-export type Carry = { id: string; minutes: number; label: string };
+// kind "move" = «Μετακίνηση» of an existing appointment; "book" = a new appointment from
+// the patient record (6a-9): a click asks to confirm instead of saving at once.
+export type Carry = { id: string; minutes: number; label: string; kind?: "move" | "book" };
+export type BookPick = { date: string; time: string; start: number; minutes: number; resourceId: string; flex: boolean; label: string };
 export type MovedEvent = { id: string; eventId: string; label: string; parked?: boolean };
 
 const SNAP = 5;
@@ -67,6 +70,7 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
     const at = slotLabel(col.date, start);
     if (col.date < now.iso || (col.date === now.iso && start < now.minute)) return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("past")}` };
     if (zone === "off" || zone === "weekend") return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("closed")}` };
+    if (clash && carry?.kind === "book" && selfId === carry.id) return { col, start, end, tone: "bad", text: `${hhmm(start)} × ${t("clash", { name: clash.label })}` };
     if (clash) return { col, start, end, tone: "park", flex: zone === "flex", text: `⤓ ${at} · ${t("park", { name: clash.label })}` };
     if (zone === "flex") return { col, start, end, tone: "flex", text: `${at} · ${t("flex")}` };
     return { col, start, end, tone: "ok", text: `${at} ✓ ${label}` };
@@ -192,7 +196,15 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
     e.preventDefault();
     e.stopPropagation();
     const tg = target.current;
-    if (tg) void commit(carry.id, tg, carry.minutes);
+    if (!tg) return;
+    if (carry.kind === "book") {
+      // New appointment: the confirm strip asks first (red = not possible there).
+      if (tg.tone === "bad") return void window.dispatchEvent(new CustomEvent("clinic:move-failed", { detail: tg.text }));
+      return void window.dispatchEvent(new CustomEvent<BookPick>("clinic:book-pick", {
+        detail: { date: tg.col.date, time: hhmm(tg.start), start: tg.start, minutes: carry.minutes, resourceId: tg.col.resourceId, flex: tg.tone === "flex", label: slotLabel(tg.col.date, tg.start) },
+      }));
+    }
+    void commit(carry.id, tg, carry.minutes);
   };
 
   const tone = ghost?.tone === "ok" ? "border-ok bg-ok-bg/90 text-ok-ink" : ghost?.tone === "flex" ? "border-warn bg-warn-bg/90 text-warn-ink" : ghost?.tone === "park" ? "border-cal-blue bg-cal-blue-bg/95 text-cal-blue" : "border-danger bg-danger-bg/90 text-danger-ink";

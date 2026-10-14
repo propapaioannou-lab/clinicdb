@@ -2,6 +2,29 @@
 
 Plain-language record of what changed and how to check it.
 
+## 14 Oct 2026 — Calendar v3: the layout from your board
+
+- **Computer:** the search bar at the top is gone from the calendar. The date bar is at
+  the very top, with **Ιατρός / Γραμματεία at the far right**. The calendar is bigger,
+  with a **column on the right**.
+- **Search** (top of the right column, or Ctrl K) opens a small window **over** the
+  calendar, so you never leave it. Pick the type (Νέα συμβουλευτική, Botox …) and press
+  **«Περιμένει ώρα»**, or **«Καρτέλα»** to open the record. Someone new: «+ Νέος
+  ασθενής», name and mobile; «Μήπως υπάρχει ήδη;» warns about look-alikes.
+- **Waiting bubbles** («Περιμένουν ώρα») sit at the top of the column. Several can wait,
+  and they stay until someone books them, even if the calendar is closed. Everyone at
+  the front desk sees them. Click a bubble, then a free time, then «Κλείσιμο»: it is
+  booked and the bubble disappears. A new patient's record is created only then. «×»
+  takes a bubble off (it is kept in the log).
+- **The cards below sort themselves:** a patient's card moves up 10′ before their time
+  and while they wait, and new things go on top for 15′. The front desk also gets an
+  «Επόμενος» card. We'll tune the order as you use it.
+- **Phone:** one view only, the day. Just ‹ «15 Οκτ» › and «+ Ραντεβού»; the schedule
+  fills the screen.
+- **Tablet:** the cards stay on top; search and bubbles sit in one line above the
+  calendar.
+- Clicking an appointment opens its panel over the right column.
+
 ## 13 Oct 2026 — Online demo for testers (Render + Neon)
 
 - A **separate test copy** on the internet, for your secretary to try from any computer

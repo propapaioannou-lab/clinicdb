@@ -1695,6 +1695,44 @@
       "refused": "This time is not available",
       "booked": "Booked for {name}",
       "back": "Patient record"
+    },
+    "side": {
+      "label": "Next to the calendar"
+    },
+    "bubble": {
+      "title": "Waiting for a time",
+      "new": "New",
+      "since": "{by} · {minutes}′ ago",
+      "place": "Put on a time",
+      "placing": "Pick a time in the calendar",
+      "remove": "Remove: {name}",
+      "removeAsk": "Take off the waiting list?",
+      "removeYes": "Yes",
+      "removeNo": "No",
+      "hint": "Click a free time · Esc = cancel, they keep waiting"
+    },
+    "search": {
+      "open": "Search patient",
+      "title": "Search patient",
+      "placeholder": "Name or phone",
+      "forType": "For:",
+      "none": "Nobody found.",
+      "flagged": "Flag",
+      "last": "last {when}",
+      "upcoming": "booked {date}",
+      "wait": "Wait for a time",
+      "record": "Record",
+      "newPatient": "New patient “{name}”",
+      "hint": "Type a name or phone. “Wait for a time” puts them in the right-hand column until you book them.",
+      "newTitle": "New patient",
+      "name": "Full name",
+      "mobile": "Mobile (if you have it)",
+      "newType": "Will be booked as {type}",
+      "maybe": "Already on file?",
+      "thisOne": "That’s them",
+      "addNew": "Wait for a time as new",
+      "back": "Back",
+      "error": "Not saved. Please try again."
     }
   },
   "live": {

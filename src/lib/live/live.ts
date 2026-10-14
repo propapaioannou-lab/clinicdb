@@ -8,7 +8,9 @@ import { Client } from "pg";
 
 export const CHANNEL = "clinic_live";
 
-export type LiveEvent = LiveAppointmentEvent | LiveChatEvent;
+export type LiveEvent = LiveAppointmentEvent | LiveChatEvent | LiveBubbleEvent;
+// Patients waiting on the calendar for a time changed (calendar v3).
+export type LiveBubbleEvent = { type: "bubble"; companyId: string; action: string; bubbleId: string; at: string };
 // A new staff-chat message (6a-10).
 export type LiveChatEvent = { type: "chat"; companyId: string; message: { id: string; senderId: string; senderName: string; senderRole: string; text: string; at: string } };
 export type LiveAppointmentEvent = {

@@ -10,6 +10,7 @@ import { arrive, bookingSearch, quickBook, quickDuplicates } from "@/lib/calenda
 import { cancelAppointment, cancelPreview, type CancelKind } from "@/lib/calendar/cancel";
 import { CANCEL_STATUSES, STATUS_LABEL } from "@/lib/calendar/status";
 import { addToWaitlist, removeFromWaitlist, type WaitlistMatch } from "@/lib/calendar/waitlist";
+import { addBubble, bookBubble, removeBubble } from "@/lib/calendar/bubbles";
 import { db } from "@/lib/db";
 import { activeCompany } from "@/lib/company";
 import { parseDayMonthYear } from "@/lib/patients/normalize";
@@ -221,4 +222,32 @@ export async function bookFromWaitlistAction(entryId: string, slot: { resourceId
   const r = await createAppointment(actor, { patientId: e.patientId, typeId, resourceId: slot.resourceId, date: isoOf(slot.date), time: slot.time, reason: e.note ?? undefined }, ctx);
   if (r.ok) await removeFromWaitlist(actor, entryId, "booked", ctx);
   return result(r.ok ? { ok: true, overridden: r.overridden } : r);
+}
+
+// ── Patients waiting for a time (calendar v3 bubbles) ────────────────────────────────
+export async function bubbleAddAction(raw: { patientId?: string; typeId?: string; newPatient?: { name?: string; mobile?: string } }) {
+  const actor = await actorNow();
+  const company = await activeCompany(actor);
+  if (!company) return { error: "not_found" };
+  const r = await addBubble(actor, company.id, raw, await requestContext());
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/calendar");
+  return { ok: true, id: r.id };
+}
+
+export async function bubbleRemoveAction(id: string) {
+  const actor = await actorNow();
+  const r = await removeBubble(actor, String(id), await requestContext());
+  if (!r.ok) return { error: r.error };
+  revalidatePath("/calendar");
+  return { ok: true };
+}
+
+// Put the bubble on the picked time (a new patient's record is created then).
+export async function bubbleBookAction(id: string, slot: { resourceId: string; date: string; time: string; flex?: boolean }): Promise<BookingResult & { patientId?: string | null }> {
+  const actor = await actorNow();
+  const r = await bookBubble(actor, String(id), { ...slot, date: isoOf(slot.date) }, await requestContext());
+  if (!r.ok && "patientError" in r) return { error: "invalid_value", patientError: r.patientError as string };
+  if (r.ok) revalidatePath("/");
+  return { ...(await result(r.ok ? { ok: true, overridden: r.overridden } : r)), ...(r.ok && { patientId: r.patientId }) };
 }

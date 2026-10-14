@@ -25,6 +25,8 @@ export function PatientSearch({ limited }: { limited: boolean }) {
     const onKey = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLElement && e.target.closest("input, textarea, select, [contenteditable]");
       if ((e.key === "/" && !typing) || (e.key === "k" && (e.ctrlKey || e.metaKey))) {
+        // Hidden (the calendar on a wide screen has its own search window): leave it to that.
+        if (!input.current?.offsetParent) return;
         e.preventDefault();
         input.current?.focus();
         input.current?.select();

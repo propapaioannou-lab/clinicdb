@@ -43,7 +43,8 @@ const athensNow = () => {
   return { iso: `${p.year}-${p.month}-${p.day}`, minute: Number(p.hour) * 60 + Number(p.minute) };
 };
 
-type Ghost = { left: number; top: number; width: number; height: number; tone: "ok" | "flex" | "park" | "bad"; text: string; flex?: boolean };
+// `of` = what it belongs to (the carried item, or a drag): once that is gone, so is the ghost.
+type Ghost = { left: number; top: number; width: number; height: number; tone: "ok" | "flex" | "park" | "bad"; text: string; flex?: boolean; of: string };
 type Target = { col: ColInfo; start: number; end: number; tone: Ghost["tone"]; text: string; flex?: boolean };
 type Drag = { mode: "move" | "resize"; appt: ApptInfo; el: HTMLElement; grab: number; x: number; y: number; started: boolean; touchReady: boolean };
 
@@ -90,7 +91,7 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
     target.current = tg;
     if (!tg || !rect) return setGhost(null);
     const top = rect.top + yOf(scale, tg.start);
-    setGhost({ left: rect.left + 2, width: rect.width - 4, top, height: Math.max(14, yOf(scale, tg.end) - yOf(scale, tg.start)), tone: tg.tone, text: tg.text });
+    setGhost({ left: rect.left + 2, width: rect.width - 4, top, height: Math.max(14, yOf(scale, tg.end) - yOf(scale, tg.start)), tone: tg.tone, text: tg.text, of: drag.current ? "drag" : (carry?.id ?? "") });
   };
 
   const commit = async (id: string, tg: Target, minutes: number) => {
@@ -211,7 +212,7 @@ export function DragSurface({ scale, carry, className, style, children }: { scal
   return (
     <div ref={box} className={`${className ?? ""} ${carry ? "cursor-copy" : ""}`} style={style} onPointerDown={down} onClickCapture={click} onPointerLeave={() => carry && !drag.current && show(null)} aria-busy={busy}>
       {children}
-      {inBrowser && ghost && createPortal(
+      {inBrowser && ghost && (ghost.of === "drag" || ghost.of === carry?.id) && createPortal(
         <div aria-hidden="true" className={`pointer-events-none fixed z-[60] overflow-hidden rounded-[7px] border-2 border-dashed px-2 py-0.5 text-[12px] font-semibold shadow-[0_6px_18px_rgba(28,32,36,0.18)] ${tone}`}
           style={{ left: ghost.left, top: ghost.top, width: ghost.width, height: ghost.height }}>
           {ghost.text}

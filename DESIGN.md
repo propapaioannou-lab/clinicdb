@@ -196,6 +196,24 @@ Principle: each person sees only what they act on.
   - physician: Τώρα, Επόμενος (rich), Σήμερα, Αύριο.
 - The calendar itself uses the full width.
 
+**Calendar v3 (14 Oct 2026, from the owner's layout board — replaces the top strip on
+wide screens)**
+- Computer (≥ 1024 px): no search bar on top; the one-line header goes to the top, with
+  Ιατρός / Γραμματεία at the far right. The calendar is bigger, with a **300 px column
+  on the right**:
+  - the search box (Ctrl K) opens a **search window over the calendar**; a patient found
+    or added (new = name + mobile, «Μήπως υπάρχει ήδη;») becomes a **bubble**
+    «Περιμένουν ώρα» at the top of the column — several can wait, for the whole front
+    desk, until put on a time (click the bubble → ghost → click a time → confirm) or
+    removed;
+  - under the bubbles the **cards sort themselves by priority**: a patient's card rises
+    10′ before their time and while they wait; new things (e.g. a waiting-list entry)
+    go on top for 15′. All numbers in `lib/calendar/priority.ts`, to be tuned in use.
+  - The appointment panel opens over the column.
+- Tablet (768–1023 px): the top strip stays; search + bubbles in one line above the grid.
+- Phone: **one view**, the day — ‹ «15 Οκτ» › and «+ Ραντεβού» only; no view/role
+  switches, no cards; the schedule fills the screen above the bottom bar.
+
 **Time scale**
 - Day and week views use **two bands**, with 14:30–16:00 collapsed:
   - surgery band compact (day ≈ 52 px/h, week ≈ 40 px/h);

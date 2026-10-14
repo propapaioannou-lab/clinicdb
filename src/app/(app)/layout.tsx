@@ -5,6 +5,7 @@ import { CalendarIcon, ChatIcon, HomeIcon, LogoutIcon, PatientsIcon, ScalpelIcon
 import { PatientSearch } from "@/components/patient-search";
 import { NavLink } from "@/components/shell/nav-link";
 import { RailToggle } from "@/components/shell/rail-toggle";
+import { TopBar } from "@/components/shell/top-bar";
 import { Avatar } from "@/components/ui";
 import { requireSession } from "@/lib/auth/current";
 import { backupHealth } from "@/lib/backups";
@@ -100,11 +101,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-surface-2 px-4 py-3 md:px-8 md:py-[18px]">
+        <TopBar>
           <Link href="/" aria-label={t("nav.office")} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-primary text-[15px] font-bold text-white md:hidden">Π</Link>
           <PatientSearch limited={!canSeeContactDetails(user.level)} />
           <Link href="/settings" aria-label={t("nav.settings")} className="md:hidden"><Avatar name={user.name} size={36} /></Link>
-        </header>
+        </TopBar>
         {backupProblem && (
           <div role="alert" className="bg-danger px-4 py-2 text-sm text-white md:px-8">
             {t("backups.banner")} <Link href="/admin/backups" className="underline">{t("backups.bannerLink")}</Link>

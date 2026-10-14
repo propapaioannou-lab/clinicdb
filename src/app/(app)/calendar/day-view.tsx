@@ -178,7 +178,7 @@ export function DayView({ data: all, types, startAt, carry, showCancelled = fals
             </div>
           ))}
         </div>
-        <div className="max-h-[calc(100vh-250px)] min-h-[420px] overflow-y-auto">
+        <div className="max-h-[calc(100dvh-250px)] min-h-[420px] overflow-y-auto max-md:max-h-[calc(100dvh-300px)] lg:max-h-[calc(100dvh-200px)]">
           <DragSurface scale={scale} carry={carry} className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
             <TimeAxis scale={scale} labels={{ surgery: t("bands.surgery"), office: t("bands.office") }} />
             {data.columns.map((c) => (
@@ -240,7 +240,8 @@ export function DayView({ data: all, types, startAt, carry, showCancelled = fals
 
       {panel.kind === "book" && <QuickBook key={`${panel.resourceId}${panel.start}`} data={data} types={types} at={panel} close={() => setPanel({ kind: "default" })} />}
       {open && (
-        <aside className={`${card} sticky top-[88px] flex max-h-[calc(100vh-110px)] w-[380px] shrink-0 flex-col gap-4 overflow-y-auto p-5 max-lg:fixed max-lg:inset-x-3 max-lg:bottom-3 max-lg:top-auto max-lg:z-40 max-lg:w-auto max-lg:shadow-[0_12px_40px_rgba(28,32,36,0.25)]`}>
+        // Wide screens: over the right-hand column (calendar v3); narrower: a sheet at the bottom.
+        <aside className={`${card} fixed z-40 flex flex-col gap-4 overflow-y-auto p-5 shadow-[0_12px_40px_rgba(28,32,36,0.25)] lg:bottom-4 lg:right-6 lg:top-4 lg:w-[340px] max-lg:inset-x-3 max-lg:bottom-3 max-lg:max-h-[calc(100vh-110px)]`}>
           {panel.kind === "appointment" && selected && <AppointmentPanel key={selected.id} a={selected} data={data} close={() => setPanel({ kind: "default" })} />}
         </aside>
       )}

@@ -351,6 +351,7 @@ model Patient {
   documents       Document[]
   appointments    Appointment[]
   waitlist        WaitlistEntry[]
+  bubbles         CalendarBubble[]
 
   @@unique([companyId, number])
   @@index([companyId, sortName])
@@ -823,6 +824,30 @@ model ChatMessage {
 // «💬 Πρόταση» on every screen of the online demo: what a tester would change, with the
 // screen, who and when. The owner reads them, ticks them done and exports them to Markdown.
 // No patient data (the demo holds fake data only). Kept, never deleted.
+// Patients waiting on the calendar for a time (calendar v3, 14 Oct 2026): found or added
+// in the calendar's search, they float at the top of the right-hand column until someone
+// puts them on a time (booked) or takes them off. A new patient is only a name (+ mobile)
+// here; the record is created when the appointment is booked. Never deleted, only closed.
+model CalendarBubble {
+  id            String    @id @default(cuid())
+  companyId     String
+  patientId     String?
+  newName       String?
+  newMobile     String?
+  typeId        String?
+  createdAt     DateTime  @default(now())
+  createdById   String
+  createdByName String
+  closedAt      DateTime?
+  closedById    String?
+  closedWhy     String? // "booked" | "removed"
+  appointmentId String?
+  patient       Patient?  @relation(fields: [patientId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, closedAt])
+  @@index([patientId])
+}
+
 model Suggestion {
   id        String    @id @default(cuid())
   companyId String?

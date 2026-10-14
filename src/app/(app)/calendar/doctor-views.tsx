@@ -7,6 +7,8 @@ import type { Scale } from "@/lib/calendar/bands";
 import type { patientCard, RangeAppointment, RangeDay } from "@/lib/calendar/views";
 import { CardText, ColumnBackground, dur, Folds, GridLines, Legend, place, SurgeryBar, TimeAxis } from "./grid-bits";
 import { NowLine } from "./now-line";
+import { athensSlot } from "@/lib/calendar/appointments";
+import { dueBoost, PRIORITY } from "@/lib/calendar/priority";
 import type { Tile } from "./top-strip";
 
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
@@ -31,7 +33,7 @@ export async function DoctorDay({ day, resourceId, current, scale, types }: { da
   return (
     <section className={`${card} overflow-hidden`}>
       {day.holiday && <div className="bg-warn-bg px-4 py-2 text-sm font-semibold text-warn-ink">{t("holiday", { name: day.holiday })}</div>}
-      <div className="max-h-[calc(100vh-290px)] min-h-[420px] overflow-y-auto">
+      <div className="max-h-[calc(100dvh-290px)] min-h-[420px] overflow-y-auto max-md:max-h-[calc(100dvh-260px)] lg:max-h-[calc(100dvh-190px)]">
         <div className="relative grid grid-cols-[64px_minmax(0,1fr)]" style={{ height: scale.height }}>
           <TimeAxis scale={scale} labels={{ surgery: t("bands.surgery"), office: t("bands.office") }} />
           <div className="relative border-l border-line-soft">
@@ -79,10 +81,17 @@ export async function doctorTiles({ day, resourceId, next, current, tomorrow }: 
   const office = active.filter((a) => a.layer !== "SURGERY");
   const p = next?.patient;
   const firstTomorrow = tomorrow.find((a) => a.layer === "SURGERY") ?? tomorrow[0];
+  const due = (a: RangeAppointment) => {
+    const from = athensSlot(day.date, hhmm(a.start));
+    const to = athensSlot(day.date, hhmm(a.end));
+    return from && to ? [dueBoost(from.toISOString(), to.toISOString())] : [];
+  };
   return [
-    { key: "now", label: current ? t("strip.nowIn", { room: current.room ?? "—" }) : t("strip.now"), value: current ? `${current.name ?? current.typeLabel} · ${current.typeLabel}` : t("strip.nobody") },
+    { key: "now", label: current ? t("strip.nowIn", { room: current.room ?? "—" }) : t("strip.now"), value: current ? `${current.name ?? current.typeLabel} · ${current.typeLabel}` : t("strip.nobody"), rank: { base: PRIORITY.base.now, boosts: current ? [{ add: PRIORITY.busy }] : [] } },
     {
       key: "next",
+      // Rises when the patient's time comes (10′ before) or they are waiting (calendar v3).
+      rank: { base: PRIORITY.base.next, boosts: next ? [...due(next.a), ...(next.waiting !== null ? [{ add: PRIORITY.waiting }] : [])] : [] },
       label: next ? `${t("nextCard", { time: next.a.time })}${next.waiting !== null ? ` · ${t("waitingFor", { minutes: next.waiting })}` : ""}` : t("strip.next"),
       wide: true,
       tone: next ? "primary" : "neutral",
@@ -99,11 +108,13 @@ export async function doctorTiles({ day, resourceId, next, current, tomorrow }: 
     },
     {
       key: "today",
+      rank: { base: PRIORITY.base.today },
       label: t("strip.today"),
       value: [ops.length ? t("strip.opsCount", { count: ops.length }) : null, t("strip.count", { count: office.length }), t("strip.newCount", { count: office.filter((a) => a.isNew).length })].filter(Boolean).join(" · "),
     },
     {
       key: "tomorrow",
+      rank: { base: PRIORITY.base.tomorrow },
       label: firstTomorrow?.layer === "SURGERY" ? t("strip.tomorrowSurgery") : t("strip.tomorrow"),
       value: firstTomorrow ? `${firstTomorrow.time} ${firstTomorrow.name ?? ""}${firstTomorrow.reason ? ` · ${firstTomorrow.reason}` : ""}` : "—",
       sub: tomorrow.some((a) => a.layer !== "SURGERY") ? t("strip.count", { count: tomorrow.filter((a) => a.layer !== "SURGERY").length }) : undefined,

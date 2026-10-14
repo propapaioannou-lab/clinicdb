@@ -40,7 +40,7 @@ export async function DeskWeek({ days, resources, todayIso, scale, types, carry,
           );
         })}
       </div>
-      <div className="max-h-[calc(100vh-290px)] min-h-[420px] overflow-y-auto">
+      <div className="max-h-[calc(100dvh-290px)] min-h-[420px] overflow-y-auto lg:max-h-[calc(100dvh-210px)]">
         <DragSurface scale={scale} carry={carry} className="relative grid" style={{ gridTemplateColumns: cols, height: scale.height }}>
           <TimeAxis scale={scale} labels={{ surgery: t("bands.surgery"), office: t("bands.office") }} />
           {days.map((d) => (
